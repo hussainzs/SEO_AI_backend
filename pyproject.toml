@@ -1,0 +1,27 @@
+[project]
+name = "seo-ai-backend"
+version = "0.1.0"
+description = "SEO for Journalists and News Media Organizations"
+authors = [
+    {name = "Hussain Zaidi",email = "syedhussainzaidi2002@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13,<4.0"
+dependencies = [
+    "langchain (>=0.3.25,<0.4.0)",
+    "langgraph (>=0.4.1,<0.5.0)",
+    "pydantic (>=2.11.4,<3.0.0)",
+    "pydantic-settings (>=2.9.1,<3.0.0)",
+    "langchain-openai (>=0.3.16,<0.4.0)",
+    "langchain-google-genai (>=2.1.4,<3.0.0)",
+    "langchain-groq (>=0.3.2,<0.4.0)",
+    "fastapi (>=0.115.12,<0.116.0)",
+    "uvicorn (>=0.34.2,<0.35.0)"
+]
+
+[tool.poetry]
+package-mode = false
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
