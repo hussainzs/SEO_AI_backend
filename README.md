@@ -92,3 +92,7 @@ poetry remove package-name
 - Check your environment: `poetry env info`
 - List installed packages: `poetry show`
 
+## Contributing Guidelines
+
+check out the [CONTRIBUTING.md](CONTRIBUTING.md) file for more details on how to contribute to this project.
+
