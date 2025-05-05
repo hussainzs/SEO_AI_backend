@@ -202,15 +202,6 @@ async def assistant(state: State):
     # update the state
     return {"messages": [response], "llm_final_answer": response.content if response.content else ""}
 
-# Define the conditional edge logic that will decide if LLM made a tool call so route to toolNode or end the graph.
-def should_continue(state: State) -> Literal['end'] | Literal['continue']:
-    messages = state["messages"]
-    most_recent_message: AIMessage = messages[-1] # type: ignore
-    # If the last message is not a tool call, then we finish
-    if not most_recent_message.tool_calls:
-        return "end"
-    # default to continue
-    return "continue"
 
 # ***5. Define the workflow of the graph
 print("\n=== Building Graph Workflow ===\n")
@@ -229,7 +220,7 @@ graph_builder.add_edge(start_key=START, end_key="assistant")
 graph_builder.add_conditional_edges(
     source="assistant", 
     path=tools_condition, 
-    # tools_condition will route to node called "tools" if the LLM made a tool call, otherwise it will route to END.
+    # prebuilt tools_condition will route to node called "tools" if the LLM made a tool call, otherwise it will route to END.
 )
 graph_builder.add_edge(start_key="tools", end_key="assistant")
 
