@@ -3,7 +3,10 @@ Here we will create a simple langGraph workflow with one tool and get streaming 
 We need to use async.
 """
 
+print("\n=== Initializing LangGraph Workflow ===\n")
+
 import os
+import json
 from json import dumps as json_dump
 from pprint import pprint
 from typing import Literal, Optional
@@ -39,6 +42,8 @@ from datetime import datetime
 
 # *******************Pre Load*******************
 
+print("\n=== Loading Environment Variables and Initializing Clients ===\n")
+
 # Load the environment variables from the .env file
 load_dotenv()
 
@@ -48,6 +53,8 @@ if not tavily_api_key:
     raise ValueError(
         "TAVILY_API_KEY environment variable not set."
     )  # In real application, we would do this validation in a separate file.
+else:
+    print("✓ Tavily API key loaded successfully")
 
 tavily_client = TavilyClient(api_key=tavily_api_key)
 async_tavily_client = AsyncTavilyClient(api_key=tavily_api_key)
@@ -56,6 +63,9 @@ async_tavily_client = AsyncTavilyClient(api_key=tavily_api_key)
 gemini_api_key: str | None = os.getenv("GEMINI_API_KEY")
 if not gemini_api_key:
     raise ValueError("GEMINI_API_KEY environment variable not set.")
+else:
+    print("✓ Gemini API key loaded successfully")
+
 gemini_llm = ChatGoogleGenerativeAI(
     model="gemini-2.0-flash",
     temperature=0.3,
@@ -66,6 +76,8 @@ gemini_llm = ChatGoogleGenerativeAI(
 
 
 # *** Define the STATE of the graph
+print("\n=== Defining State and Tool Classes ===\n")
+
 class State(MessagesState):
     """
     Remember: Subclassing MessageState by LangGraph provides us with a `messages` state automatically with the right reducer.
@@ -106,10 +118,12 @@ class WebSearch(BaseTool):
         topic: Literal["news", "general"] = "general",
         run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
+        print(f"\n→ Executing web search for query: {query}")
         # Now using LLM generated parameters and some hardcoded ones we will call the Tavily API
         response = tavily_client.search(
             query=query, topic=topic, max_results=2, include_answer=True
         )
+        print("✓ Web search completed successfully")
         return json_dump(
             response
         )  # convert the response to a json string as the LLMs expect a string from the tool.
@@ -121,22 +135,25 @@ class WebSearch(BaseTool):
         run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
     ) -> str:
         try:
+            print(f"\n→ Executing async web search for query: {query}")
             # Perform the asynchronous search with the same parameters as the sync version
             response = await async_tavily_client.search(
                 query=query, topic=topic, max_results=2, include_answer=True
             )
+            print("✓ Async web search completed successfully")
             return json_dump(response)  # Convert the response to a JSON string
         except Exception as e:
             # Proper error handling with meaningful message
             error_message = f"Asynchronous web search failed: {str(e)}"
+            print(f"✗ Error: {error_message}")
             if run_manager:
                 await run_manager.on_tool_error(error=e)
             raise RuntimeError(error_message)
 
 
 # *** 3. Define our prompt
-prompt_content: str = """ 
-You are a helpful assistant that can answer questions and provide information based on the latest news and general knowledge.
+prompt_content = """ 
+System Instructions: You are a helpful assistant that can answer questions and provide information based on the latest news and general knowledge.
 Use the web search tool for up to date information or news. If you need current time to formulate web query, the current time is {current_time}.
 
 You must provide sources in your answer if you use the web search tool. Use the urls from the web search results to provide sources.
@@ -146,10 +163,11 @@ If you are not sure about the answer, ask the user for more information or clari
 If user asked a multi part question that needs to be web searched, you can conduct parallel tool calls to the same tool with different queries.
 If the queries are related, you can combine the results to provide a comprehensive answer.
 
+Now answer the user question: 
 Human: {user_input}
 """
 
-template = ChatPromptTemplate([HumanMessage(content=prompt_content)])
+template = ChatPromptTemplate.from_template(prompt_content)
 
 # *** 4. Define the Nodes
 # Define tools once at the module level
@@ -163,12 +181,13 @@ async def assistant(state: State):
     """
     This node defines the LLM that will interact with user, create tool calls, process tool results and provide final answer.
     """
+    print("\n→ Assistant processing current state")
     # call the LLM with the messages we have
     response: BaseMessage = await gemini_llm.ainvoke(state['messages'])
-    
+    print("✓ Assistant generated response")
     # update the state
     return {"messages": [response], "llm_final_answer": response.content if response.content else ""}
-    
+
 # Define the conditional edge logic that will decide if LLM made a tool call so route to toolNode or end the graph.
 def should_continue(state: State) -> Literal['end'] | Literal['continue']:
     messages = state["messages"]
@@ -180,6 +199,8 @@ def should_continue(state: State) -> Literal['end'] | Literal['continue']:
     return "continue"
 
 # ***5. Define the workflow of the graph
+print("\n=== Building Graph Workflow ===\n")
+
 graph_builder = StateGraph(state_schema=State)
 
 # add nodes in the graph
@@ -202,6 +223,8 @@ graph_builder.add_edge(start_key="tools", end_key="assistant")
 # ****6. Compile the graph - now we can astream this with the inputs needed and it will output.
 workflow: CompiledStateGraph = graph_builder.compile()
 
+print("✓ Graph workflow compiled successfully\n")
+
 # *******************End of Graph*******************
 
 async def run_workflow_stream(user_input: str) -> None:
@@ -214,6 +237,8 @@ async def run_workflow_stream(user_input: str) -> None:
     Returns:
         None
     """
+    print("\n=== Starting Workflow Execution ===\n")
+    print(f"→ Processing user input: {user_input}")
     # Generate current time string
     current_time: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S %Z")
 
@@ -222,17 +247,23 @@ async def run_workflow_stream(user_input: str) -> None:
         user_input=user_input,
         current_time=current_time
     )
-    
+
     # Prepare the initial state for the workflow
     inputs: dict = {
         "messages": formatted_messages,
         "llm_final_answer": ""
     }
+    
+    print(f"→ state prepared:")
+    pprint(inputs) # Pretty print the initial state for verification
+    print("=============================")
 
+    print("\n→ Streaming workflow updates:")
     # Stream the workflow execution and print each update
     try:
         async for update in workflow.astream(input=inputs, stream_mode="updates"):
-            print("")
-            pprint(update)
+            print("\n=== Workflow Update ===")
+            print(json.dumps(update, indent=4, default=str))
+        print("\n✓ Workflow completed successfully")
     except Exception as exc:
-        pprint(f"Error running workflow: {exc}")
+        print(f"\n✗ Workflow Error: {exc}")
