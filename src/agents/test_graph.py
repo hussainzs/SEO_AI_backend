@@ -5,13 +5,14 @@ We need to use async.
 
 import os
 from json import dumps as json_dump
-from typing import Any, Literal, Optional
+from pprint import pprint
+from typing import Literal, Optional
 from dotenv import load_dotenv
 from langgraph.graph import StateGraph, MessagesState, START, END
 
 # For defining custom Tools
 from langgraph.graph.state import CompiledStateGraph
-from langgraph.prebuilt import ToolNode, tools_condition
+from langgraph.prebuilt import ToolNode
 from langchain_core.callbacks import (
     AsyncCallbackManagerForToolRun,
     CallbackManagerForToolRun,
@@ -36,7 +37,7 @@ from langchain_core.prompts import ChatPromptTemplate
 # For date time
 from datetime import datetime
 
-# *******************Pre Work*******************
+# *******************Pre Load*******************
 
 # Load the environment variables from the .env file
 load_dotenv()
@@ -69,8 +70,6 @@ class State(MessagesState):
     """
     Remember: Subclassing MessageState by LangGraph provides us with a `messages` state automatically with the right reducer.
     """
-
-    num_of_steps: int
     llm_final_answer: str
 
 
@@ -153,16 +152,17 @@ Human: {user_input}
 template = ChatPromptTemplate([HumanMessage(content=prompt_content)])
 
 # *** 4. Define the Nodes
+# Define tools once at the module level
+tools: list[BaseTool] = [WebSearch()]
+
+# Bind tools to LLM once at the module level for efficiency
+gemini_llm.bind_tools(tools=tools)
 
 # LLM Node
 async def assistant(state: State):
     """
     This node defines the LLM that will interact with user, create tool calls, process tool results and provide final answer.
     """
-    # Bind tools to Gemini LLM
-    tools: list[BaseTool] = [WebSearch()]
-    gemini_llm.bind_tools(tools)
-    
     # call the LLM with the messages we have
     response: BaseMessage = await gemini_llm.ainvoke(state['messages'])
     
@@ -180,7 +180,6 @@ def should_continue(state: State) -> Literal['end'] | Literal['continue']:
     return "continue"
 
 # ***5. Define the workflow of the graph
-tools: list[BaseTool] = [WebSearch()]
 graph_builder = StateGraph(state_schema=State)
 
 # add nodes in the graph
@@ -192,7 +191,7 @@ graph_builder.add_node(node="tools", action=ToolNode(tools))
 graph_builder.add_edge(start_key=START, end_key="assistant")
 graph_builder.add_conditional_edges(
     source="assistant", 
-    path=tools_condition, 
+    path=should_continue, 
     path_map={
         "continue": "tools",
         "end": END
@@ -204,8 +203,36 @@ graph_builder.add_edge(start_key="tools", end_key="assistant")
 workflow: CompiledStateGraph = graph_builder.compile()
 
 # *******************End of Graph*******************
-def get_workflow() -> CompiledStateGraph:
+
+async def run_workflow_stream(user_input: str) -> None:
     """
-    This function returns the compiled workflow. This is the main entry point for the workflow.
+    Runs the LangGraph workflow with streaming output and prints each update to the terminal.
+
+    Args:
+        user_input (str): The user's question or request to be processed by the assistant.
+
+    Returns:
+        None
     """
-    return workflow
+    # Generate current time string
+    current_time: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S %Z")
+
+    # Format the prompt with user input and current time
+    formatted_messages: list[BaseMessage] = template.format_messages(
+        user_input=user_input,
+        current_time=current_time
+    )
+    
+    # Prepare the initial state for the workflow
+    inputs: dict = {
+        "messages": formatted_messages,
+        "llm_final_answer": ""
+    }
+
+    # Stream the workflow execution and print each update
+    try:
+        async for update in workflow.astream(input=inputs, stream_mode="updates"):
+            print("")
+            pprint(update)
+    except Exception as exc:
+        pprint(f"Error running workflow: {exc}")
