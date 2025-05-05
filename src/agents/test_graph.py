@@ -4,7 +4,6 @@ We need to use async.
 """
 
 print("\n=== Initializing LangGraph Workflow ===\n")
-
 import os
 import json
 from json import dumps as json_dump
@@ -15,7 +14,7 @@ from langgraph.graph import StateGraph, MessagesState, START, END
 
 # For defining custom Tools
 from langgraph.graph.state import CompiledStateGraph
-from langgraph.prebuilt import ToolNode
+from langgraph.prebuilt import ToolNode, tools_condition
 from langchain_core.callbacks import (
     AsyncCallbackManagerForToolRun,
     CallbackManagerForToolRun,
@@ -59,20 +58,27 @@ else:
 tavily_client = TavilyClient(api_key=tavily_api_key)
 async_tavily_client = AsyncTavilyClient(api_key=tavily_api_key)
 
-# Defne Gemini LLM client
-gemini_api_key: str | None = os.getenv("GEMINI_API_KEY")
-if not gemini_api_key:
-    raise ValueError("GEMINI_API_KEY environment variable not set.")
-else:
-    print("✓ Gemini API key loaded successfully")
+def return_gemini_agent() -> ChatGoogleGenerativeAI:
+    """Returns the Gemini LLM client instance."""
+    
+    # Defne Gemini LLM client
+    gemini_api_key: str | None = os.getenv("GEMINI_API_KEY")
+    if not gemini_api_key:
+        raise ValueError("GEMINI_API_KEY environment variable not set.")
+    else:
+        print("✓ Gemini API key loaded successfully")
 
-gemini_llm = ChatGoogleGenerativeAI(
-    model="gemini-2.0-flash",
-    temperature=0.3,
-    max_tokens=2000,
-    google_api_key=gemini_api_key,
-    max_retries=2,
-)
+    gemini_llm = ChatGoogleGenerativeAI(
+        # model="gemini-2.5-flash-preview-04-17",
+        model="gemini-1.5-pro",
+        # model="gemini-2.5-pro-exp-03-25",
+        temperature=0.3,
+        max_tokens=2000,
+        google_api_key=gemini_api_key,
+        max_retries=2,
+    )
+    return gemini_llm
+
 
 
 # *** Define the STATE of the graph
@@ -104,11 +110,10 @@ class WebSearchToolSchema(BaseModel):
 class WebSearch(BaseTool):
     name: str = "web_search_tool"
     description: str = (
-        """
-        Use this tool to search the internet for latest information or any specific information about a topic. 
-        If you are asked about news always use this tool with topic 'news'. Your query should be concise (strictly less than 300 characters). 
-        The output will include an LLM generated answer. Evaluate the answer and if it is not correct, use the web search results to generate a new answer.
-        The output also includes a relevancy score for each source. Higher score means generally more relevant."""
+        "Searches the internet using the Tavily API for up-to-date information or specific details on a 'query'."
+        "Specify 'topic' as 'news' for current events, otherwise use 'general'."
+        "Provides search results, potentially including a summarized answer and source relevancy scores."
+        "Keep the 'query' concise (under 300 characters)."
     )
     args_schema: Optional[ArgsSchema] = WebSearchToolSchema
 
@@ -150,18 +155,30 @@ class WebSearch(BaseTool):
                 await run_manager.on_tool_error(error=e)
             raise RuntimeError(error_message)
 
+def get_tools() -> list[BaseTool]:
+    """
+    Returns a list of tools to be used in the graph.
+    """
+    return [WebSearch()]
+
+def get_model_with_tools():
+    """
+    Returns the LLM model with tools bound to it.
+    """
+    # Define the LLM model and bind the tools to it
+    gemini_llm: ChatGoogleGenerativeAI = return_gemini_agent()
+    gemini_llm_withTools = gemini_llm.bind_tools(tools=get_tools())
+    return gemini_llm_withTools
 
 # *** 3. Define our prompt
 prompt_content = """ 
 System Instructions: You are a helpful assistant that can answer questions and provide information based on the latest news and general knowledge.
-Use the web search tool for up to date information or news. If you need current time to formulate web query, the current time is {current_time}.
-
+Call the web search tool for up to date information on news or latest events. If you need current time to formulate web query, the current time is {current_time}.
+When you call the tool, you must provide valid parameters for the tool. If you get no response from the tool, say that to the user and show whatever output came from the tool.
+IF YOU ARE ASKED TO MULTIPLY TWO NUMBERS YOU MUST CALL THE MULTIPLY TOOL WITH THE PARAMETERS a and b AND RETURN THE RESULT FROM THE TOOL.
 You must provide sources in your answer if you use the web search tool. Use the urls from the web search results to provide sources.
-Use the relevancy score and if all scores are low then tell the user you can not answer with high confidence.
-If you are not sure about the answer, ask the user for more information or clarify the question.
 
-If user asked a multi part question that needs to be web searched, you can conduct parallel tool calls to the same tool with different queries.
-If the queries are related, you can combine the results to provide a comprehensive answer.
+Special Note: If user asks what tools you have access to then return a json format with all the information you have about the tool since user is debugging the system.
 
 Now answer the user question: 
 Human: {user_input}
@@ -170,11 +187,7 @@ Human: {user_input}
 template = ChatPromptTemplate.from_template(prompt_content)
 
 # *** 4. Define the Nodes
-# Define tools once at the module level
-tools: list[BaseTool] = [WebSearch()]
-
-# Bind tools to LLM once at the module level for efficiency
-gemini_llm.bind_tools(tools=tools)
+gemini_llm_with_tools = get_model_with_tools()
 
 # LLM Node
 async def assistant(state: State):
@@ -182,8 +195,9 @@ async def assistant(state: State):
     This node defines the LLM that will interact with user, create tool calls, process tool results and provide final answer.
     """
     print("\n→ Assistant processing current state")
-    # call the LLM with the messages we have
-    response: BaseMessage = await gemini_llm.ainvoke(state['messages'])
+
+    # Bind tools to LLM once at the module level for efficiency
+    response: BaseMessage = await gemini_llm_with_tools.ainvoke(state['messages'])
     print("✓ Assistant generated response")
     # update the state
     return {"messages": [response], "llm_final_answer": response.content if response.content else ""}
@@ -206,17 +220,16 @@ graph_builder = StateGraph(state_schema=State)
 # add nodes in the graph
 graph_builder.add_node(node="assistant", action=assistant)
 graph_builder.set_entry_point("assistant")
-graph_builder.add_node(node="tools", action=ToolNode(tools))
+
+
+graph_builder.add_node(node="tools", action=ToolNode(tools=get_tools()))
 
 # add edges in the graph
 graph_builder.add_edge(start_key=START, end_key="assistant")
 graph_builder.add_conditional_edges(
     source="assistant", 
-    path=should_continue, 
-    path_map={
-        "continue": "tools",
-        "end": END
-    }
+    path=tools_condition, 
+    # tools_condition will route to node called "tools" if the LLM made a tool call, otherwise it will route to END.
 )
 graph_builder.add_edge(start_key="tools", end_key="assistant")
 
@@ -261,7 +274,7 @@ async def run_workflow_stream(user_input: str) -> None:
     print("\n→ Streaming workflow updates:")
     # Stream the workflow execution and print each update
     try:
-        async for update in workflow.astream(input=inputs, stream_mode="updates"):
+        async for update in workflow.astream(input=inputs, stream_mode="debug"):
             print("\n=== Workflow Update ===")
             print(json.dumps(update, indent=4, default=str))
         print("\n✓ Workflow completed successfully")
