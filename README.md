@@ -2,7 +2,7 @@
 
 Multi-agent AI-powered SEO assistant tailored for journalists and news media organizations. 
 
-## Features
+## Features (more to come)
 
 - Data driven keyword for article draft
 - SEO optimized URL slugs
