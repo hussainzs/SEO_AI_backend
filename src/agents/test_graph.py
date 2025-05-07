@@ -5,7 +5,6 @@ Here we will create a simple langGraph workflow with one tool and get streaming 
 print("\n=== Initializing LangGraph Workflow ===\n")
 import os
 import json
-from json import dumps as json_dump
 from pprint import pprint
 from typing import Literal, Optional
 from dotenv import load_dotenv
@@ -143,7 +142,7 @@ class WebSearch(BaseTool):
             query=query, topic=topic, max_results=2, include_answer=True
         )
         print("✓ Web search completed successfully")
-        return json_dump(
+        return json.dumps(
             response
         )  # convert the response to a json string as the LLMs expect a string from the tool.
 
@@ -160,7 +159,7 @@ class WebSearch(BaseTool):
                 query=query, topic=topic, max_results=2, include_answer=True
             )
             print("✓ Async web search completed successfully")
-            return json_dump(response)  # Convert the response to a JSON string
+            return json.dumps(response)  # Convert the response to a JSON string
         except Exception as e:
             # Proper error handling with meaningful message
             error_message = f"Asynchronous web search failed: {str(e)}"
