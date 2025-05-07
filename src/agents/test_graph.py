@@ -1,6 +1,5 @@
 """
 Here we will create a simple langGraph workflow with one tool and get streaming output which will be sent to FastAPI.
-We need to use async.
 """
 
 print("\n=== Initializing LangGraph Workflow ===\n")
@@ -21,6 +20,7 @@ from langchain_core.callbacks import (
 )
 from langchain_core.tools import BaseTool
 from langchain_core.tools.base import ArgsSchema
+import opik
 from pydantic import BaseModel, Field
 
 # Tavily Client
@@ -39,12 +39,25 @@ from langchain_core.prompts import ChatPromptTemplate
 # For date time
 from datetime import datetime
 
+# For Opik observability
+from opik.integrations.langchain import OpikTracer
+
 # *******************Pre Load*******************
 
 print("\n=== Loading Environment Variables and Initializing Clients ===\n")
 
 # Load the environment variables from the .env file
 load_dotenv()
+
+# Define the LangFuse callback handler for observability
+opik_api_key: str | None = os.getenv("OPIK_API_KEY")
+opik_workspace: str | None = os.getenv("OPIK_WORKSPACE")
+opik_project_name: str | None = os.getenv("OPIK_PROJECT_NAME")
+if not opik_api_key or not opik_workspace:
+    raise ValueError(
+        "OPIK_API_KEY and OPIK_WORKSPACE environment variables not set."
+    )  # In real application, we would do this validation in a separate file.
+
 
 # Define the Tavily client for the web search tool.
 tavily_api_key: str | None = os.getenv("TAVILY_API_KEY")
@@ -70,8 +83,9 @@ def return_gemini_agent() -> ChatGoogleGenerativeAI:
 
     gemini_llm = ChatGoogleGenerativeAI(
         # model="gemini-2.5-flash-preview-04-17",
-        model="gemini-1.5-pro",
+        # model="gemini-1.5-pro",
         # model="gemini-2.5-pro-exp-03-25",
+        model="gemini-2.0-flash",
         temperature=0.3,
         max_tokens=2000,
         google_api_key=gemini_api_key,
@@ -226,6 +240,8 @@ graph_builder.add_edge(start_key="tools", end_key="assistant")
 
 # ****6. Compile the graph - now we can astream this with the inputs needed and it will output.
 workflow: CompiledStateGraph = graph_builder.compile()
+# Create the Opik tracer for observability
+tracer = OpikTracer(graph=workflow.get_graph(xray=True), project_name=opik_project_name)
 
 print("✓ Graph workflow compiled successfully\n")
 
@@ -265,7 +281,7 @@ async def run_workflow_stream(user_input: str) -> None:
     print("\n→ Streaming workflow updates:")
     # Stream the workflow execution and print each update
     try:
-        async for update in workflow.astream(input=inputs, stream_mode="debug"):
+        async for update in workflow.astream(input=inputs, stream_mode="updates", config={"callbacks": [tracer]}):
             print("\n=== Workflow Update ===")
             print(json.dumps(update, indent=4, default=str))
         print("\n✓ Workflow completed successfully")
