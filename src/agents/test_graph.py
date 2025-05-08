@@ -304,18 +304,19 @@ async def run_workflow_stream(user_input: str) -> AsyncGenerator[dict, None]:
         async for update in workflow.astream(
             input=inputs, stream_mode="updates", config={"callbacks": [tracer]}
         ):
+            # Check if the update dictionary has the 'assistant' key. Otherwise it will have 'tools' key.
             if "assistant" in update:
                 assistant_output = update["assistant"]
+                # if there is no messages key then we can't do anything so skip
                 if not assistant_output.get("messages"):
                     continue
-
+                
+                # messages is a array where each update contains only one element in the array. get this element
                 msg = assistant_output["messages"][0]
 
-                # CASE: LLM content + tool calls
-                if getattr(msg, "tool_calls", None):
-                    if msg.content:
-                        yield {"type": "answer", "content": msg.content}
-
+                # CASE: Check for TOOL CALLS and make sure they are not empty
+                if hasattr(msg, "tool_calls") and msg.tool_calls:
+                    # loop through tool calls because there may be multiple tool calls. tool_calls is a list of dicts.
                     for tool_call in msg.tool_calls:
                         name = tool_call.get("name", "unknown_tool")
                         args = tool_call.get("args", {})
@@ -325,7 +326,7 @@ async def run_workflow_stream(user_input: str) -> AsyncGenerator[dict, None]:
                             "tool_args": args or {},
                         }
 
-                # CASE: pure LLM answer
+                # CASE: pure LLM answer (content without tool calls)
                 elif msg.content:
                     yield {"type": "answer", "content": msg.content}
 
@@ -336,5 +337,4 @@ async def run_workflow_stream(user_input: str) -> AsyncGenerator[dict, None]:
         yield {"type": "complete", "content": "Workflow completed successfully"}
 
     except Exception as exc:
-        # print(f"\n✗ Workflow Error: {exc}")
         yield {"type": "error", "content": str(exc)}
