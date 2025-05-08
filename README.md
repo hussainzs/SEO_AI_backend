@@ -1,8 +1,8 @@
 # Multi Agent AI SEO Assistant for News Media Organizations
 
-Multi-agent AI-powered SEO assistant tailored for journalists and news media organizations. 
+(⚠️🔨In-progress) Multi-agent AI-powered SEO assistant tailored for journalists and news media organizations. 
 
-## Features
+## Features (more to come)
 
 - Data driven keyword for article draft
 - SEO optimized URL slugs
@@ -17,18 +17,60 @@ Follow these steps to set up the project on your local machine.
 - **Python**: Ensure you have Python 3.13 or higher installed. You can download it from [python.org](https://www.python.org/downloads/).
 - **Poetry**: This project uses Poetry for dependency management. There are multiple ways to install it. Click here for the [official installation instructions](https://python-poetry.org/docs/).
 
-  - **Using pipx** (recommended): this requires `pipx` to be installed. Follow the [instructions here](https://pipx.pypa.io/stable/installation/) to install pipx. This is preferred as it will handle updating and uninstalling Poetry for you. Once `pipx` is installed, run:
+  - **Using pipx** (recommended): this requires `pipx` to be installed. Follow the [instructions here](https://pipx.pypa.io/stable/installation/) to install pipx. This is preferred as it will handle updating and uninstalling Poetry for you. Once `pipx` is installed, **run**:
 
     ```bash
     pipx install poetry
     ```
-    If you want to upgrade Poetry using pipx, you can run:
+    In the future, If you want to upgrade Poetry using pipx, you can run:
 
     ```bash
     pipx upgrade poetry
     ```
 
-  - **Using the official installer**: Click here for the [official installation instructions](https://python-poetry.org/docs/#installing-with-the-official-installer).
+---
+
+#### **Observability & Tracing**
+  Opik by Comet ([Learn more](https://www.comet.com/site/products/opik/))  
+  - **Cloud-hosted, free tier:** No credit card required.  
+  - **Limits:** 25,000 traces/month, 60-day data retention.  
+  - **Setup:**  
+    - Sign up for a free account on [Comet Opik](https://www.comet.com/site/products/opik/).
+    - Obtain your Opik API credentials.
+    - Add the following variables to your `.env` file (see `.env.example` for details):  
+      - `OPIK_API_KEY`
+      - `OPIK_WORKSPACE`
+      - `OPIK_PROJECT_NAME`
+    - Note the `OPIK_PROJECT_NAME` is the name of the project you want to create in Opik. If you don't create a project it will go into Default project.
+    - Also note that `OPIK_WORKSPACE` can be found in the quickstart guide for langgraph in Opik once you sign up for the free account.
+---
+
+#### **Web Search Providers**
+
+- **Tavily** ([tavily.com](https://tavily.com)):  
+  - **Free tier:** 1,000 searches/month, no credit card required.  
+  - **Setup:**  
+    - Sign up and create an API key on [Tavily](https://tavily.com).
+    - Add your API key to the `.env` file as `TAVILY_API_KEY` (see `.env.example`).
+- **Exa** ([exa.ai](https://exa.ai/)):  
+  - *Coming soon*
+
+---
+
+#### **LLMs (Large Language Models)**
+
+- **Google Generative AI**  
+  - **Get a free API key:** [Google Gemini API](https://ai.google.dev/gemini-api/docs/api-key)  
+  - **Pricing:** [See pricing](https://ai.google.dev/gemini-api/docs/pricing)  
+  - **Model names:** [Model variations](https://ai.google.dev/gemini-api/docs/models#model-variations)  
+  - **Setup:**  
+    - Obtain your API key and add it to `.env` as `GEMINI_API_KEY` (see `.env.example`).
+- **OpenAI:**  
+  - *Coming soon*
+- **Groq:**  
+  - *Coming soon*
+
+---
 
 ### 2. Clone the Repository
 
