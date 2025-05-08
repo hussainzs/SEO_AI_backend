@@ -1,11 +1,8 @@
 """
 Here we will create a simple langGraph workflow with one tool and get streaming output which will be sent to FastAPI.
 """
-
-print("\n=== Initializing LangGraph Workflow ===\n")
 import os
 import json
-from pprint import pprint
 from typing import Literal, Optional
 from dotenv import load_dotenv
 from langgraph.graph import StateGraph, MessagesState, START, END
@@ -19,7 +16,6 @@ from langchain_core.callbacks import (
 )
 from langchain_core.tools import BaseTool
 from langchain_core.tools.base import ArgsSchema
-import opik
 from pydantic import BaseModel, Field
 
 # Tavily Client
@@ -43,8 +39,6 @@ from opik.integrations.langchain import OpikTracer
 
 # *******************Pre Load*******************
 
-print("\n=== Loading Environment Variables and Initializing Clients ===\n")
-
 # Load the environment variables from the .env file
 load_dotenv()
 
@@ -64,21 +58,18 @@ if not tavily_api_key:
     raise ValueError(
         "TAVILY_API_KEY environment variable not set."
     )  # In real application, we would do this validation in a separate file.
-else:
-    print("✓ Tavily API key loaded successfully")
 
 tavily_client = TavilyClient(api_key=tavily_api_key)
 async_tavily_client = AsyncTavilyClient(api_key=tavily_api_key)
 
+
 def return_gemini_agent() -> ChatGoogleGenerativeAI:
     """Returns the Gemini LLM client instance."""
-    
+
     # Defne Gemini LLM client
     gemini_api_key: str | None = os.getenv("GEMINI_API_KEY")
     if not gemini_api_key:
         raise ValueError("GEMINI_API_KEY environment variable not set.")
-    else:
-        print("✓ Gemini API key loaded successfully")
 
     gemini_llm = ChatGoogleGenerativeAI(
         # model="gemini-2.5-flash-preview-04-17",
@@ -93,14 +84,12 @@ def return_gemini_agent() -> ChatGoogleGenerativeAI:
     return gemini_llm
 
 
-
 # *** Define the STATE of the graph
-print("\n=== Defining State and Tool Classes ===\n")
-
 class State(MessagesState):
     """
     Remember: Subclassing MessageState by LangGraph provides us with a `messages` state automatically with the right reducer.
     """
+
     llm_final_answer: str
 
 
@@ -136,12 +125,12 @@ class WebSearch(BaseTool):
         topic: Literal["news", "general"] = "general",
         run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
-        print(f"\n→ Executing web search for query: {query}")
+
         # Now using LLM generated parameters and some hardcoded ones we will call the Tavily API
         response = tavily_client.search(
             query=query, topic=topic, max_results=2, include_answer=True
         )
-        print("✓ Web search completed successfully")
+
         return json.dumps(
             response
         )  # convert the response to a json string as the LLMs expect a string from the tool.
@@ -153,12 +142,10 @@ class WebSearch(BaseTool):
         run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
     ) -> str:
         try:
-            print(f"\n→ Executing async web search for query: {query}")
             # Perform the asynchronous search with the same parameters as the sync version
             response = await async_tavily_client.search(
                 query=query, topic=topic, max_results=2, include_answer=True
             )
-            print("✓ Async web search completed successfully")
             return json.dumps(response)  # Convert the response to a JSON string
         except Exception as e:
             # Proper error handling with meaningful message
@@ -168,11 +155,13 @@ class WebSearch(BaseTool):
                 await run_manager.on_tool_error(error=e)
             raise RuntimeError(error_message)
 
+
 def get_tools() -> list[BaseTool]:
     """
     Returns a list of tools to be used in the graph.
     """
     return [WebSearch()]
+
 
 def get_model_with_tools():
     """
@@ -182,6 +171,7 @@ def get_model_with_tools():
     gemini_llm: ChatGoogleGenerativeAI = return_gemini_agent()
     gemini_llm_withTools = gemini_llm.bind_tools(tools=get_tools())
     return gemini_llm_withTools
+
 
 # *** 3. Define our prompt
 prompt_content = """ 
@@ -202,22 +192,23 @@ template = ChatPromptTemplate.from_template(prompt_content)
 # *** 4. Define the Nodes
 gemini_llm_with_tools = get_model_with_tools()
 
+
 # LLM Node
 async def assistant(state: State):
     """
     This node defines the LLM that will interact with user, create tool calls, process tool results and provide final answer.
     """
-    print("\n→ Assistant processing current state")
 
-    # Bind tools to LLM once at the module level for efficiency
     response: BaseMessage = await gemini_llm_with_tools.ainvoke(state['messages'])
-    print("✓ Assistant generated response")
+    
     # update the state
-    return {"messages": [response], "llm_final_answer": response.content if response.content else ""}
+    return {
+        "messages": [response],
+        "llm_final_answer": response.content if response.content else "",
+    }
 
 
 # ***5. Define the workflow of the graph
-print("\n=== Building Graph Workflow ===\n")
 
 graph_builder = StateGraph(state_schema=State)
 
@@ -231,8 +222,8 @@ graph_builder.add_node(node="tools", action=ToolNode(tools=get_tools()))
 # add edges in the graph
 graph_builder.add_edge(start_key=START, end_key="assistant")
 graph_builder.add_conditional_edges(
-    source="assistant", 
-    path=tools_condition, 
+    source="assistant",
+    path=tools_condition,
     # prebuilt tools_condition will route to node called "tools" if the LLM made a tool call, otherwise it will route to END.
 )
 graph_builder.add_edge(start_key="tools", end_key="assistant")
@@ -242,9 +233,8 @@ workflow: CompiledStateGraph = graph_builder.compile()
 # Create the Opik tracer for observability
 tracer = OpikTracer(graph=workflow.get_graph(xray=True), project_name=opik_project_name)
 
-print("✓ Graph workflow compiled successfully\n")
-
 # *******************End of Graph*******************
+
 
 async def run_workflow_stream(user_input: str) -> None:
     """
@@ -256,33 +246,78 @@ async def run_workflow_stream(user_input: str) -> None:
     Returns:
         None
     """
-    print("\n=== Starting Workflow Execution ===\n")
-    print(f"→ Processing user input: {user_input}")
     # Generate current time string
     current_time: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S %Z")
 
     # Format the prompt with user input and current time
     formatted_messages: list[BaseMessage] = template.format_messages(
-        user_input=user_input,
-        current_time=current_time
+        user_input=user_input, current_time=current_time
     )
 
     # Prepare the initial state for the workflow
-    inputs: dict = {
-        "messages": formatted_messages,
-        "llm_final_answer": ""
-    }
-    
-    print(f"→ state prepared:")
-    pprint(inputs) # Pretty print the initial state for verification
-    print("=============================")
+    inputs: dict = {"messages": formatted_messages, "llm_final_answer": ""}
 
     print("\n→ Streaming workflow updates:")
     # Stream the workflow execution and print each update
     try:
-        async for update in workflow.astream(input=inputs, stream_mode="updates", config={"callbacks": [tracer]}):
+        async for update in workflow.astream(
+            input=inputs, stream_mode="updates", config={"callbacks": [tracer]}
+        ):
             print("\n=== Workflow Update ===")
-            print(json.dumps(update, indent=4, default=str))
-        print("\n✓ Workflow completed successfully")
+            # print(json.dumps(update, indent=4, default=str), flush=True)
+
+            # Check if the update dictionary has the 'assistant' key. Otherwise it will have 'tools' key.
+            if "assistant" in update:
+                # get the object associated with the key 'assistant'
+                assistant_output = update.get("assistant", {})
+
+                # Ensure messages are not empty
+                if not assistant_output or not assistant_output.get("messages"):
+                    continue
+
+                # Get the stuff inside 'messages' array
+                assistant_message = assistant_output["messages"][0]
+
+                # ---------------------------------------------------
+                # CASE 1: Check for TOOL CALLS and make sure they are not empty
+                # ---------------------------------------------------
+                if hasattr(assistant_message, "tool_calls") and assistant_message.tool_calls:
+                    if assistant_message.content:
+                        # If there is content (unlikely but sometimes happens), print it as well
+                        print(f"LLM Answer: {assistant_message.content}", flush=True)
+                        
+                    # loop through tool calls because there may be multiple tool calls
+                    for tool_call in assistant_message.tool_calls:
+                        tool_name = tool_call.get("name", "unknown_tool")
+                        tool_args = tool_call.get("args", {})
+
+                        # Format the arguments nicely: key1="value1", key2="value2"
+                        args_str = ", ".join(f'{k}="{v}"' for k, v in tool_args.items())
+                        print(f"Tool Call to {tool_name}: Ran with args: {args_str}", flush=True)
+
+                # ---------------------------------------------------
+                # CASE 2: Check for FINAL ANSWER (content without tool calls)
+                # ---------------------------------------------------
+                # Check if content is present and non empty AND ensure tool_calls is empty or not present
+                elif hasattr(assistant_message, "content") and assistant_message.content and not (
+                        hasattr(assistant_message, "tool_calls") and assistant_message.tool_calls
+                    ):
+                    # Only print if it's NOT also making a tool call in the same message
+                    print(f"LLM Answer: {assistant_message.content}", flush=True)
+                # ---------------------------------------------------
+            # for tool processing, we will only show tool processing, tool results can be large and we will not show them here.
+            elif "tools" in update:
+                print("Processing tool ...", flush=True)
+            else:
+                # this shouldn't happen but just in case some shit happens
+                print(
+                    "\n-------------- GOT UNKNOWN TYPE OF NODE -------- CHECK output!",
+                    flush=True,
+                )
+                print(f"Unknown node type: {update}", flush=True)
+
+        # try block finished so output workflow done. 
+        print("\n====✓✓ Workflow completed successfully")
+
     except Exception as exc:
         print(f"\n✗ Workflow Error: {exc}")
