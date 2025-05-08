@@ -1,11 +1,17 @@
 """
 Here we will create a simple langGraph workflow with one tool and get streaming output which will be sent to FastAPI.
 """
+
+# ---------------------------------------------------
+# Section 1: Imports and Environment Setup
+# ---------------------------------------------------
 import os
 import json
 from typing import Literal, Optional
 from dotenv import load_dotenv
-from langgraph.graph import StateGraph, MessagesState, START, END
+
+# For Graph State
+from langgraph.graph import StateGraph, MessagesState, START
 
 # For defining custom Tools
 from langgraph.graph.state import CompiledStateGraph
@@ -28,7 +34,7 @@ from tavily import (
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 # For Prompts
-from langchain_core.messages import HumanMessage, BaseMessage, AIMessage
+from langchain_core.messages import BaseMessage
 from langchain_core.prompts import ChatPromptTemplate
 
 # For date time
@@ -42,6 +48,9 @@ from opik.integrations.langchain import OpikTracer
 # Load the environment variables from the .env file
 load_dotenv()
 
+# ---------------------------------------------------
+# Section 2: Opik API Key and Workspace Validation
+# ---------------------------------------------------
 # Define the LangFuse callback handler for observability
 opik_api_key: str | None = os.getenv("OPIK_API_KEY")
 opik_workspace: str | None = os.getenv("OPIK_WORKSPACE")
@@ -52,6 +61,9 @@ if not opik_api_key or not opik_workspace:
     )  # In real application, we would do this validation in a separate file.
 
 
+# ---------------------------------------------------
+# Section 3: Tavily Client Initialization
+# ---------------------------------------------------
 # Define the Tavily client for the web search tool.
 tavily_api_key: str | None = os.getenv("TAVILY_API_KEY")
 if not tavily_api_key:
@@ -63,6 +75,9 @@ tavily_client = TavilyClient(api_key=tavily_api_key)
 async_tavily_client = AsyncTavilyClient(api_key=tavily_api_key)
 
 
+# ---------------------------------------------------
+# Section 4: Gemini LLM Client Initialization
+# ---------------------------------------------------
 def return_gemini_agent() -> ChatGoogleGenerativeAI:
     """Returns the Gemini LLM client instance."""
 
@@ -84,15 +99,18 @@ def return_gemini_agent() -> ChatGoogleGenerativeAI:
     return gemini_llm
 
 
-# *** Define the STATE of the graph
+# ---------------------------------------------------
+# Section 5: State Definition for LangGraph
+# ---------------------------------------------------
 class State(MessagesState):
     """
     Remember: Subclassing MessageState by LangGraph provides us with a `messages` state automatically with the right reducer.
     """
-
     llm_final_answer: str
 
-
+# ---------------------------------------------------
+# Section 6: Web Search Tool Definition
+# ---------------------------------------------------
 # *** Now lets define the TOOLS we will use in the graph. We define our tool by subclassing BaseTool
 # 1. First define the input schema for the tool. This is a simple pydantic model that defines the input parameters for the tool.
 class WebSearchToolSchema(BaseModel):
@@ -156,6 +174,9 @@ class WebSearch(BaseTool):
             raise RuntimeError(error_message)
 
 
+# ---------------------------------------------------
+# Section 7: Tool Registration and Tool Binding with LLM
+# ---------------------------------------------------
 def get_tools() -> list[BaseTool]:
     """
     Returns a list of tools to be used in the graph.
@@ -169,11 +190,14 @@ def get_model_with_tools():
     """
     # Define the LLM model and bind the tools to it
     gemini_llm: ChatGoogleGenerativeAI = return_gemini_agent()
-    gemini_llm_withTools = gemini_llm.bind_tools(tools=get_tools())
-    return gemini_llm_withTools
+    gemini_llm_with_tools = gemini_llm.bind_tools(tools=get_tools())
+    return gemini_llm_with_tools
 
 
-# *** 3. Define our prompt
+# ---------------------------------------------------
+# Section 8: Prompt Template Definition
+# ---------------------------------------------------
+# *** Define our prompt (we avoid a separate system prompt because some models don't support it. Instead we use a single prompt template with the system instructions inside it.)
 prompt_content = """ 
 System Instructions: You are a helpful assistant that can answer questions and provide information based on the latest news and general knowledge.
 Call the web search tool for up to date information on news or latest events. If you need current time to formulate web query, the current time is {current_time}.
@@ -189,7 +213,11 @@ Human: {user_input}
 
 template = ChatPromptTemplate.from_template(prompt_content)
 
-# *** 4. Define the Nodes
+# ---------------------------------------------------
+# Section 9: Node Definitions for LangGraph
+# ---------------------------------------------------
+
+# get the model with tools so we can use it inside the assistant node below. Don't define it inside the node because it will be called multiple times and slow down the process.
 gemini_llm_with_tools = get_model_with_tools()
 
 
@@ -198,7 +226,6 @@ async def assistant(state: State):
     """
     This node defines the LLM that will interact with user, create tool calls, process tool results and provide final answer.
     """
-
     response: BaseMessage = await gemini_llm_with_tools.ainvoke(state['messages'])
     
     # update the state
@@ -208,15 +235,14 @@ async def assistant(state: State):
     }
 
 
-# ***5. Define the workflow of the graph
+# ---------------------------------------------------
+# Section 10: Workflow Graph Construction
+# ---------------------------------------------------
 
 graph_builder = StateGraph(state_schema=State)
 
 # add nodes in the graph
 graph_builder.add_node(node="assistant", action=assistant)
-graph_builder.set_entry_point("assistant")
-
-
 graph_builder.add_node(node="tools", action=ToolNode(tools=get_tools()))
 
 # add edges in the graph
@@ -228,14 +254,15 @@ graph_builder.add_conditional_edges(
 )
 graph_builder.add_edge(start_key="tools", end_key="assistant")
 
-# ****6. Compile the graph - now we can astream this with the inputs needed and it will output.
+# Compile the graph - now we can astream this with the inputs needed and it will output.
 workflow: CompiledStateGraph = graph_builder.compile()
+
 # Create the Opik tracer for observability
 tracer = OpikTracer(graph=workflow.get_graph(xray=True), project_name=opik_project_name)
 
-# *******************End of Graph*******************
-
-
+# ---------------------------------------------------
+# Section 11: Workflow Execution with Streaming Output
+# ---------------------------------------------------
 async def run_workflow_stream(user_input: str) -> None:
     """
     Runs the LangGraph workflow with streaming output and prints each update to the terminal.
@@ -264,50 +291,46 @@ async def run_workflow_stream(user_input: str) -> None:
             input=inputs, stream_mode="updates", config={"callbacks": [tracer]}
         ):
             print("\n=== Workflow Update ===")
-            # print(json.dumps(update, indent=4, default=str), flush=True)
+            # print(json.dumps(update, indent=4, default=str), flush=True)  # save this for debugging if needed.
 
             # Check if the update dictionary has the 'assistant' key. Otherwise it will have 'tools' key.
             if "assistant" in update:
                 # get the object associated with the key 'assistant'
                 assistant_output = update.get("assistant", {})
 
-                # Ensure messages are not empty
+                # Ensure the assistant_output is not empty and has the 'messages' key
                 if not assistant_output or not assistant_output.get("messages"):
                     continue
 
-                # Get the stuff inside 'messages' array
+                # Get the stuff inside 'messages' array. We get the first index because "updates" mode only adds one message at a time in the array.
                 assistant_message = assistant_output["messages"][0]
 
-                # ---------------------------------------------------
                 # CASE 1: Check for TOOL CALLS and make sure they are not empty
-                # ---------------------------------------------------
                 if hasattr(assistant_message, "tool_calls") and assistant_message.tool_calls:
+                    # Some models like GPT 4.1 can output content and tool calls in the same message. This if condition is for them.
                     if assistant_message.content:
-                        # If there is content (unlikely but sometimes happens), print it as well
                         print(f"LLM Answer: {assistant_message.content}", flush=True)
                         
-                    # loop through tool calls because there may be multiple tool calls
+                    # loop through tool calls because there may be multiple tool calls. tool_calls is a list of dicts.
                     for tool_call in assistant_message.tool_calls:
                         tool_name = tool_call.get("name", "unknown_tool")
                         tool_args = tool_call.get("args", {})
 
                         # Format the arguments nicely: key1="value1", key2="value2"
                         args_str = ", ".join(f'{k}="{v}"' for k, v in tool_args.items())
-                        print(f"Tool Call to {tool_name}: Ran with args: {args_str}", flush=True)
+                        print(f"Tool Call to {tool_name}: Ran with arguments: {args_str}", flush=True)
 
-                # ---------------------------------------------------
                 # CASE 2: Check for FINAL ANSWER (content without tool calls)
-                # ---------------------------------------------------
                 # Check if content is present and non empty AND ensure tool_calls is empty or not present
                 elif hasattr(assistant_message, "content") and assistant_message.content and not (
                         hasattr(assistant_message, "tool_calls") and assistant_message.tool_calls
                     ):
-                    # Only print if it's NOT also making a tool call in the same message
                     print(f"LLM Answer: {assistant_message.content}", flush=True)
                 # ---------------------------------------------------
-            # for tool processing, we will only show tool processing, tool results can be large and we will not show them here.
+                
+            # for tool processing, we will only show tool processing, tool results can be large and we will not yield them.
             elif "tools" in update:
-                print("Processing tool ...", flush=True)
+                print("Processing tool call ...", flush=True)
             else:
                 # this shouldn't happen but just in case some shit happens
                 print(
