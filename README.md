@@ -1,6 +1,6 @@
 # Multi Agent AI SEO Assistant for News Media Organizations
 
-Multi-agent AI-powered SEO assistant tailored for journalists and news media organizations. 
+(⚠️🔨In-progress) Multi-agent AI-powered SEO assistant tailored for journalists and news media organizations. 
 
 ## Features (more to come)
 
@@ -31,19 +31,18 @@ Follow these steps to set up the project on your local machine.
 ---
 
 #### **Observability & Tracing**
-
-> **Opik by Comet** ([Learn more](https://www.comet.com/site/products/opik/))  
-> - **Cloud-hosted, free tier:** No credit card required.  
-> - **Limits:** 25,000 traces/month, 60-day data retention.  
-> - **Setup:**  
->   - Sign up for a free account on [Comet Opik](https://www.comet.com/site/products/opik/).
->   - Obtain your Opik API credentials.
->   - Add the following variables to your `.env` file (see `.env.example` for details):  
->     - `OPIK_API_KEY`
->     - `OPIK_WORKSPACE`
->     - `OPIK_PROJECT_NAME`
->  - Note the `OPIK_PROJECT_NAME` is the name of the project you want to create in Opik. If you don't create a project it will go into Default project.
->  - Also note that `OPIK_WORKSPACE` cane be found in the quickstart guide for langgraph in Opik once you sign up for the free account.
+  Opik by Comet ([Learn more](https://www.comet.com/site/products/opik/))  
+  - **Cloud-hosted, free tier:** No credit card required.  
+  - **Limits:** 25,000 traces/month, 60-day data retention.  
+  - **Setup:**  
+    - Sign up for a free account on [Comet Opik](https://www.comet.com/site/products/opik/).
+    - Obtain your Opik API credentials.
+    - Add the following variables to your `.env` file (see `.env.example` for details):  
+      - `OPIK_API_KEY`
+      - `OPIK_WORKSPACE`
+      - `OPIK_PROJECT_NAME`
+    - Note the `OPIK_PROJECT_NAME` is the name of the project you want to create in Opik. If you don't create a project it will go into Default project.
+    - Also note that `OPIK_WORKSPACE` can be found in the quickstart guide for langgraph in Opik once you sign up for the free account.
 ---
 
 #### **Web Search Providers**
