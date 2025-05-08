@@ -113,7 +113,13 @@ poetry env info --path
 ```
 ### 5. Running the Project
 
-will be updated in future releases.
+To run the FastAPI backend, use the following command:
+
+```bash
+python -m src.main
+```
+
+This will start the backend server. By default, it will be accessible at `http://127.0.0.1:8000`. You can test the API by visiting the interactive Swagger documentation at `http://127.0.0.1:8000/docs`.
 
 ### 6. Managing Dependencies
 
