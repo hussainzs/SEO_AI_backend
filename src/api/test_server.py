@@ -1,5 +1,7 @@
 """
 A minimal FastAPI server that exposes a single SSE endpoint for frontend testing.
+!! This should only be run in a local development environment and not in production !!
+
 It emits a sequence of static events, each formatted as a proper SSE "data:" frame,
 with a 2-second delay between each event. The emitted objects match the backend's
 real SSE output structure for seamless frontend integration testing.
@@ -16,6 +18,7 @@ import json
 from typing import AsyncGenerator
 from fastapi import FastAPI, APIRouter
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
 
@@ -79,6 +82,15 @@ app: FastAPI = FastAPI(
     title="SSE Test Server",
     version="1.0.0",
     description="A minimal server for frontend SSE integration testing."
+)
+
+# Add CORS middleware to allow requests from the frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
 )
 
 router: APIRouter = APIRouter(prefix="/api/test-agent", tags=["AGENT"])
