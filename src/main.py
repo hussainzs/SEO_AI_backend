@@ -1,4 +1,7 @@
 # entrypoint: create FastAPI app and import routes
+"""
+Run: python -m src.main
+"""
 
 import uvicorn
 from fastapi import FastAPI
