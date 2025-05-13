@@ -1,5 +1,6 @@
 """
-Here we will create a simple langGraph workflow with one tool and get streaming output which will be sent to FastAPI.
+Here we will create a reAct agent using LangGraph and Tavily API.
+This agent will be able to call the web search tool and get the latest information from the web.
 """
 
 # ---------------------------------------------------
@@ -215,6 +216,8 @@ Your answer formatting:
 Your answer should be neatly formatted with good spacing and line breaks. 
 If you used the tool, support all your answers with the sources from the tool. The sources should be in next line and numbered if there are multiple sources.
 If you are answering multiple questions, use line breaks to separate the answers and each answer should have relevant sources.
+Just provide links as sources, no need to provide the title or any other information.
+i.e. "1. <link1> \n 2. <link2> "
 
 Now answer the following user question: 
 Human: {user_input}
