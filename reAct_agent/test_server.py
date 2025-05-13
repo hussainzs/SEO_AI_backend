@@ -31,47 +31,44 @@ STATIC_EVENTS: list[dict] = [
         "type": "tool_call",
         "tool_name": "web_search_tool",
         "tool_args": {
-            "query": "India Pakistan relations news this week",
-            "topic": "news"
-        }
+            "query": "Global climate change impact 2024",
+            "topic": "news",
+        },
+    },
+    {
+        "type": "tool_call",
+        "tool_name": "web_search_tool",
+        "tool_args": {"query": "latest advancements in AI 2024", "topic": "general"},
     },
     {
         "type": "tool_call",
         "tool_name": "web_search_tool",
         "tool_args": {
-            "query": "population of India 2024",
-            "topic": "general"
-        }
-    },
-    {
-        "type": "tool_call",
-        "tool_name": "web_search_tool",
-        "tool_args": {
-            "query": "population of Pakistan 2024",
-            "topic": "general"
-        }
+            "query": "renewable energy adoption statistics 2024",
+            "topic": "general",
+        },
     },
     {
         "type": "tool_processing",
-        "content": "Processing tool call ..."
+        "content": "Processing tool call, please wait ...",
     },
     {
         "type": "answer",
         "content": (
-            "This week, India and Pakistan have been engaged in military actions. India fired missiles into Pakistani-controlled territory, "
-            "and Pakistan shot down several drones. The UN Secretary-General has urged both nations to exercise maximum restraint due to escalating tensions. "
-            "(Source: [https://www.chicagotribune.com/2025/05/08/india-pakistan-trade-fire/](https://www.chicagotribune.com/2025/05/08/india-pakistan-trade-fire/), "
-            "[https://news.un.org/en/story/2025/05/1162901](https://news.un.org/en/story/2025/05/1162901))\n\n"
-            "As of 2024, India's population is estimated at over 1.4 billion (Source: [https://statisticstimes.com/demographics/india/indian-states-population.php](https://statisticstimes.com/demographics/india/indian-states-population.php), "
-            "[https://www.worldometers.info/world-population/india-population/](https://www.worldometers.info/world-population/india-population/)). "
-            "Pakistan’s population in 2024 is estimated at 251 million (Source: [https://danso.info/en/population-of-pakistan/](https://danso.info/en/population-of-pakistan/), "
-            "[https://www.worldometers.info/world-population/pakistan-population/](https://www.worldometers.info/world-population/pakistan-population/))."
-        )
+            "In 2024, global climate change continues to have significant impacts, including rising sea levels and extreme weather events. "
+            "Efforts to mitigate these effects include international agreements and increased investment in renewable energy.\n"
+            "(Source: [https://climate.nasa.gov/news/](https://climate.nasa.gov/news/), "
+            "[https://www.ipcc.ch/reports/](https://www.ipcc.ch/reports/))\n\n"
+            "Advancements in AI in 2024 include breakthroughs in natural language processing and autonomous systems. "
+            "These developments are driving innovation across industries.\n"
+            "(Source: [https://www.technologyreview.com/](https://www.technologyreview.com/), "
+            "[https://www.forbes.com/ai/](https://www.forbes.com/ai/))."
+        ),
     },
     {
         "type": "complete",
-        "content": "Workflow completed successfully"
-    }
+        "content": "Workflow completed successfully.",
+    },
 ]
 
 # ---------------------------------------------------
