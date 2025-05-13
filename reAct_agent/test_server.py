@@ -7,7 +7,7 @@ with a 2-second delay between each event. The emitted objects match the backend'
 real SSE output structure for seamless frontend integration testing.
 
 How to run:
-    python -m src.api.test_server
+    python -m reAct_agent.test_server
 
 Test endpoint (if server running on localhost):
     POST http://127.0.0.1:8000/api/test-agent/chat/stream

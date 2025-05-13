@@ -6,7 +6,7 @@ Run: python -m src.main
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from src.api.test_route import router as test_agent_router
+from reAct_agent.test_route import router as test_agent_router
 
 def create_app() -> FastAPI:
     app = FastAPI(
@@ -23,7 +23,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    # mount your streaming chat endpoint
+    # mount routes here
     app.include_router(test_agent_router)
     return app
 
