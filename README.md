@@ -113,7 +113,7 @@ poetry env info --path
 ```
 ### 5. Running the Project
 
-will be updated in future releases.
+To be updated
 
 ### 6. Managing Dependencies
 

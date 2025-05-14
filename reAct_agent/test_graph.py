@@ -1,5 +1,6 @@
 """
-Here we will create a simple langGraph workflow with one tool and get streaming output which will be sent to FastAPI.
+Here we will create a reAct agent using LangGraph and Tavily API.
+This agent will be able to call the web search tool and get the latest information from the web.
 """
 
 # ---------------------------------------------------
@@ -7,7 +8,7 @@ Here we will create a simple langGraph workflow with one tool and get streaming 
 # ---------------------------------------------------
 import os
 import json
-from typing import Literal, Optional
+from typing import AsyncGenerator, Literal, Optional
 from dotenv import load_dotenv
 
 # For Graph State
@@ -166,12 +167,14 @@ class WebSearch(BaseTool):
             )
             return json.dumps(response)  # Convert the response to a JSON string
         except Exception as e:
-            # Proper error handling with meaningful message
             error_message = f"Asynchronous web search failed: {str(e)}"
-            print(f"✗ Error: {error_message}")
+            print(f"✗ Error: {error_message}") # Keep server-side log for this
+            
             if run_manager:
-                await run_manager.on_tool_error(error=e)
-            raise RuntimeError(error_message)
+                await run_manager.on_tool_error(error=e, name=self.name) # Pass tool name
+                
+            # Return a JSON string with the error message for the LLM to reflect on
+            return json.dumps({"error": error_message, "tool_name": self.name})
 
 
 # ---------------------------------------------------
@@ -200,14 +203,23 @@ def get_model_with_tools():
 # *** Define our prompt (we avoid a separate system prompt because some models don't support it. Instead we use a single prompt template with the system instructions inside it.)
 prompt_content = """ 
 System Instructions: You are a helpful assistant that can answer questions and provide information based on the latest news and general knowledge.
-Call the web search tool for up to date information on news or latest events. If you need current time to formulate web query, the current time is {current_time}.
+Call the web search tool for up to date information on news or latest events or information of the future or any other information you dont have access to. 
+If you need current time to answer the question, the current time is {current_time}.
+
+Instructions for using the web search tool:
 When you call the tool, you must provide valid parameters for the tool. If you get no response from the tool, say that to the user and show whatever output came from the tool.
-IF YOU ARE ASKED TO MULTIPLY TWO NUMBERS YOU MUST CALL THE MULTIPLY TOOL WITH THE PARAMETERS a and b AND RETURN THE RESULT FROM THE TOOL.
 You must provide sources in your answer if you use the web search tool. Use the urls from the web search results to provide sources.
+If the web search tool results don't really answer the user question with high confidence, then you reflect on the tool output and query again with a more specific query.
+If the user question is asking for multiple questions, then you can call the web search tool multiple times with different queries.
 
-Special Note: If user asks what tools you have access to then return a json format with all the information you have about the tool since user is debugging the system.
+Your answer formatting:
+Your answer should be neatly formatted with good spacing and line breaks. 
+If you used the tool, support all your answers with the sources from the tool. The sources should be in next line and numbered if there are multiple sources.
+If you are answering multiple questions, use line breaks to separate the answers and each answer should have relevant sources.
+Just provide links as sources, no need to provide the title or any other information.
+i.e. "1. <link1> \n 2. <link2> "
 
-Now answer the user question: 
+Now answer the following user question: 
 Human: {user_input}
 """
 
@@ -233,7 +245,6 @@ async def assistant(state: State):
         "messages": [response],
         "llm_final_answer": response.content if response.content else "",
     }
-
 
 # ---------------------------------------------------
 # Section 10: Workflow Graph Construction
@@ -263,84 +274,77 @@ tracer = OpikTracer(graph=workflow.get_graph(xray=True), project_name=opik_proje
 # ---------------------------------------------------
 # Section 11: Workflow Execution with Streaming Output
 # ---------------------------------------------------
-async def run_workflow_stream(user_input: str) -> None:
+async def run_workflow_stream(user_input: str) -> AsyncGenerator[dict, None]:
     """
-    Runs the LangGraph workflow with streaming output and prints each update to the terminal.
+    Runs the LangGraph workflow with streaming output and yields updates as a dictionary.
 
     Args:
-        user_input (str): The user's question or request to be processed by the assistant.
-
-    Returns:
-        None
+        user_input (str): The input string provided by the user to initiate the workflow.
+        dict: A JSON-serializable dictionary representing the workflow's state. Possible 
+        dictionary structures include:
+            - {"type": "answer", "content": str}:
+                Represents an answer or response generated by the workflow.
+                
+            - {"type": "tool_call", "tool_name": str, "tool_args": dict}:
+                Indicates a tool call with the tool's name and arguments.
+                
+            - {"type": "tool_processing", "content": str}:
+                Signals that a tool call is being processed.
+                
+            - {"type": "complete", "content": str}:
+                Indicates successful completion of the workflow.
+                
+            - {"type": "error", "content": str}:
+                Contains an error message if an exception occurs during the workflow.
+    Raises:
+        Exception: Any exception encountered during the execution of the workflow is caught 
+        and yielded as an error update.
     """
-    # Generate current time string
-    current_time: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S %Z")
-
-    # Format the prompt with user input and current time
-    formatted_messages: list[BaseMessage] = template.format_messages(
+    
+    # Prepare messages and inputs
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    formatted_messages = template.format_messages(
         user_input=user_input, current_time=current_time
     )
+    
+    inputs = {"messages": formatted_messages, "llm_final_answer": ""}
 
-    # Prepare the initial state for the workflow
-    inputs: dict = {"messages": formatted_messages, "llm_final_answer": ""}
-
-    print("\n→ Streaming workflow updates:")
-    # Stream the workflow execution and print each update
     try:
         async for update in workflow.astream(
             input=inputs, stream_mode="updates", config={"callbacks": [tracer]}
         ):
-            print("\n=== Workflow Update ===")
-            # print(json.dumps(update, indent=4, default=str), flush=True)  # save this for debugging if needed.
-
             # Check if the update dictionary has the 'assistant' key. Otherwise it will have 'tools' key.
             if "assistant" in update:
-                # get the object associated with the key 'assistant'
-                assistant_output = update.get("assistant", {})
-
-                # Ensure the assistant_output is not empty and has the 'messages' key
-                if not assistant_output or not assistant_output.get("messages"):
+                assistant_output = update["assistant"]
+                # if there is no messages key then we can't do anything so skip
+                if not assistant_output.get("messages"):
                     continue
-
-                # Get the stuff inside 'messages' array. We get the first index because "updates" mode only adds one message at a time in the array.
-                assistant_message = assistant_output["messages"][0]
-
-                # CASE 1: Check for TOOL CALLS and make sure they are not empty
-                if hasattr(assistant_message, "tool_calls") and assistant_message.tool_calls:
-                    # Some models like GPT 4.1 can output content and tool calls in the same message. This if condition is for them.
-                    if assistant_message.content:
-                        print(f"LLM Answer: {assistant_message.content}", flush=True)
-                        
-                    # loop through tool calls because there may be multiple tool calls. tool_calls is a list of dicts.
-                    for tool_call in assistant_message.tool_calls:
-                        tool_name = tool_call.get("name", "unknown_tool")
-                        tool_args = tool_call.get("args", {})
-
-                        # Format the arguments nicely: key1="value1", key2="value2"
-                        args_str = ", ".join(f'{k}="{v}"' for k, v in tool_args.items())
-                        print(f"Tool Call to {tool_name}: Ran with arguments: {args_str}", flush=True)
-
-                # CASE 2: Check for FINAL ANSWER (content without tool calls)
-                # Check if content is present and non empty AND ensure tool_calls is empty or not present
-                elif hasattr(assistant_message, "content") and assistant_message.content and not (
-                        hasattr(assistant_message, "tool_calls") and assistant_message.tool_calls
-                    ):
-                    print(f"LLM Answer: {assistant_message.content}", flush=True)
-                # ---------------------------------------------------
                 
-            # for tool processing, we will only show tool processing, tool results can be large and we will not yield them.
-            elif "tools" in update:
-                print("Processing tool call ...", flush=True)
-            else:
-                # this shouldn't happen but just in case some shit happens
-                print(
-                    "\n-------------- GOT UNKNOWN TYPE OF NODE -------- CHECK output!",
-                    flush=True,
-                )
-                print(f"Unknown node type: {update}", flush=True)
+                # messages is a array where each update contains only one element in the array. get this element
+                msg = assistant_output["messages"][0]
 
-        # try block finished so output workflow done. 
-        print("\n====✓✓ Workflow completed successfully")
+                # CASE: Check for TOOL CALLS and make sure they are not empty
+                if hasattr(msg, "tool_calls") and msg.tool_calls:
+                    # loop through tool calls because there may be multiple tool calls. tool_calls is a list of dicts.
+                    for tool_call in msg.tool_calls:
+                        name = tool_call.get("name", "unknown_tool")
+                        args = tool_call.get("args", {})
+                        yield {
+                            "type": "tool_call",
+                            "tool_name": name,
+                            "tool_args": args or {},
+                        }
+
+                # CASE: pure LLM answer (content without tool calls)
+                elif msg.content:
+                    yield {"type": "answer", "content": msg.content}
+
+            elif "tools" in update:
+                yield {"type": "tool_processing", "content": "Processing tool call ..."}
+
+        # print("\n====✓✓ Workflow completed successfully")
+        yield {"type": "complete", "content": "Workflow completed successfully"}
 
     except Exception as exc:
-        print(f"\n✗ Workflow Error: {exc}")
+        yield {"type": "error", "content": str(exc)}
