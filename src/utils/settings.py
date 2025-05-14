@@ -2,6 +2,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import SecretStr
 from dotenv import find_dotenv
 
+from src import api
+
+
 class Settings(BaseSettings):
     """
     Application settings loaded from environment variables.
@@ -49,48 +52,51 @@ class Settings(BaseSettings):
     )
 
     # **API keys and configuration values**
-    
-    #LLMs
+
+    # LLMs
     GEMINI_API_KEY: SecretStr | None = None
     GROK_API_KEY: SecretStr | None = None
-    
+
     # Web Search APIs
     TAVILY_API_KEY: SecretStr | None = None
     EXA_API_KEY: SecretStr | None = None
-    
+
     # Observability and Monitoring
     OPIK_API_KEY: SecretStr | None = None
     OPIK_WORKSPACE: str | None = None
     OPIK_PROJECT_NAME: str | None = None
 
-    
     # FastAPI host and port with default values
     HOST: str = "0.0.0.0"
     PORT: int = 8000
 
+
+# *******************************************************
 # Singleton instance to be used throughout the application
+# *******************************************************
 settings = Settings()
+
 
 def get_api_key(api_key: SecretStr | None) -> str | None:
     """
     Safely retrieve the value of a SecretStr API key.
+    If env variable is declared but not set, it will return None.
 
     Args:
         api_key (SecretStr | None): The SecretStr API key object.
 
     Returns:
-        str | None: The actual API key string, or None if not set.
+        (str | None): The actual API key string, or None if not set.
+
+    Raises:
+        ValueError: If the API key is not set or if there is an error retrieving it.
     """
     if api_key is not None:
         try:
             return api_key.get_secret_value()
         except Exception as exc:
             # Handle any error that may occur when retrieving the secret value
-            raise ValueError(f"Failed to retrieve API key: {exc}") from exc
-    return None
-
-# Example usage: Accessing settings from anywhere in your code
-# from src.utils.settings import settings, get_api_key
-# gemini_key = get_api_key(api_key=settings.GEMINI_API_KEY)
-# host = settings.HOST
-# port = settings.PORT
+            raise ValueError(f"Failed to retrieve API key ({api_key}): {exc}") from exc
+    else:
+        # If the API key is None, return None
+        return None
