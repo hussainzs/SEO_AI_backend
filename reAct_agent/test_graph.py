@@ -8,7 +8,7 @@ This agent will be able to call the web search tool and get the latest informati
 # ---------------------------------------------------
 import os
 import json
-from typing import AsyncGenerator, AsyncIterator, Literal, Optional
+from typing import AsyncGenerator, Literal, Optional
 from dotenv import load_dotenv
 
 # For Graph State
