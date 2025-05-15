@@ -50,3 +50,6 @@ logs/
 *.db
 *.sqlite3
 .DS_Store
+
+# Google Ads Yaml file
+google-ads.yaml
