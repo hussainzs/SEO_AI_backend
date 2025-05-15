@@ -2,8 +2,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import SecretStr
 from dotenv import find_dotenv
 
-from src import api
-
 
 class Settings(BaseSettings):
     """
@@ -55,7 +53,7 @@ class Settings(BaseSettings):
 
     # LLMs
     GEMINI_API_KEY: SecretStr | None = None
-    GROK_API_KEY: SecretStr | None = None
+    GROQ_API_KEY: SecretStr | None = None
 
     # Web Search APIs
     TAVILY_API_KEY: SecretStr | None = None
