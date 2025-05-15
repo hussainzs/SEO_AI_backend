@@ -14,7 +14,7 @@ class Settings(BaseSettings):
 
     **LLMs:**
         GEMINI_API_KEY (SecretStr | None): API key for Gemini service.
-        GROK_API_KEY (SecretStr | None): API key for Grok service.
+        GROQ_API_KEY (SecretStr | None): API key for Groq service.
 
     **Web Search APIs:**
         TAVILY_API_KEY (SecretStr | None): API key for Tavily service.
