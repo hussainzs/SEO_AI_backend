@@ -53,3 +53,4 @@ logs/
 
 # Google Ads Yaml file
 google-ads.yaml
+google_ads_api.py

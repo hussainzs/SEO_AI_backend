@@ -63,9 +63,6 @@ class Settings(BaseSettings):
     OPIK_API_KEY: SecretStr | None = None
     OPIK_WORKSPACE: str | None = None
     OPIK_PROJECT_NAME: str | None = None
-    
-    # Google Keywords through Google Ads API
-    GOOGLE_ADS_API_KEY: SecretStr | None = None
 
     # FastAPI host and port with default values
     HOST: str = "0.0.0.0"
