@@ -1,6 +1,7 @@
 """
 Here we test different parts of the code as a scratchpad. To be deleted later.
 """
+
 import asyncio
 
 #####
@@ -8,11 +9,15 @@ import asyncio
 #####
 from src.tools.web_search_tool import WebSearch
 
+
 async def test_exa_web_search():
     exa_search = WebSearch()
-    exa_search_result = await exa_search._arun(query="best enterprise RAG search engine")
+    exa_search_result = await exa_search._arun(
+        query="best enterprise RAG search engine"
+    )
     print(exa_search_result)
-    
+
+
 asyncio.run(test_exa_web_search())
 
 ############

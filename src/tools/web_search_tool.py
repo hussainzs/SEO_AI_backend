@@ -23,7 +23,7 @@ web_search_params = {
     "tavily": {
         "search_depth": "advanced",
         "topic": "news",
-        # default is 7 days, but we may have to change this later as this should depend on input. 
+        # default is 7 days, but we may have to change this later as this should depend on input.
         "days": 14,
         "max_results": 5,
         "chunks_per_source": 3,
@@ -35,14 +35,16 @@ web_search_params = {
         "num_results": 5,
         "type": "keyword",
         "category": "news",
-    }
+    },
 }
+
 
 class WebSearchToolSchema(BaseModel):
     query: str = Field(
         ...,
         description="The query to search the web for",
     )
+
 
 class WebSearch(BaseTool):
     name: str = "web_search_tool"
@@ -53,7 +55,9 @@ class WebSearch(BaseTool):
     )
     args_schema: Optional[ArgsSchema] = WebSearchToolSchema
 
-    def _run(self, query: str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
+    def _run(
+        self, query: str, run_manager: Optional[CallbackManagerForToolRun] = None
+    ) -> str:
         """
         Run the web search tool with the given query.
         """
@@ -61,23 +65,21 @@ class WebSearch(BaseTool):
         if chat_client == "tavily":
             search_params = web_search_params["tavily"]
             client = get_tavily_client()
-            response = client.search(
-                query=query,
-                **search_params  # type: ignore
-            )
+            response = client.search(query=query, **search_params)  # type: ignore
             response = self._parse_tavily_response(response)  # type: ignore
         else:
             search_params = web_search_params["exa"]
             client = get_exa_client()
             response = client.search_and_contents(
-                query=query,
-                **search_params  # type: ignore
+                query=query, **search_params  # type: ignore
             )
-            response = self._parse_exa_response(response) 
+            response = self._parse_exa_response(response)
 
-        return response  
-    
-    async def _arun(self, query: str, run_manager: Optional[AsyncCallbackManagerForToolRun] = None) -> str:
+        return response
+
+    async def _arun(
+        self, query: str, run_manager: Optional[AsyncCallbackManagerForToolRun] = None
+    ) -> str:
         """
         Asynchronously run the web search tool with the given query.
         """
@@ -85,15 +87,13 @@ class WebSearch(BaseTool):
         if chat_client == "tavily":
             client = get_tavily_client(return_async=True)
             response = await client.search(
-                query=query,
-                **web_search_params["tavily"]  # type: ignore
+                query=query, **web_search_params["tavily"]  # type: ignore
             )
             response = self._parse_tavily_response(response)
         else:
             client = get_exa_client(return_async=True)
             response = await client.search_and_contents(
-                query=query,
-                **web_search_params["exa"]  # type: ignore
+                query=query, **web_search_params["exa"]  # type: ignore
             )
             response = self._parse_exa_response(response)
 
@@ -124,19 +124,21 @@ class WebSearch(BaseTool):
             # we iterate through the list, grab each Result object and extract the relevant fields
             for item in response_obj.results:
                 parsed_item = {
-                    'title': item.title,
-                    'url': item.url,
-                    'score': item.highlight_scores,
-                    'published_date': item.published_date,
-                    'author': item.author,
-                    'highlights': item.highlights,
+                    "title": item.title,
+                    "url": item.url,
+                    "score": item.highlight_scores,
+                    "published_date": item.published_date,
+                    "author": item.author,
+                    "highlights": item.highlights,
                 }
                 parsed_results.append(parsed_item)
-                
+
             return str(parsed_results)
 
         except KeyError as key_err:
-            raise KeyError(f"Missing expected key in Exa response: {key_err}") from key_err
+            raise KeyError(
+                f"Missing expected key in Exa response: {key_err}"
+            ) from key_err
         except Exception as exc:
             raise Exception(f"Failed to parse Exa response: {exc}") from exc
 
@@ -163,18 +165,18 @@ class WebSearch(BaseTool):
             parsed_results: list[dict[str, Optional[Any]]] = []
 
             # Attempt to retrieve the list of results from the response object
-            results: list[dict[str, Any]] = response_obj.get('results', [])
+            results: list[dict[str, Any]] = response_obj.get("results", [])
             if not isinstance(results, list):
                 raise ValueError("The 'results' field is not a list.")
 
             # Iterate over each result and extract only the required fields, renaming 'content' to 'highlights'
             for item in results:
                 parsed_item: dict[str, Optional[Any]] = {
-                    'url': item.get('url'),
-                    'title': item.get('title'),
-                    'score': item.get('score'),
-                    'published_date': item.get('published_date'),
-                    'highlights': item.get('content')
+                    "url": item.get("url"),
+                    "title": item.get("title"),
+                    "score": item.get("score"),
+                    "published_date": item.get("published_date"),
+                    "highlights": item.get("content"),
                 }
                 parsed_results.append(parsed_item)
 
@@ -183,10 +185,14 @@ class WebSearch(BaseTool):
 
         except KeyError as key_err:
             # Raise a KeyError if the expected key is missing
-            raise KeyError(f"Missing expected key in tavily response: {key_err}") from key_err
+            raise KeyError(
+                f"Missing expected key in tavily response: {key_err}"
+            ) from key_err
         except ValueError as val_err:
             # Raise a ValueError if the results field is not a list
-            raise ValueError(f"Invalid format in Tavily response, results field is not a list: {val_err}") from val_err
+            raise ValueError(
+                f"Invalid format in Tavily response, results field is not a list: {val_err}"
+            ) from val_err
         except Exception as exc:
             # Raise any other exceptions that occur during parsing
             raise Exception(f"Failed to parse Tavily response: {exc}") from exc

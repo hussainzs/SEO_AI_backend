@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from reAct_agent.test_route import router as test_agent_router
 
+
 def create_app() -> FastAPI:
     app = FastAPI(
         title="Test Agent API",
@@ -27,16 +28,14 @@ def create_app() -> FastAPI:
     app.include_router(test_agent_router)
     return app
 
+
 app: FastAPI = create_app()
 
 if __name__ == "__main__":
     # Run the FastAPI application on localhost
     uvicorn.run(
         app="src.main:app",  # Specify the app location
-        host="127.0.0.1",    # Bind to localhost
-        port=8000,           # Use port 8000
-        reload=True,         # Enable auto-reload for development
+        host="127.0.0.1",  # Bind to localhost
+        port=8000,  # Use port 8000
+        reload=True,  # Enable auto-reload for development
     )
-
-
-
