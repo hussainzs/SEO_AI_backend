@@ -7,7 +7,7 @@ from tavily import (
     TavilyClient,
     AsyncTavilyClient,
 )
-from exa_py import Exa
+from exa_py import Exa, AsyncExa
 from pydantic import SecretStr
 from src.utils.settings import settings, get_api_key
 
@@ -105,13 +105,16 @@ def get_tavily_client(return_async: bool = False) -> TavilyClient | AsyncTavilyC
         return TavilyClient(api_key=tavily_api_key)
     
 # Exa Web Search
-def get_exa_client() -> Exa:
+def get_exa_client(return_async: bool = False) -> Exa | AsyncExa:
     """
     Initialize the Exa Web Search client.
     \nPython SDK documentation: https://docs.exa.ai/sdks/python-sdk-specification
     
+    Args:
+        return_async (bool): If True, returns an asynchronous client. Defaults to False.
+    
     Returns:
-        Exa: The initialized Exa client.
+        Exa | AsyncExa: The initialized Exa client.
     """
 
     # Get the API key from settings
@@ -120,4 +123,7 @@ def get_exa_client() -> Exa:
         raise ValueError("Exa API key is not set in the environment variables. Check your environment variables")
 
     # Initialize the Exa client
-    return Exa(api_key=exa_api_key)
+    if return_async:
+        return AsyncExa(api_key=exa_api_key)
+    else:
+        return Exa(api_key=exa_api_key)

@@ -1,0 +1,228 @@
+################Exa Client response (raw) ################
+Title: Messages & Statements | Office of the President
+URL: https://president.upenn.edu/meet-president/announcements
+ID: https://president.upenn.edu/meet-president/announcements
+Score: None
+Published Date: 2025-02-24T00:00:00.000Z
+Author: 
+Image: None
+Favicon: https://president.upenn.edu/themes/custom/penn_global/assets/img/simplified-shield.ico
+Extras: None
+Subpages: None
+Text: None
+Highlights: ['Previously, on February 6, 2025, the Office of Civil Rights (OCR) notified Penn that it had initiated a directed investigation under Title IX of the Education Amendments of 1972, the federal statute prohibiting sex discrimination, into the University’s intercollegiate athletics participation policies. Penn Board of Trustees Votes to Appoint J. Larry Jameson President and Extend His Term Through June 2027 March 13, 2025 The Board of Trustees of the University of Pennsylvania today voted unanimously to appoint J. Larry Jameson, who has served as Interim President since December 2023, President of the University for a term that will run through June 30, 2027. An update to the University community on recent executive orders February 24, 2025 I know our community is closely following the flurry of recent executive orders, federal guidance, and legal actions, especially as they affect higher education, diversity, equity, and inclusion efforts, research programs, funding, and immigration. Penn has always upheld the law, and we will continue doing so. But the future of higher education may alter dramatically depending on how courts rule, how agencies implement new policies, and how future orders and legislation are enacted.']
+Highlight Scores: [0.3104080557823181]
+Summary: None
+
+
+Title: An update to the Penn community on federal funding
+URL: https://president.upenn.edu/announcements/update-penn-community-federal-funding
+ID: https://president.upenn.edu/announcements/update-penn-community-federal-funding
+Score: None
+Published Date: 2025-03-25T00:00:00.000Z
+Author:
+Image: None
+Favicon: https://president.upenn.edu/themes/custom/penn_global/assets/img/simplified-shield.ico
+Extras: None
+Subpages: None
+Text: None
+Highlights: ['Last week, we learned through various news outlets that the Trump Administration was expected to suspend $175M in federal contracts awarded to Penn, citing the participation of a transgender athlete on the women’s swimming team in 2022. Previously, on February 6, 2025, the Office of Civil Rights (OCR) notified Penn that it had initiated a directed investigation under Title IX of the Education Amendments of 1972, the federal statute prohibiting sex discrimination, into the University’s intercollegiate athletics participation policies. For NCAA Division I sports, eligibility is governed by NCAA rules. Beginning in 2010, the NCAA required that transgender student-athletes be permitted to participate on college teams. Penn has never had a transgender student-athlete policy of its own.']
+Highlight Scores: [0.33926644921302795]
+Summary: None
+
+
+Title: Trump admin restores student status for Penn affiliates, ...
+URL: https://whyy.org/articles/international-student-status-restored-upenn-trump/
+ID: https://whyy.org/articles/international-student-status-restored-upenn-trump/
+Score: None
+Published Date: 2025-04-26T01:49:46.000Z
+Author: Alan Yu
+Image: https://whyy.org/wp-content/uploads/2025/03/03-26-2025-k-paynter-upenn-file-2025.jpg
+Favicon: https://whyy.org/wp-content/themes/whyy/images/icons/favicon-rebrand-32.png
+Extras: None
+Subpages: None
+Text: None
+Highlights: ['Let us know!   Earlier this month, the Trump administration abruptly terminated the student status of more than 1,000 international students around the country, including at the University of Pennsylvania, Temple University and Rutgers University. But now the government has reversed itself and restored status for some, including three at the University of Pennsylvania, as confirmed by a university spokesperson.  There are more than 1 million international students in the U.S., and the government went after a small group of them. Lawyers say what these cases had in common is that the students had some minor run-ins with the law, which they say are the equivalent of traffic tickets and have never had any bearing on student status.']
+Highlight Scores: [0.4871733784675598]
+Summary: None
+
+
+Title: Trump administration claims Penn violated sex ...
+URL: https://www.cbsnews.com/philadelphia/news/trump-penn-title-ix-violation-sports/
+ID: https://www.cbsnews.com/philadelphia/news/trump-penn-title-ix-violation-sports/
+Score: None
+Published Date: 2025-04-28T23:47:13.000Z
+Author:
+Image: https://assets3.cbsnewsstatic.com/hub/i/r/2025/04/08/b900eec4-3cf0-4405-ba8d-73255f3b02df/thumbnail/1200x630/172fccf79dcb6a0dfeea482963192d4c/gettyimages-1833764322.jpg?v=8e9dede207b29c97b32974c53e32aabc
+Favicon: https://www.cbsnews.com/fly/bundles/cbsnewscore/icons/icon-32x32.png?v=8e9dede207b29c97b32974c53e32aabc
+Extras: None
+Subpages: None
+Text: None
+Highlights: ["The NCAA changed its policy the day after Trump signed an executive order on Feb. 5 that was intended to ban transgender athletes from competing in girls and women's sports. That ended its sport-by-sport practice in favor of a blanket policy that only allows athletes assigned female at birth to participate in women's sports. The Education Department also opened reviews of San Jose State University volleyball, Denver Public Schools, Portland Public Schools, Oregon School Activities Association and the Massachusetts Interscholastic Athletic Association. It also sued the state of Maine to force it to ban transgender athletes from girls' and women's sports or face prosecution. "]
+Highlight Scores: [0.3603823482990265]
+Summary: None
+
+
+Title: Federal impacts on Penn
+URL: https://www.thedp.com/section/federal-funding-actions-trump-penn-impacts
+ID: https://www.thedp.com/section/federal-funding-actions-trump-penn-impacts
+Score: None
+Published Date: None
+Author:
+Image: https://d1q35ni5859stt.cloudfront.net/b51d5e33f372b3d2c9f60cc1a8461079/dist/img/social-default.png
+Favicon: https://d1q35ni5859stt.cloudfront.net/b51d5e33f372b3d2c9f60cc1a8461079/dist/img/favicon/favicon-32x32.png
+Extras: None
+Subpages: None
+Text: None
+Highlights: [" The April 22 letter from the American Association of Colleges and Universities was co-signed by 150 university presidents and higher education leaders from across the country.  Jameson discusses recent federal action against Penn in DP interview   The DP sat down with Jameson for an exclusive interview to discuss his tenure to date, recent federal actions, and Penn's approach to a period of unprecedented uncertainty.  Penn confirms five additional student visa revocations, bringing total to eight   A University spokesperson told The Daily Pennsylvanian that the five additional revocations are inclusive of both current students and recent graduates.\xa0"]
+Highlight Scores: [0.3408758342266083]
+Summary: None
+
+Resolved Search Type: keyword
+CostDollars: total=0.0075
+  - search: {'keyword': 0.0025}
+  - contents: {'highlights': 0.005}
+
+####################### Exa Response (parsed) ###########################
+[
+    {
+        'title': 'The most important AI tool marketers have never heard of', 
+        'url': 'https://searchengineland.com/rag-the-most-important-ai-tool-marketers-have-never-heard-of-454921', 
+        'score': [0.5208343267440796], 
+        'published_date': '2025-05-09T00:00:00.000Z', 
+        'author': 'Vertesia', 
+        'highlights': [' Just a few years ago, we assumed the only way to get accurate, relevant results from GenAI was to develop custom models. This approach, however, dramatically underestimates the time, complexity, cost and expertise involved. RAG represents a viable and cost-effective alternative.   But first, you need to have an optimized set of data. For traditional text-based marketing use cases, you should curate a collection of existing marketing content that best represents your brand, tone of voice, and how you typically structure different types of collateral and communications.']
+    }, 
+    {
+        'title': 'The 5 Best AI-Powered Search Engines for Enterprise (2025)', 
+        'url': 'https://www.moveworks.com/us/en/resources/blog/choosing-the-best-ai-powered-search-for-enterprises', 
+        'score': [0.49123963713645935],
+        'published_date': 
+        '2025-03-05T21:21:36.000Z', 
+        'author': '', 
+        'highlights': ['One of the primary benefits of enterprise search is its ability to create a unified search experience across your entire digital ecosystem. However, not all solutions have the same level of connectivity with various enterprise applications and services. Look for a solution that comes with a large selection of pre-built connectors and flexible API integrations that allow you to centralize all of your disparate data sources. Your enterprise search solution should leverage the very latest in advanced natural language processes and machine learning capabilities. Focus on search solutions that use agentic AI to incorporate reasoning into provided search results.']
+    }, 
+    {
+        'title': 'Top 9 RAG Tools to Boost Your LLM Workflows', 
+        'url': 'https://lakefs.io/blog/rag-tools/', 
+        'score': [0.6076027154922485], 
+        'published_date': '2024-10-08T11:24:51.000Z', 
+        'author': 'Idan Novogroder', 
+        'highlights': ['RAG brings together large language models (LLMs) and traditional information retrieval systems (like databases). By combining this additional knowledge with its language skills, the AI application can generate more accurate, up-to-date, and relevant responses to the business’s unique requirements. The good news is that the market is full of tools that make implementing RAG easier. The complexity of the retrieval process, the nature of the data, and the desired output quality will determine the tools you use to develop a RAG pipeline. Keep reading to learn more about the most popular RAG tools and how to pick the one that best matches your use case.']
+    }, 
+    {
+        'title': 'Enterprise RAG Predictions for 2025', 
+        'url': 'https://www.vectara.com/blog/top-enterprise-rag-predictions', 
+        'score': [0.5074700117111206], 
+        'published_date': '2025-01-23T11:00:00.000Z', 
+        'author': '', 
+        'highlights': ['3. **The quality of RAG responses will continue to improve** Better data parsing and pre-processing techniques will emerge, along with better query intelligence mechanisms and better helper-models to align output with the expectations, values, and goals. At the same time, we expect the industry will gain a better understanding of the quality/cost tradeoff for techniques that promise improved quality, e.g., Graph RAG, Contextual Retrieval, etc. 4. **Agentic RAG will be the new top-of-mind topic**, and the next wave of hype.']
+    }, 
+    {
+        'title': 'Top 5 Trends in Enterprise RAG', 
+        'url': 'https://www.tonic.ai/guides/enterprise-rag', 
+        'score': [0.4797796308994293], 
+        'published_date': '2024-05-03T00:00:00.000Z', 
+        'author': 'AuthorTomer BenamiMay 3, 2024', 
+        'highlights': ["In 2024, query routing is no longer a niche concept; it's a core component for optimizing performance and unlocking the full potential of RAG systems. By leveraging specialized LLMs for specific tasks, developers can achieve superior accuracy, efficiency, and scalability, propelling RAG technology towards a future of intelligent and versatile information processing. Vector search is a critical part of retrieving appropriate context to feed to the LLM. It works by converting text and other data into vectors which are numerical representations that capture the data’s meaning. By comparing these vectors, the system can identify data most closely related to a user’s query."]
+    }
+]
+
+-----------------
+-----------------
+-----------------
+###################### Tavily response object (raw) ################
+{
+    "query": "what percent of penn undergrad students of 2025 found a job?", 
+    "follow_up_questions": None, 
+    "answer": None, 
+    "images": [], 
+    "results": 
+        [
+            {
+                "url": "https://www.cnbc.com/2025/05/16/how-college-grads-can-find-a-job-in-a-tough-market.html", "raw_content": None, 
+                "title": "College grads face a "tough and competitive" job market this year, expert says - CNBC", 
+                "score": 0.2830381, 
+                "published_date": "Fri, 16 May 2025 10:40:01 GMT", 
+                "content": "A majority, 62%, of the Class of 2025 are concerned about what AI will mean for their jobs, compared to 44% two years ago, according to a survey by Handshake. Graduates in the humanities and computer science are the most worried about AI\"s impact on jobs.\n"I think it\"s more about a redefinition of the entry level than it is about an elimination of the entry level," Cruzvergara said. [...] "In early January, the class of 2025 was on track to meet and even exceed the number of applications to federal government jobs," Cruzvergara said. When the executive orders hit in mid-January there was\xa0 "a pretty steep decline all of a sudden, she said.\n"The federal government is one of the largest employers in this country, and also one of the largest employers for entry-level employees as well," said Loujaina Abdelwahed, senior economist at Revelio Labs, a workforce intelligence firm. [...] College grads face a \"tough and competitive\" job market this year, expert says\nNew college graduates looking for work now are finding a tighter labor market than they expected even a few months ago.\nThe unemployment rate for recent college grads reached 5.8% in March, up from 4.6% the same time a year ago, according to an April report from the Federal Reserve Bank of New York."
+            }, 
+            
+            {
+                "url": "https://www.hrdive.com/news/2025-raises-lower-than-expected/747142/", 
+                "raw_content": None, 
+                "title": "2025 raises fell short of employers’ recent projections, Mercer finds - HR Dive", 
+                "score": 0.19355896, 
+                "published_date": "Mon, 05 May 2025 21:00:53 GMT", 
+                "content": "Pay expectations for recent graduates aren’t being met either, according to an April ZipRecruiter report. About 42% of recent graduates said they didn’t get the pay they wanted in their job search. And soon-to-be graduates said they expected to earn $101,500 on average, while the average starting salary among recent graduates was $68,400, ZipRecruiter found.\npurchase licensing rights\nFiled Under: Comp & Benefits\nHR Dive news delivered to your inbox [...] In the survey of more than 800 U.S. companies, employers said they expected to promote about 10% of their workforce, up from 8% the previous year, and to award an average raise of 8.5% with promotions.\nAmong the 44% of companies that rely on a five-tier performance rating system, top performers received average raises of 5.6%, while those who fell in the middle on performance earned 3.3%, Mercer said. [...] By signing up to receive our newsletter, you agree to our Terms of Use and Privacy Policy. You can unsubscribe at anytime.\nSign up A valid email address is required. Please select at least one newsletter."
+            }, 
+            {
+                "url": "https://www.post-gazette.com/news/education/2025/05/13/penn-state-campus-closures-fayette-new-kensington-shenango/stories/202505130066", 
+                "raw_content": None, 
+                "title": "Penn State proposes 7 campus closures, including 3 in Pittsburgh region - Pittsburgh Post-Gazette", 
+                "score": 0.12024263, 
+                "published_date": "Tue, 13 May 2025 20:21:41 GMT", 
+                "content": "Enrollment drops at the commonwealth campuses have been a yearslong struggle. At Western Pennsylvania campuses between fall 2020 and fall 2024, student declines have varied from 7% (Penn State Behrend in Erie) to 29% (Penn State Fayette).\nThese enrollment challenges are exacerbated by a looming demographic cliff that will particularly impact the Northeast and Midwest. The Keystone State’s share of high school graduates is expected to drop 17% by 2041. [...] Published Time: 2025-05-13T13:01:06-04:00\nPenn State proposes 7 campus closures, including 3 in Pittsburgh region | Pittsburgh Post-Gazette\nTuesday, May 13, 2025, 8:41PM\xa0|\xa0 67°\nObituaries\nPGe\nPG Store\nArchives\nClassifieds\nClassified\nEvents\nJobs\nPublic Notices\nPets\nMENU\nSUBSCRIBE\nLOGIN\nREGISTER\nLOG OUT\nMY PROFILE\nHome\nNews\nLocal\nSports\nOpinion\nA&E\nLife\nBusiness\nContact Us\nNEWSLETTERS\nSenate committee rejects bill that would have legalized recreational pot in Pa. [...] The past year has seen Penn State already take significant steps to reduce costs at the branch campuses. School officials cut $49 million from the commonwealth campuses’ 2025-26 budget, dropping it to $340 million, and they announced in February that they plan to trim an additional $25 million from the campuses in 2026-27.\nLast summer, Penn State officials also offered a buyout accepted by two in 10 eligible faculty and staff, and combined leadership at 11 campuses.\nOngoing battle"
+            }, 
+            {
+                "url": "https://www.post-gazette.com/sports/paul-zeise/2025/05/12/aaron-rodgers-nevillewood-steelers-offseason/stories/202505120061", 
+                "raw_content": None, 
+                "title": "Paul Zeise: Aaron Rodgers may or may not join a local country club, but he made this Steelers offseason entertaining - Pittsburgh Post-Gazette", 
+                "score": 0.094719745, 
+                "published_date": "Mon, 12 May 2025 23:38:05 GMT", 
+                "content": "1 news Penn State pushes back against report detailing possible campus closures Mon, May 12, 2025, 11:50pm Megan Tomasic 2 sports Paul Zeise: Aaron Rodgers may or may not join a local country club, but he made this Steelers offseason entertaining Mon, May 12, 2025, 11:38pm Paul Zeise 3 sports Instant analysis: Pirates lose to Mets on Pete Alonso sacrifice fly Tue, May 13, 2025, 2:14am Colin Beazley 4 business Student debt will follow him to the grave — and he still makes payments Mon, May 12, [...] Education\nHealth & Wellness\nTransportation\nState\nNation\nWorld\nWeather News\nObituaries\nNews Obituaries\nScience\nEnvironment\nFaith & Religion\nSocial Services\nLOCAL\nLocal Home\nCity\nRegion\nEast\nNorth\nSouth\nWest\nWashington\nWestmoreland\nObituaries\nClassifieds\nPublic Notices\nSPORTS\nSports Home\nSteelers\nPenguins\nPirates\n2025 U.S. Open\nSports Columns\nGene Collier\nJason Mackey\nJoe Starkey\nPaul Zeise\nPitt\nPenn State\nWVU\nNorth Shore Drive Podcast\nRiverhounds\nParis 2024 Olympics\nSports Betting [...] Random Acts of Kindness\nSeen\nOutdoors\nStyle & Fashion\nTravel\nHolidays\nDow leaps 1,100 points and S&P 500 rallies 3.3% following a 90-day truce in the U.S.-China trade war\nTrump signs executive order setting 30-day deadline for drugmakers to lower prescription drug costs\nStudent debt will follow him to the grave — and he still makes payments\nPennsylvania’s broadband expansion plans stall amid federal delays\nWith 346 days to go, the 2026 NFL draft countdown clock debuts on the North Shore"
+            }, 
+            {
+                "url": "https://www.post-gazette.com/sports/pirates/2025/05/14/pirates-mets-bryan-reynolds-mitch-keller-loss/stories/202505130046", 
+                "raw_content": None, 
+                "title": "3 takeaways: Pirates have a Bryan Reynolds problem right now - Pittsburgh Post-Gazette", 
+                "score": 0.08716692, 
+                "published_date": "Wed, 14 May 2025 04:19:22 GMT", 
+                "content": "1 news Pittsburgh International Airport's new terminal is nearly complete Wed, May 14, 2025, 12:33am Adam Babetski 2 news Senate committee rejects bill that would have legalized recreational pot in Pa. Tue, May 13, 2025, 3:53pm Ford Turner 3 sports 3 takeaways: Pirates have a Bryan Reynolds problem right now Wed, May 14, 2025, 4:19am Colin Beazley 4 news Penn State proposes 7 campus closures, including 3 in Pittsburgh region Tue, May 13, 2025, 5:01pm Megan Tomasic and Stephana Ocneanu 5 [...] RSS Feeds\nNEWS\nNews Home\nCrimes & Courts\nPolitics\nEducation\nHealth & Wellness\nTransportation\nState\nNation\nWorld\nWeather News\nObituaries\nNews Obituaries\nScience\nEnvironment\nFaith & Religion\nSocial Services\nLOCAL\nLocal Home\nCity\nRegion\nEast\nNorth\nSouth\nWest\nWashington\nWestmoreland\nObituaries\nClassifieds\nPublic Notices\nSPORTS\nSports Home\nSteelers\nPenguins\nPirates\n2025 U.S. Open\nSports Columns\nGene Collier\nJason Mackey\nJoe Starkey\nPaul Zeise\nPitt\nPenn State\nWVU\nNorth Shore Drive Podcast\nRiverhounds"
+            }
+        ], 
+        
+        "response_time": 1.69,
+}
+
+####################### Tavily Response (parsed) ###########################
+[
+    {
+        'url': 'https://www.cnbc.com/2025/05/16/how-college-grads-can-find-a-job-in-a-tough-market.html', 
+        'title': "College grads face a 'tough and competitive' job market this year, expert says - CNBC", 
+        'score': 0.2830381, 'published_date': 'Fri, 16 May 2025 10:40:01 GMT', 
+        'highlights': 'A majority, 62%, of the Class of 2025 are concerned about what AI will mean for their jobs, compared to 44% two years ago, according to a survey by Handshake. Graduates in the humanities and computer science are the most worried about AI\'s impact on jobs.\n"I think it\'s more about a redefinition of the entry level than it is about an elimination of the entry level," Cruzvergara said. [...] "In early January, the class of 2025 was on track to meet and even exceed the number of applications to federal government jobs," Cruzvergara said. When the executive orders hit in mid-January there was\xa0 "a pretty steep decline all of a sudden, she said.\n"The federal government is one of the largest employers in this country, and also one of the largest employers for entry-level employees as well," said Loujaina Abdelwahed, senior economist at Revelio Labs, a workforce intelligence firm. [...] College grads face a \'tough and competitive\' job market this year, expert says\nNew college graduates looking for work now are finding a tighter labor market than they expected even a few months ago.\nThe unemployment rate for recent college grads reached 5.8% in March, up from 4.6% the same time a year ago, according to an April report from the Federal Reserve Bank of New York.'
+    }, 
+        
+    {
+        'url': 'https://www.hrdive.com/news/2025-raises-lower-than-expected/747142/', 
+        'title': '2025 raises fell short of employers’ recent projections, Mercer finds - HR Dive', 
+        'score': 0.19355896, 
+        'published_date': 'Mon, 05 May 2025 21:00:53 GMT', 
+        'highlights': 'Pay expectations for recent graduates aren’t being met either, according to an April ZipRecruiter report. About 42% of recent graduates said they didn’t get the pay they wanted in their job search. And soon-to-be graduates said they expected to earn $101,500 on average, while the average starting salary among recent graduates was $68,400, ZipRecruiter found.\npurchase licensing rights\nFiled Under: Comp & Benefits\nHR Dive news delivered to your inbox [...] In the survey of more than 800 U.S. companies, employers said they expected to promote about 10% of their workforce, up from 8% the previous year, and to award an average raise of 8.5% with promotions.\nAmong the 44% of companies that rely on a five-tier performance rating system, top performers received average raises of 5.6%, while those who fell in the middle on performance earned 3.3%, Mercer said. [...] By signing up to receive our newsletter, you agree to our Terms of Use and Privacy Policy. You can unsubscribe at anytime.\nSign up A valid email address is required. Please select at least one newsletter.'
+    }, 
+        
+    {
+        'url': 'https://www.post-gazette.com/news/education/2025/05/13/penn-state-campus-closures-fayette-new-kensington-shenango/stories/202505130066', 
+        'title': 'Penn State proposes 7 campus closures, including 3 in Pittsburgh region - Pittsburgh Post-Gazette', 
+        'score': 0.12024263, 
+        'published_date': 'Tue, 13 May 2025 20:21:41 GMT', 
+        'highlights': 'Enrollment drops at the commonwealth campuses have been a yearslong struggle. At Western Pennsylvania campuses between fall 2020 and fall 2024, student declines have varied from 7% (Penn State Behrend in Erie) to 29% (Penn State Fayette).\nThese enrollment challenges are exacerbated by a looming demographic cliff that will particularly impact the Northeast and Midwest. The Keystone State’s share of high school graduates is expected to drop 17% by 2041. [...] Published Time: 2025-05-13T13:01:06-04:00\nPenn State proposes 7 campus closures, including 3 in Pittsburgh region | Pittsburgh Post-Gazette\nTuesday, May 13, 2025, 8:41PM\xa0|\xa0 67°\nObituaries\nPGe\nPG Store\nArchives\nClassifieds\nClassified\nEvents\nJobs\nPublic Notices\nPets\nMENU\nSUBSCRIBE\nLOGIN\nREGISTER\nLOG OUT\nMY PROFILE\nHome\nNews\nLocal\nSports\nOpinion\nA&E\nLife\nBusiness\nContact Us\nNEWSLETTERS\nSenate committee rejects bill that would have legalized recreational pot in Pa. [...] The past year has seen Penn State already take significant steps to reduce costs at the branch campuses. School officials cut $49 million from the commonwealth campuses’ 2025-26 budget, dropping it to $340 million, and they announced in February that they plan to trim an additional $25 million from the campuses in 2026-27.\nLast summer, Penn State officials also offered a buyout accepted by two in 10 eligible faculty and staff, and combined leadership at 11 campuses.\nOngoing battle'
+    }, 
+        
+    {
+        'url': 'https://www.post-gazette.com/sports/paul-zeise/2025/05/12/aaron-rodgers-nevillewood-steelers-offseason/stories/202505120061',
+        'title': 'Paul Zeise: Aaron Rodgers may or may not join a local country club, but he made this Steelers offseason entertaining - Pittsburgh Post-Gazette', 
+        'score': 0.094719745, 
+        'published_date': 'Mon, 12 May 2025 23:38:05 GMT', 
+        'highlights': '1 news Penn State pushes back against report detailing possible campus closures Mon, May 12, 2025, 11:50pm Megan Tomasic 2 sports Paul Zeise: Aaron Rodgers may or may not join a local country club, but he made this Steelers offseason entertaining Mon, May 12, 2025, 11:38pm Paul Zeise 3 sports Instant analysis: Pirates lose to Mets on Pete Alonso sacrifice fly Tue, May 13, 2025, 2:14am Colin Beazley 4 business Student debt will follow him to the grave — and he still makes payments Mon, May 12, [...] Education\nHealth & Wellness\nTransportation\nState\nNation\nWorld\nWeather News\nObituaries\nNews Obituaries\nScience\nEnvironment\nFaith & Religion\nSocial Services\nLOCAL\nLocal Home\nCity\nRegion\nEast\nNorth\nSouth\nWest\nWashington\nWestmoreland\nObituaries\nClassifieds\nPublic Notices\nSPORTS\nSports Home\nSteelers\nPenguins\nPirates\n2025 U.S. Open\nSports Columns\nGene Collier\nJason Mackey\nJoe Starkey\nPaul Zeise\nPitt\nPenn State\nWVU\nNorth Shore Drive Podcast\nRiverhounds\nParis 2024 Olympics\nSports Betting [...] Random Acts of Kindness\nSeen\nOutdoors\nStyle & Fashion\nTravel\nHolidays\nDow leaps 1,100 points and S&P 500 rallies 3.3% following a 90-day truce in the U.S.-China trade war\nTrump signs executive order setting 30-day deadline for drugmakers to lower prescription drug costs\nStudent debt will follow him to the grave — and he still makes payments\nPennsylvania’s broadband expansion plans stall amid federal delays\nWith 346 days to go, the 2026 NFL draft countdown clock debuts on the North Shore'
+    }, 
+        
+    {
+        'url': 'https://www.post-gazette.com/sports/pirates/2025/05/14/pirates-mets-bryan-reynolds-mitch-keller-loss/stories/202505130046',
+        'title': '3 takeaways: Pirates have a Bryan Reynolds problem right now - Pittsburgh Post-Gazette', 
+        'score': 0.08716692, 
+        'published_date': 'Wed, 14 May 2025 04:19:22 GMT', 
+        'highlights': "1 news Pittsburgh International Airport's new terminal is nearly complete Wed, May 14, 2025, 12:33am Adam Babetski 2 news Senate committee rejects bill that would have legalized recreational pot in Pa. Tue, May 13, 2025, 3:53pm Ford Turner 3 sports 3 takeaways: Pirates have a Bryan Reynolds problem right now Wed, May 14, 2025, 4:19am Colin Beazley 4 news Penn State proposes 7 campus closures, including 3 in Pittsburgh region Tue, May 13, 2025, 5:01pm Megan Tomasic and Stephana Ocneanu 5 [...] RSS Feeds\nNEWS\nNews Home\nCrimes & Courts\nPolitics\nEducation\nHealth & Wellness\nTransportation\nState\nNation\nWorld\nWeather News\nObituaries\nNews Obituaries\nScience\nEnvironment\nFaith & Religion\nSocial Services\nLOCAL\nLocal Home\nCity\nRegion\nEast\nNorth\nSouth\nWest\nWashington\nWestmoreland\nObituaries\nClassifieds\nPublic Notices\nSPORTS\nSports Home\nSteelers\nPenguins\nPirates\n2025 U.S. Open\nSports Columns\nGene Collier\nJason Mackey\nJoe Starkey\nPaul Zeise\nPitt\nPenn State\nWVU\nNorth Shore Drive Podcast\nRiverhounds"
+    }
+]
+
