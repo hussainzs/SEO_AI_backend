@@ -7,6 +7,7 @@ class KeywordState(MessagesState):
 
     # step 1: list of retrieved entities and events from user input
     retrieved_entities: list[str]
+    # TODO step 1.2: list of context for entities in which they are discussed so that we do not move entities across nodes out of context
 
     # step 2: agent generated search queries to find competitors based on retrieved entities
     generated_search_queries: list[str]
