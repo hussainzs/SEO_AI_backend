@@ -48,8 +48,8 @@ class WebSearch(BaseTool):
         "content or highlights are snippets of the content from each result that are relevant to the query."
     )
     args_schema: Optional[ArgsSchema] = WebSearchToolSchema
-    
-    def _run(self, query: str, run_manager: CallbackManagerForToolRun) -> str:
+
+    def _run(self, query: str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
         """
         Run the web search tool with the given query.
         """
@@ -70,3 +70,25 @@ class WebSearch(BaseTool):
             )
         
         return json.dumps(response) # convert the object to string
+
+    async def _arun(self, query: str, run_manager: Optional[AsyncCallbackManagerForToolRun] = None) -> str:
+        """
+        Asynchronously run the web search tool with the given query.
+        """
+        search_params = {}
+        if chat_client == "tavily":
+            search_params = web_search_params["tavily"]
+            client = get_tavily_client(return_async=True)
+            response = await client.search(
+                query=query,
+                **search_params  # type: ignore
+            )
+        else:
+            search_params = web_search_params["exa"]
+            client = get_exa_client()
+            response = await client.search(
+                query=query,
+                **search_params  # type: ignore
+            )
+        
+        return json.dumps(response)
