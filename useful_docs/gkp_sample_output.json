@@ -1,0 +1,222 @@
+{
+  "results": [
+    {
+      "keyword_idea_metrics": {
+        "competition": "LOW",
+        "monthly_search_volumes": [
+          {
+            "month": "MAY",
+            "year": "2024",
+            "monthly_searches": "13600000"
+          },
+          {
+            "month": "JUNE",
+            "year": "2024",
+            "monthly_searches": "16600000"
+          },
+          {
+            "month": "JULY",
+            "year": "2024",
+            "monthly_searches": "16600000"
+          },
+          {
+            "month": "AUGUST",
+            "year": "2024",
+            "monthly_searches": "16600000"
+          },
+          {
+            "month": "SEPTEMBER",
+            "year": "2024",
+            "monthly_searches": "16600000"
+          },
+          {
+            "month": "OCTOBER",
+            "year": "2024",
+            "monthly_searches": "16600000"
+          },
+          {
+            "month": "NOVEMBER",
+            "year": "2024",
+            "monthly_searches": "13600000"
+          },
+          {
+            "month": "DECEMBER",
+            "year": "2024",
+            "monthly_searches": "13600000"
+          },
+          {
+            "month": "JANUARY",
+            "year": "2025",
+            "monthly_searches": "11100000"
+          },
+          {
+            "month": "FEBRUARY",
+            "year": "2025",
+            "monthly_searches": "7480000"
+          },
+          {
+            "month": "MARCH",
+            "year": "2025",
+            "monthly_searches": "9140000"
+          },
+          {
+            "month": "APRIL",
+            "year": "2025",
+            "monthly_searches": "11100000"
+          }
+        ],
+        "avg_monthly_searches": "13600000",
+        "competition_index": "9",
+        "low_top_of_page_bid_micros": "1360000",
+        "high_top_of_page_bid_micros": "10870000"
+      },
+      "text": "coffee",
+      "keyword_annotations": {}
+    },
+    {
+      "keyword_idea_metrics": {
+        "competition": "LOW",
+        "monthly_search_volumes": [
+          {
+            "month": "MAY",
+            "year": "2024",
+            "monthly_searches": "590"
+          },
+          {
+            "month": "JUNE",
+            "year": "2024",
+            "monthly_searches": "590"
+          },
+          {
+            "month": "JULY",
+            "year": "2024",
+            "monthly_searches": "480"
+          },
+          {
+            "month": "AUGUST",
+            "year": "2024",
+            "monthly_searches": "480"
+          },
+          {
+            "month": "SEPTEMBER",
+            "year": "2024",
+            "monthly_searches": "590"
+          },
+          {
+            "month": "OCTOBER",
+            "year": "2024",
+            "monthly_searches": "720"
+          },
+          {
+            "month": "NOVEMBER",
+            "year": "2024",
+            "monthly_searches": "720"
+          },
+          {
+            "month": "DECEMBER",
+            "year": "2024",
+            "monthly_searches": "880"
+          },
+          {
+            "month": "JANUARY",
+            "year": "2025",
+            "monthly_searches": "880"
+          },
+          {
+            "month": "FEBRUARY",
+            "year": "2025",
+            "monthly_searches": "880"
+          },
+          {
+            "month": "MARCH",
+            "year": "2025",
+            "monthly_searches": "1600"
+          },
+          {
+            "month": "APRIL",
+            "year": "2025",
+            "monthly_searches": "1900"
+          }
+        ],
+        "avg_monthly_searches": "880",
+        "competition_index": "1",
+        "low_top_of_page_bid_micros": "200000",
+        "high_top_of_page_bid_micros": "570000"
+      },
+      "text": "haraz cafe",
+      "keyword_annotations": {}
+    },
+    {
+      "keyword_idea_metrics": {
+        "competition": "LOW",
+        "monthly_search_volumes": [
+          {
+            "month": "MAY",
+            "year": "2024",
+            "monthly_searches": "2400"
+          },
+          {
+            "month": "JUNE",
+            "year": "2024",
+            "monthly_searches": "2400"
+          },
+          {
+            "month": "JULY",
+            "year": "2024",
+            "monthly_searches": "2400"
+          },
+          {
+            "month": "AUGUST",
+            "year": "2024",
+            "monthly_searches": "2400"
+          },
+          {
+            "month": "SEPTEMBER",
+            "year": "2024",
+            "monthly_searches": "2900"
+          },
+          {
+            "month": "OCTOBER",
+            "year": "2024",
+            "monthly_searches": "2400"
+          },
+          {
+            "month": "NOVEMBER",
+            "year": "2024",
+            "monthly_searches": "2900"
+          },
+          {
+            "month": "DECEMBER",
+            "year": "2024",
+            "monthly_searches": "2400"
+          },
+          {
+            "month": "JANUARY",
+            "year": "2025",
+            "monthly_searches": "2900"
+          },
+          {
+            "month": "FEBRUARY",
+            "year": "2025",
+            "monthly_searches": "2900"
+          },
+          {
+            "month": "MARCH",
+            "year": "2025",
+            "monthly_searches": "3600"
+          },
+          {
+            "month": "APRIL",
+            "year": "2025",
+            "monthly_searches": "3600"
+          }
+        ],
+        "avg_monthly_searches": "2900",
+        "competition_index": "5"
+      },
+      "text": "coffee in",
+      "keyword_annotations": {}
+    }
+  ],
+  "total_size": 3
+}
