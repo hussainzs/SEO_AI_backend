@@ -17,6 +17,7 @@ Exa Docs: https://docs.exa.ai/sdks/python-sdk-specification#search-and-contents-
 """
 chat_client: Literal["tavily", "exa"] = "exa"
 
+# NOTE: refer to `reference_docs/web_search_responses.txt` for expected raw response from Tavily and Exa and parsed refined responses.
 
 # some other constants we will feed into our tavily or exa client
 web_search_params = {

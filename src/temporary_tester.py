@@ -39,7 +39,7 @@ from src.tools.google_keywords_api import GoogleKeywordsAPI
 gkp = GoogleKeywordsAPI()
 
 async def test_google_keywords_api():
-    keywords = ["coffee", "tea"]
+    keywords = ["upenn graduates", "penn alums", "penn medicine"]
     results = await gkp.get_static_keywords(keywords=keywords)
     # results = await gkp.generate_keywords(keywords=keywords)
     print(f"\n\nTotal keywords found: {len(results)}")

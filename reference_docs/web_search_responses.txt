@@ -97,8 +97,7 @@ CostDollars: total=0.0075
         'title': 'The 5 Best AI-Powered Search Engines for Enterprise (2025)', 
         'url': 'https://www.moveworks.com/us/en/resources/blog/choosing-the-best-ai-powered-search-for-enterprises', 
         'score': [0.49123963713645935],
-        'published_date': 
-        '2025-03-05T21:21:36.000Z', 
+        'published_date': '2025-03-05T21:21:36.000Z', 
         'author': '', 
         'highlights': ['One of the primary benefits of enterprise search is its ability to create a unified search experience across your entire digital ecosystem. However, not all solutions have the same level of connectivity with various enterprise applications and services. Look for a solution that comes with a large selection of pre-built connectors and flexible API integrations that allow you to centralize all of your disparate data sources. Your enterprise search solution should leverage the very latest in advanced natural language processes and machine learning capabilities. Focus on search solutions that use agentic AI to incorporate reasoning into provided search results.']
     }, 
