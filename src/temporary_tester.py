@@ -56,9 +56,24 @@ from pprint import pprint
 # ### Test: Keyword agent workflow
 ##########
 from src.agents.keywords_agent.graph import run_keyword_agent_stream
+from src.test_user_input import sample_input
 
 async def test_keyword_agent_workflow():
-    user_input = "What are the best practices for SEO?"
-    await run_keyword_agent_stream(user_input=user_input)
+    await run_keyword_agent_stream(user_input=sample_input)
 
 asyncio.run(test_keyword_agent_workflow())
+
+##########
+# ### Test: GroqModel
+##########
+# from src.utils.models_initializer import get_groq_model
+# groq_model = get_groq_model()
+# messages = [
+#     (
+#         "system",
+#         "You are a geography expert. ",
+#     ),
+#     ("human", "Tell me an interesting mind boggling fact about Amazon rainforest."),
+# ]
+# ai_msg = groq_model.invoke(messages)
+# print(f"AI message: {ai_msg}")
