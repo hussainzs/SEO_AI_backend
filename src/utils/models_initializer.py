@@ -14,20 +14,23 @@ from src.utils.settings import settings, get_key
 
 
 # Gemini LLM
-def get_gemini_model(model_name: str = "gemini-2.0-flash") -> ChatGoogleGenerativeAI:
+def get_gemini_model(
+    model_name: int = 1, temperature: float = 0.5
+) -> ChatGoogleGenerativeAI:
     """
     Initialize the Gemini LLM with the specified model name.
     Available model names:
 
     for latest available models: https://ai.google.dev/gemini-api/docs/models#model-variations
 
-    - "gemini-2.0-flash"
-    - "gemini-2.5-flash-preview-04-17"
-    - "gemini-2.5-pro-exp-03-25"
-    - "gemini-1.5-pro"
+    - (1) "gemini-2.0-flash"
+    - (2) "gemini-2.5-flash-preview-04-17"
+    - (3) "gemini-2.5-pro-exp-03-25"
+    - (4) "gemini-1.5-pro"
 
     Args:
-        model_name (str): The name of the model to use. Defaults to "gemini-2.0-flash".
+        model_name (int): The number of model to use. Defaults to (1) which is "gemini-2.0-flash".
+        temperature (float): The temperature for the model. Defaults to 0.5.
 
     Returns:
         ChatGoogleGenerativeAI: The initialized Gemini LLM instance of ChatGoogleGenerativeAI from Langchain integration.
@@ -40,10 +43,18 @@ def get_gemini_model(model_name: str = "gemini-2.0-flash") -> ChatGoogleGenerati
             "Gemini API key is not set in the environment variables. Check your environment variables"
         )
 
+    # Map the model number to the actual model name
+    model_mapping = {
+        1: "gemini-2.0-flash",
+        2: "gemini-2.5-flash-preview-04-17",
+        3: "gemini-2.5-pro-exp-03-25",
+        4: "gemini-1.5-pro",
+    }
+
     # Initialize the Gemini LLM with the specified model name
     gemini_llm = ChatGoogleGenerativeAI(
-        model=model_name,
-        temperature=0.2,
+        model=model_mapping.get(model_name, "gemini-2.0-flash"),
+        temperature=temperature,
         google_api_key=gemini_api_key,
         max_retries=2,
     )
@@ -52,35 +63,45 @@ def get_gemini_model(model_name: str = "gemini-2.0-flash") -> ChatGoogleGenerati
 
 
 # Groq LLM
-def get_groq_model(model_name: str = "llama3-70b-8192") -> ChatGroq:
+def get_groq_model(model_name: int = 1) -> ChatGroq:
     """
     Initialize the Groq LLM with the specified model name.
-
     Available model names:
-    \nFor latest available models: https://console.groq.com/docs/models
-    \nFor rate limits: https://console.groq.com/dashboard/limits
 
-    - "llama3-70b-8192"
-    - "deepseek-r1-distill-llama-70b"
-    - "meta-llama/llama-4-scout-17b-16e-instruct"
+    For the latest available models: https://console.groq.com/docs/models
+    For rate limits: https://console.groq.com/dashboard/limits
+
+    - (1) "llama3-70b-8192"
+    - (2) "deepseek-r1-distill-llama-70b"
+    - (3) "meta-llama/llama-4-scout-17b-16e-instruct"
 
     Args:
-        model_name (str): The name of the model to use. Defaults to "llama3-70b-8192".
+        model_name (int): The number of the model to use. Defaults to (1) which is "llama3-70b-8192".
 
     Returns:
-        ChatGroq: The initialized Groq LLM instance of ChatGroq from Lancgchain integration.
+        ChatGroq: The initialized Groq LLM instance of ChatGroq from Langchain integration.
+
+    Raises:
+        ValueError: If the Groq API key is not set in the environment variables.
     """
 
-    # Get the API key from settings. ChatGroq expects a SecretStr type for the API key so we import that directtly instead of using get_api_key function
+    # Get the API key from settings. ChatGroq expects a SecretStr type for the API key.
     groq_api_key: SecretStr | None = settings.GROQ_API_KEY
     if groq_api_key is None:
         raise ValueError(
             "Groq API key is not set in the environment variables. Check your environment variables"
         )
 
+    # Map the model number to the actual model name
+    model_mapping = {
+        1: "llama3-70b-8192",
+        2: "deepseek-r1-distill-llama-70b",
+        3: "meta-llama/llama-4-scout-17b-16e-instruct",
+    }
+
     # Initialize the Groq LLM with the specified model name
     groq_llm = ChatGroq(
-        model=model_name,
+        model=model_mapping.get(model_name, "llama3-70b-8192"),
         temperature=0.2,
         api_key=groq_api_key,
     )
