@@ -7,8 +7,8 @@ from langchain_core.messages import HumanMessage
 
 # Entity Extractor related imports
 from src.utils.models_initializer import get_gemini_model
-from src.agents.keywords_agent.prompts import ENTITY_EXTRACTOR_PROMPT
-from src.agents.keywords_agent.schemas import Entities
+from src.agents.keywords_agent.prompts import ENTITY_EXTRACTOR_PROMPT, COMPETITOR_ANALYST_PROMPT
+from src.agents.keywords_agent.schemas import Entities, SearchQueries
 
 
 async def entity_extractor(state: KeywordState):
@@ -85,7 +85,50 @@ async def competitor_analyst(state: KeywordState):
         - state.competitor_information: List of competitor data retrieved from tools.
         - state.competitive_analysis: Summary of the competitive analysis.
     """
-    pass
+    # Get the input from state 
+    user_article: str = state["user_input"]
+    entities: str = state["retrieved_entities"]
+
+    # prepare the prompt & call it 
+    prompt: str = COMPETITOR_ANALYST_PROMPT.format(
+        user_article=user_article, entities=entities)
+    
+    # Initialize primary model with structured output
+    primary_model = get_gemini_model(
+        model_name=2, temperature=0.6
+    ).with_structured_output(schema=SearchQueries)
+
+    # Initialize fallback model with structured output
+    fallback_model = get_gemini_model(
+        model_name=3, temperature=0.6
+    ).with_structured_output(schema=SearchQueries)
+
+    # Create a model with fallback mechanism
+    model_with_fallback = primary_model.with_fallbacks(
+        fallbacks=[fallback_model], exceptions_to_handle=(Exception,)        
+    )
+
+    # initialize the list of generated search queries 
+    generated_search_queries: list[str] = []
+
+    try:
+
+        # I got the concept of using the model with fallback, it prevents from LLM failing so, I am using it.
+
+        search_queries: SearchQueries = await model_with_fallback.ainvoke(
+            input=[HumanMessage(content=prompt)]
+        )
+
+        generated_search_queries: list[str] = search_queries.search_queries
+
+    except Exception as e:
+        raise RuntimeError(
+            f"Search query generation failed with all available models: {str(e)}"
+        ) from e 
+
+    # Return the generated search queries
+    print(f"Generated Search Queries: {generated_search_queries}")
+    return {"generated_search_queries": generated_search_queries}
 
 
 async def google_keyword_planner(state: KeywordState):
