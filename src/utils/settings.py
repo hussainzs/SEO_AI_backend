@@ -1,6 +1,7 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import SecretStr
 from dotenv import find_dotenv
+import os
 
 
 class Settings(BaseSettings):
@@ -68,7 +69,6 @@ class Settings(BaseSettings):
     # FastAPI host and port with default values
     HOST: str = "0.0.0.0"
     PORT: int = 8000
-
 
 # *******************************************************
 # Singleton instance to be used throughout the application

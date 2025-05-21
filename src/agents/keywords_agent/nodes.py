@@ -18,7 +18,7 @@ def entity_extractor(state: KeywordState):
     pass
 
 
-def competitive_analyst(state: KeywordState):
+def competitor_analyst(state: KeywordState):
     """
     Perform a reflective analysis to generate search queries, retrieve competitor
     information, and conduct a competitive analysis.
@@ -36,6 +36,7 @@ def competitive_analyst(state: KeywordState):
         - state.competitive_analysis: Summary of the competitive analysis.
     """
     pass
+
 
 def google_keyword_planner(state: KeywordState):
     """

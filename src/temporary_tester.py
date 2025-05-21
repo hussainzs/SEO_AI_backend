@@ -35,18 +35,30 @@ from pprint import pprint
 ##############
 # ### Test: Google Keywords API
 ##############
-from src.tools.google_keywords_api import GoogleKeywordsAPI
-gkp = GoogleKeywordsAPI()
+# from src.tools.google_keywords_api import GoogleKeywordsAPI
+# gkp = GoogleKeywordsAPI()
 
-async def test_google_keywords_api():
-    keywords = ["upenn graduates", "penn alums", "penn medicine"]
-    results = await gkp.get_static_keywords(keywords=keywords)
-    # results = await gkp.generate_keywords(keywords=keywords)
-    print(f"\n\nTotal keywords found: {len(results)}")
-    print(f"Keywords are: {', '.join([result['text'] for result in results])}")
-    print("Generated Keywords:")
-    for result in results:
-        pprint(result)
-        print("\n")
+# async def test_google_keywords_api():
+#     keywords = ["upenn graduates", "penn alums", "penn medicine"]
+#     results = await gkp.get_static_keywords(keywords=keywords)
+#     # results = await gkp.generate_keywords(keywords=keywords)
+#     print(f"\n\nTotal keywords found: {len(results)}")
+#     print(f"Keywords are: {', '.join([result['text'] for result in results])}")
+#     print("Generated Keywords:")
+#     for result in results:
+#         pprint(result)
+#         print("\n")
 
-asyncio.run(test_google_keywords_api())
+# asyncio.run(test_google_keywords_api())
+
+
+##########
+# ### Test: Keyword agent workflow
+##########
+from src.agents.keywords_agent.graph import run_keyword_agent_stream
+
+async def test_keyword_agent_workflow():
+    user_input = "What are the best practices for SEO?"
+    await run_keyword_agent_stream(user_input=user_input)
+
+asyncio.run(test_keyword_agent_workflow())
