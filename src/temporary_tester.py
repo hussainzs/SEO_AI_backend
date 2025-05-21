@@ -35,18 +35,45 @@ from pprint import pprint
 ##############
 # ### Test: Google Keywords API
 ##############
-from src.tools.google_keywords_api import GoogleKeywordsAPI
-gkp = GoogleKeywordsAPI()
+# from src.tools.google_keywords_api import GoogleKeywordsAPI
+# gkp = GoogleKeywordsAPI()
 
-async def test_google_keywords_api():
-    keywords = ["upenn graduates", "penn alums", "penn medicine"]
-    results = await gkp.get_static_keywords(keywords=keywords)
-    # results = await gkp.generate_keywords(keywords=keywords)
-    print(f"\n\nTotal keywords found: {len(results)}")
-    print(f"Keywords are: {', '.join([result['text'] for result in results])}")
-    print("Generated Keywords:")
-    for result in results:
-        pprint(result)
-        print("\n")
+# async def test_google_keywords_api():
+#     keywords = ["upenn graduates", "penn alums", "penn medicine"]
+#     results = await gkp.get_static_keywords(keywords=keywords)
+#     # results = await gkp.generate_keywords(keywords=keywords)
+#     print(f"\n\nTotal keywords found: {len(results)}")
+#     print(f"Keywords are: {', '.join([result['text'] for result in results])}")
+#     print("Generated Keywords:")
+#     for result in results:
+#         pprint(result)
+#         print("\n")
 
-asyncio.run(test_google_keywords_api())
+# asyncio.run(test_google_keywords_api())
+
+
+##########
+# ### Test: Keyword agent workflow
+##########
+from src.agents.keywords_agent.graph import run_keyword_agent_stream
+from src.test_user_input import sample_input
+
+async def test_keyword_agent_workflow():
+    await run_keyword_agent_stream(user_input=sample_input)
+
+asyncio.run(test_keyword_agent_workflow())
+
+##########
+# ### Test: GroqModel
+##########
+# from src.utils.models_initializer import get_groq_model
+# groq_model = get_groq_model()
+# messages = [
+#     (
+#         "system",
+#         "You are a geography expert. ",
+#     ),
+#     ("human", "Tell me an interesting mind boggling fact about Amazon rainforest."),
+# ]
+# ai_msg = groq_model.invoke(messages)
+# print(f"AI message: {ai_msg}")
