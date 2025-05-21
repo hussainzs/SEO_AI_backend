@@ -41,11 +41,11 @@ graph_builder.add_node(node="suggestions_generator", action=suggestions_generato
 
 # Add Edges
 graph_builder.add_edge(start_key=START, end_key="entity_extractor")
-graph_builder.add_edge(start_key="entity_extractor", end_key="competitive_analyst")
+graph_builder.add_edge(start_key="entity_extractor", end_key="competitor_analyst")
 
 # if this confuses you refer to: https://www.baihezi.com/mirrors/langgraph/reference/prebuilt/index.html#tools_condition
 graph_builder.add_conditional_edges(
-    source="competitive_analyst",
+    source="competitor_analyst",
     path=tools_condition,
     path_map={
         # If it returns 'action', route to the 'tools' node
@@ -58,7 +58,7 @@ graph_builder.add_conditional_edges(
 # this is a loopback edge to allow the agent to retry the tool call
 graph_builder.add_edge(
     start_key="tools",
-    end_key="competitive_analyst",
+    end_key="competitor_analyst",
 )
 graph_builder.add_edge(
     start_key="google_keyword_planner",
@@ -86,7 +86,7 @@ tracer = OpikTracer(
 async def run_keyword_agent_stream(user_input: str):
 
     async for update in keyword_agent.astream(
-        input={"messages": user_input},
+        input={"messages": user_input, "user_input": user_input},
         stream_mode="updates",
         config={"callbacks": [tracer]},
     ):
