@@ -47,6 +47,7 @@ class Settings(BaseSettings):
         env_file=find_dotenv(),  # Automatically find and use the .env file
         env_file_encoding="utf-8",
         env_ignore_empty=True,
+        extra="allow",
     )
 
     # **API keys and configuration values**
@@ -75,7 +76,7 @@ class Settings(BaseSettings):
 settings = Settings()
 
 
-def get_api_key(api_key: SecretStr | None) -> str | None:
+def get_key(api_key: SecretStr | str | None) -> str | None:
     """
     Safely retrieve the value of a SecretStr API key.
     If env variable is declared but not set, it will return None.
@@ -91,7 +92,10 @@ def get_api_key(api_key: SecretStr | None) -> str | None:
     """
     if api_key is not None:
         try:
-            return api_key.get_secret_value()
+            if isinstance(api_key, SecretStr):
+                # If the API key is a SecretStr, return its value
+                return api_key.get_secret_value()
+            return api_key
         except Exception as exc:
             # Handle any error that may occur when retrieving the secret value
             raise ValueError(f"Failed to retrieve API key ({api_key}): {exc}") from exc

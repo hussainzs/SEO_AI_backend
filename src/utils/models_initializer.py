@@ -10,7 +10,7 @@ from tavily import (
 )
 from exa_py import Exa, AsyncExa
 from pydantic import SecretStr
-from src.utils.settings import settings, get_api_key
+from src.utils.settings import settings, get_key
 
 
 # Gemini LLM
@@ -34,7 +34,7 @@ def get_gemini_model(model_name: str = "gemini-2.0-flash") -> ChatGoogleGenerati
     """
 
     # Get the API key from settings
-    gemini_api_key: str | None = get_api_key(api_key=settings.GEMINI_API_KEY)
+    gemini_api_key: str | None = get_key(api_key=settings.GEMINI_API_KEY)
     if gemini_api_key is None:
         raise ValueError(
             "Gemini API key is not set in the environment variables. Check your environment variables"
@@ -102,7 +102,7 @@ def get_tavily_client(return_async: bool = False) -> TavilyClient | AsyncTavilyC
     """
 
     # Get the API key from settings
-    tavily_api_key: str | None = get_api_key(api_key=settings.TAVILY_API_KEY)
+    tavily_api_key: str | None = get_key(api_key=settings.TAVILY_API_KEY)
     if tavily_api_key is None:
         raise ValueError(
             "Tavily API key is not set in the environment variables. Check your environment variables"
@@ -129,7 +129,7 @@ def get_exa_client(return_async: bool = False) -> Exa | AsyncExa:
     """
 
     # Get the API key from settings
-    exa_api_key: str | None = get_api_key(api_key=settings.EXA_API_KEY)
+    exa_api_key: str | None = get_key(api_key=settings.EXA_API_KEY)
     if exa_api_key is None:
         raise ValueError(
             "Exa API key is not set in the environment variables. Check your environment variables"
