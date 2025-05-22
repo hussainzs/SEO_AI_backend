@@ -20,3 +20,25 @@ Extract 3 entities from the article and output them in the structured format:
 Here is the article:
 {user_article}
 """
+
+COMPETITOR_ANALYST_PROMPT = """
+You are an expert in SEO and keyword research. You are given a draft of a news article.
+Your job is to use the provided entities which are derived from the article and content of the article to come up with two targeted search queries optimized to retrieve
+high-ranking articles closely related to the article's content and topic.
+
+While generating the search queries, please consider the following:
+1. the search queries you extract will be used to find competitor articles written about the same topic. Keep this purpose in mind.
+2. your search queries should be able to identify competitor's articles covering general topic our article is covering & those articles address similar specific nauances.  
+3.make sure two distinct search intent queries are generated. (a) Statement based Broad/Entity Focused Search Query: Use retrieved entities to generate this type of query. 
+(b) Question based Google Search Query: Formulate common question user might ask related to the topic.
+4. your search queries should be consisting of a couple of words. Keep the purpose of the search queries in mind to determine the best search queries.
+
+Generate 2 search queries for the article and output them in the structured format:
+["search_query1", "search_query2"]
+
+Here are the entities:
+{entities}
+Here is the article:
+{user_article}
+
+"""
