@@ -1,7 +1,7 @@
 """
 here we initialize our langchain models and web search sdks so we can just import them in rest of our app.
 """
-
+from typing import Any, Callable, Union
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_groq import ChatGroq
 from tavily import (
@@ -11,7 +11,10 @@ from tavily import (
 from exa_py import Exa, AsyncExa
 from pydantic import SecretStr
 from src.utils.settings import settings, get_key
+from pydantic import BaseModel
 
+# Define a type alias for valid chat models 
+ChatModel = Union[ChatGoogleGenerativeAI, ChatGroq]
 
 # Gemini LLM
 def get_gemini_model(
@@ -164,3 +167,94 @@ def get_exa_client(return_async: bool = False) -> Exa | AsyncExa:
         return AsyncExa(api_key=exa_api_key)
     else:
         return Exa(api_key=exa_api_key)
+
+# This function helps to define different models for different nodes in the graph. I know this may seem a little too much but trust me its worth it.
+def initialize_model_with_fallbacks(
+    primary_model_fn: Callable[..., Any],
+    primary_model_kwargs: dict,
+    fallback_model_fns: list[Callable[..., Any]] | None = None,
+    fallback_model_kwargs_list: list[dict] | None = None,
+    structured_output_schema: type[BaseModel] | None = None,
+    bind_tools: bool = False,
+    tools: list[Any] | None = None,
+    tool_choice: Any | None = None,
+) -> ChatModel:
+    """
+    Initializes a primary model with optional structured output and tool binding,
+    and sets up fallback models with the same options.
+    
+    Assumes model functions are defined in this file above like get_gemini_model, get_groq_model etc.
+    Also assumes they have with_structured_output and bind_tools methods (I don't think we will use models where this assumption is not true).
+    
+    Waring: Make sure you are passing the correct model functions and kwargs. There is no type safety for this.
+
+    Args:
+        primary_model_fn (Callable[..., Any]): Function to initialize the primary model.
+        primary_model_kwargs (dict): Keyword arguments for the primary model.
+        fallback_model_fns (Optional[Sequence[Callable[..., Any]]]): Functions to initialize fallback models.
+        fallback_model_kwargs_list (Optional[Sequence[dict]]): List of keyword arguments for each fallback model.
+        structured_output_schema (Optional[Any]): Schema for structured output. If None, structured output is not applied.
+        bind_tools (bool): Whether to bind tools to the models.
+        tools (Optional[list[Any]]): List of tools to bind if bind_tools is True.
+        tool_choice (Any | None): Tool choice to use for the models. Use this to force a specific tool choice in which case give the name of tool.
+
+    Returns:
+        Any: The initialized model with fallbacks.
+
+    Raises:
+        ValueError: If fallback_model_fns and fallback_model_kwargs_list lengths do not match.
+        Exception: If model initialization fails.
+        
+    Example:
+        >>> from src.utils.models_initializer import get_gemini_model, get_groq_model, initialize_model_with_fallbacks
+        >>> from src.agents.keywords_agent.schemas import Entities
+        >>>
+        >>> model = initialize_model_with_fallbacks(
+        ...     primary_model_fn=get_gemini_model,
+        ...     primary_model_kwargs={"model_name": 2, "temperature": 0.6},
+        ...     fallback_model_fns=[get_groq_model, get_gemini_model],
+        ...     fallback_model_kwargs_list=[
+        ...         {"model_name": 1, "temperature": 0.6},
+        ...         {"model_name": 3, "temperature": 0.6}
+        ...     ],
+        ...     structured_output_schema=Entities,
+        ... )
+    """
+    # Initialize the primary model with explicit parameters
+    primary_model = primary_model_fn(**primary_model_kwargs)
+    
+    if structured_output_schema is not None:
+        primary_model = primary_model.with_structured_output(schema=structured_output_schema)
+        
+    if bind_tools and tools is not None:
+        # If tool_choice is provided add that parameter too
+        if tool_choice is not None:
+            primary_model = primary_model.bind_tools(tools=tools, tool_choice=tool_choice)
+        else:
+            primary_model = primary_model.bind_tools(tools=tools)
+
+    # Initialize fallback models if provided
+    fallbacks = []
+    if fallback_model_fns and fallback_model_kwargs_list:
+        
+        if len(fallback_model_fns) != len(fallback_model_kwargs_list):
+            raise ValueError("fallback_model_fns and fallback_model_kwargs_list must have the same length.")
+        
+        for fn, kwargs in zip(fallback_model_fns, fallback_model_kwargs_list):
+            fallback = fn(**kwargs)
+            if structured_output_schema is not None:
+                fallback = fallback.with_structured_output(schema=structured_output_schema)
+            if bind_tools and tools is not None:
+                if tool_choice is not None:
+                    fallback = fallback.bind_tools(tools=tools, tool_choice=tool_choice)
+                else:
+                    fallback = fallback.bind_tools(tools=tools)
+            fallbacks.append(fallback)
+    
+    # Attach fallbacks to the primary model
+    if fallbacks:
+        primary_model = primary_model.with_fallbacks(
+            fallbacks=fallbacks,
+        )
+
+    return primary_model

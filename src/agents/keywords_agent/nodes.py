@@ -2,57 +2,65 @@
 Write all the node functions for the keywords agent here.
 """
 
+from pprint import pprint
+from typing import Any
 from src.agents.keywords_agent.state import KeywordState
 from langchain_core.messages import HumanMessage
 
 # Entity Extractor related imports
-from src.utils.models_initializer import get_gemini_model, get_groq_model
+from src.utils.models_initializer import initialize_model_with_fallbacks, get_gemini_model, get_groq_model
 from src.agents.keywords_agent.prompts import (
     ENTITY_EXTRACTOR_PROMPT,
-    COMPETITOR_ANALYST_PROMPT,
+    QUERY_GENERATOR_PROMPT
 )
-from src.agents.keywords_agent.schemas import Entities, SearchQueries
+from src.agents.keywords_agent.schemas import Entities
+from src.tools.web_search_tool import WebSearch, dummy_web_search_tool
+
 
 # #################
-# Initialize models for Entity Extractor Node
+# Entity Extractor Model
 # #################
-ENTITIES_PRIMARY_MODEL = get_gemini_model(
-    model_name=2, temperature=0.6
-).with_structured_output(schema=Entities)
-
-ENTITIES_FALLBACK_MODEL1 = get_groq_model(
-    model_name=1, temperature=0.6
-).with_structured_output(schema=Entities)
-
-ENTITIES_FALLBACK_MODEL2 = get_gemini_model(
-    model_name=3, temperature=0.6
-).with_structured_output(schema=Entities)
-
-# Create a reusable model with fallback mechanism for entity extraction
-ENTITIES_MODEL_WITH_FALLBACK = ENTITIES_PRIMARY_MODEL.with_fallbacks(
-    fallbacks=[ENTITIES_FALLBACK_MODEL1, ENTITIES_FALLBACK_MODEL2],
-    exceptions_to_handle=(Exception,),
+ENTITIES_MODEL_WITH_FALLBACK_AND_STRUCTURED = initialize_model_with_fallbacks(
+    primary_model_fn=get_gemini_model,
+    primary_model_kwargs={"model_name": 2, "temperature": 0.5},
+    fallback_model_fns=[get_groq_model, get_gemini_model],
+    fallback_model_kwargs_list=[
+        {"model_name": 1, "temperature": 0.5},
+        {"model_name": 3, "temperature": 0.2}
+    ],
+    structured_output_schema=Entities,
 )
 
 # #################
-# Initialize models for Competitor Analyst Node
-# #################
-SEARCH_QUERIES_PRIMARY_MODEL = get_gemini_model(
-    model_name=2, temperature=0.6
-).with_structured_output(schema=SearchQueries)
-
-SEARCH_QUERIES_FALLBACK_MODEL1 = get_gemini_model(
-    model_name=3, temperature=0.6
-).with_structured_output(schema=SearchQueries)
-
-SEARCH_QUERIES_FALLBACK_MODEL2 = get_groq_model(
-    model_name=2, temperature=0.6
-).with_structured_output(schema=SearchQueries)
-
-# Create a reusable model with fallback mechanism for search queries
-SEARCH_QUERIES_MODEL_WITH_FALLBACK = SEARCH_QUERIES_PRIMARY_MODEL.with_fallbacks(
-    fallbacks=[SEARCH_QUERIES_FALLBACK_MODEL1, SEARCH_QUERIES_FALLBACK_MODEL2],
-    exceptions_to_handle=(Exception,),
+# Query Generator Model
+# #################'
+# QUERY_GENERATOR_MODEL_WITH_FALLBACK_AND_TOOLS = initialize_model_with_fallbacks(
+#     primary_model_fn=get_gemini_model,
+#     primary_model_kwargs={"model_name": 1, "temperature": 0.7},
+#     fallback_model_fns=[get_groq_model, get_gemini_model],
+#     fallback_model_kwargs_list=[
+#         {"model_name": 2, "temperature": 0.7},
+#         {"model_name": 2, "temperature": 0.7}
+#     ],
+#     bind_tools=True,
+#     # tools=[WebSearch()],
+#     tools=[dummy_web_search_tool],
+#     # tool_choice="web_search_tool",
+#     tool_choice="dummy_web_search_tool", # testing
+# )
+QUERY_GENERATOR_MODEL_WITH_FALLBACK_AND_TOOLS = initialize_model_with_fallbacks(
+    primary_model_fn=get_groq_model,
+    primary_model_kwargs={"model_name": 1, "temperature": 0.7},
+    fallback_model_fns=[get_groq_model, get_gemini_model],
+    fallback_model_kwargs_list=[
+        {"model_name": 2, "temperature": 0.7},
+        {"model_name": 1, "temperature": 0.7}
+    ],
+    bind_tools=True,
+    # tools=[WebSearch()],
+    tools=[dummy_web_search_tool],
+    # tool_choice="web_search_tool",
+    tool_choice="dummy_web_search_tool", # testing
 )
 
 
@@ -68,88 +76,112 @@ async def entity_extractor(state: KeywordState):
     Updates:
         - state.retrieved_entities: List of extracted entities.
     """
-    # Get user input from state
-    user_article: str = state["user_input"]
+    # # Get user input from state
+    # user_article: str = state["user_input"]
 
-    # Prepare the prompt
-    prompt: str = ENTITY_EXTRACTOR_PROMPT.format(user_article=user_article)
+    # # Prepare the prompt
+    # prompt: str = ENTITY_EXTRACTOR_PROMPT.format(user_article=user_article)
 
-    # initialize the list of retrieved entities
-    retrieved_entities: list[str] = []
+    # # initialize the list of retrieved entities
+    # retrieved_entities: list[str] = []
 
-    try:
-        # Use the model with fallback to extract entities. The appropriate model will be chosen automatically if primary fails.
-        # type hinting doesn't work here because python isn't recognizing that structured output will be pydantic object.
-        entities: Entities = await ENTITIES_MODEL_WITH_FALLBACK.ainvoke(
-            input=[HumanMessage(content=prompt)]
-        )  # type: ignore
+    # try:
+    #     # Use the model with fallback to extract entities. The appropriate model will be chosen automatically if primary fails.
+    #     # type hinting doesn't work here because python isn't recognizing that structured output will be pydantic object.
+    #     entities: Entities = await ENTITIES_MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(
+    #         input=[HumanMessage(content=prompt)]
+    #     )  # type: ignore
 
-        # Extract the list of entities
-        retrieved_entities: list[str] = entities.entities
+    #     # Extract the list of entities
+    #     retrieved_entities: list[str] = entities.entities
 
-    except Exception as e:
-        # This will only trigger if both models fail
-        raise RuntimeError(
-            f"Entity extraction failed with all available models: {str(e)}"
-        ) from e
+    # except Exception as e:
+    #     # This will only trigger if both models fail
+    #     raise RuntimeError(
+    #         f"Entity extraction failed with all available models: {str(e)}"
+    #     ) from e
 
-    # Return the retrieved entities
-    print(f"Retrieved entities: {retrieved_entities}")
-    return {"retrieved_entities": retrieved_entities}
+    # # Return the retrieved entities
+    # print(f"Retrieved entities: {retrieved_entities}")
+    
+    # for testing
+    entities = [
+      "NIH funding cuts",
+      "Ivy League universities",
+      "University protests"
+    ]
+    return {"retrieved_entities": entities}
+    # return {"retrieved_entities": retrieved_entities}
 
 
-async def competitor_analyst(state: KeywordState):
+async def query_generator(state: KeywordState):
     """
-    Perform a reflective analysis to generate search queries, retrieve competitor
-    information, and conduct a competitive analysis.
-
-    Steps:
-        1. Generate search queries based on the retrieved entities.
-        2. Make tool calls to Tavily/Exa to fetch competitor information.
-        3. Reflect on the tool results to determine if true competitive articles
-           are found. If not, retry tool calls (maximum of 2 attempts).
-        4. Conduct a competitive analysis based on the retrieved data.
-
+    Takes user_input and retrieved_entities and generates search queries.
+    If state['_web_search_results_accumulated'] has previous tool calls and their responses then it will also look at the tool response to previous queries and regenerate search queries.
+    Its tool_choice parameter is set to "web_search_tool" to force the LLM to always use the web search tool.
+    
     Updates:
-        - state.generated_search_queries: List of generated search queries.
-        - state.competitor_information: List of competitor data retrieved from tools.
-        - state.competitive_analysis: Summary of the competitive analysis.
+        - state.messages: updates it with AIMessage which should have toolCall.
+        - state.generated_search_queries: List of generated search queries
+        - state.tool_call_count: Initializes to 0 if it doesn't exist so routeing edge can increment it after making sure a tool call was made
     """
-    # Get the input from state
-    user_article: str = state["user_input"]
-    entities: list[str] = state["retrieved_entities"]
-
-    # prepare the prompt & call it
-    prompt: str = COMPETITOR_ANALYST_PROMPT.format(
-        user_article=user_article, entities=entities
+    # check this to ensure AI made a tool call and followed instructions. this way we can add 1 to tool_call_count
+    tool_call_was_made: bool = False
+    
+    model = QUERY_GENERATOR_MODEL_WITH_FALLBACK_AND_TOOLS
+    web_search_results: str = state.get("web_search_results_accumulated", "")
+    
+    # testing
+    print(f"\nweb_search_results: {web_search_results}")
+    
+    prompt = QUERY_GENERATOR_PROMPT.format(
+        user_article=state["user_input"],
+        entities=state["retrieved_entities"],
+        web_search_results=web_search_results,
     )
+    
+    ai_message = await model.ainvoke([HumanMessage(content=prompt)])
+    
+    # get the search queries from the tool call AI made. Here if AI did not make a tool call then it will be empty. 
+    # But we did everything to ensure that AI makes a tool call.
+    print()
+    pprint(ai_message)
+    search_queries = []
+    tool_calls: list[Any] = ai_message.tool_calls # type: ignore
+    for t in tool_calls:
+        query: str = t["args"]["query"]
+        search_queries.append(query)
+    
+    # update tool_call_was_made to true if AI made a tool call
+    if len(tool_calls) > 0:
+        tool_call_was_made = True
 
-    # initialize the list of generated search queries
-    generated_search_queries: list[str] = []
+    pprint(f"\nSearch_queries: {search_queries}")
+    
+    if tool_call_was_made:
+        print(f"\nTool call was made: {tool_call_was_made} \n\n")
+        return {
+            'messages': [ai_message], 
+            'generated_search_queries': search_queries,
+            "tool_call_count": state.get("tool_call_count", 0) + 1
+        }
+    else:
+        return {
+            'messages': [ai_message], 
+            'search_queries': search_queries,
+            "tool_call_count": state.get("tool_call_count", 0)
+            }
 
-    try:
-
-        # I got the concept of using the model with fallback, it prevents from LLM failing so, I am using it.
-
-        search_queries: (
-            SearchQueries
-        ) = await SEARCH_QUERIES_MODEL_WITH_FALLBACK.ainvoke(
-            input=[HumanMessage(content=prompt)]
-        )  # type: ignore
-
-        generated_search_queries: list[str] = search_queries.search_queries
-
-        # Execute the tool call for generated Search Queries
-
-    except Exception as e:
-        raise RuntimeError(
-            f"Search query generation failed with all available models: {str(e)}"
-        ) from e
-
-    # Return the generated search queries
-    print(f"Generated Search Queries: {generated_search_queries}")
-    return {"generated_search_queries": generated_search_queries}
-
+async def competitor_analysis(state: KeywordState):
+    """
+    This node gets the user_input, retrieved_entities and web_search_results from the state and conducts competitor analysis.
+    
+    Updates:
+        - state.competitor_information: List of competitor data from top 5 search results (it may have upto 20 results). 
+        - state.generated_search_queries: List of generated search queries (it may have upto 4 search queries so it must choose the top 2).
+        - state.competitive_analysis: Competitive analysis generated by our agent after comparing our article with competitor content.  
+    """
+    pass
 
 async def google_keyword_planner(state: KeywordState):
     """

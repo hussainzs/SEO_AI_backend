@@ -5,7 +5,6 @@ from typing import Any
 from langgraph.graph import MessagesState
 
 
-# Define the State
 class KeywordState(MessagesState):
     # user input: draft article
     user_input: str
@@ -15,6 +14,8 @@ class KeywordState(MessagesState):
 
     # output from step 2: agent generated search queries to find competitors based on retrieved entities
     generated_search_queries: list[str]
+    tool_call_count: int
+    web_search_results_accumulated: str
 
     # output from step 3: executing search queries: index = rank, dict[str, Any] = tavily/exa parsed response
     competitor_information: list[dict[str, Any]]
