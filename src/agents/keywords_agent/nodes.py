@@ -6,9 +6,54 @@ from src.agents.keywords_agent.state import KeywordState
 from langchain_core.messages import HumanMessage
 
 # Entity Extractor related imports
-from src.utils.models_initializer import get_gemini_model
-from src.agents.keywords_agent.prompts import ENTITY_EXTRACTOR_PROMPT, COMPETITOR_ANALYST_PROMPT
+from src.utils.models_initializer import get_gemini_model, get_groq_model
+from src.agents.keywords_agent.prompts import (
+    ENTITY_EXTRACTOR_PROMPT,
+    COMPETITOR_ANALYST_PROMPT,
+)
 from src.agents.keywords_agent.schemas import Entities, SearchQueries
+
+# #################
+# Initialize models for Entity Extractor Node
+# #################
+ENTITIES_PRIMARY_MODEL = get_gemini_model(
+    model_name=2, temperature=0.6
+).with_structured_output(schema=Entities)
+
+ENTITIES_FALLBACK_MODEL1 = get_groq_model(
+    model_name=1, temperature=0.6
+).with_structured_output(schema=Entities)
+
+ENTITIES_FALLBACK_MODEL2 = get_gemini_model(
+    model_name=3, temperature=0.6
+).with_structured_output(schema=Entities)
+
+# Create a reusable model with fallback mechanism for entity extraction
+ENTITIES_MODEL_WITH_FALLBACK = ENTITIES_PRIMARY_MODEL.with_fallbacks(
+    fallbacks=[ENTITIES_FALLBACK_MODEL1, ENTITIES_FALLBACK_MODEL2],
+    exceptions_to_handle=(Exception,),
+)
+
+# #################
+# Initialize models for Competitor Analyst Node
+# #################
+SEARCH_QUERIES_PRIMARY_MODEL = get_gemini_model(
+    model_name=2, temperature=0.6
+).with_structured_output(schema=SearchQueries)
+
+SEARCH_QUERIES_FALLBACK_MODEL1 = get_gemini_model(
+    model_name=3, temperature=0.6
+).with_structured_output(schema=SearchQueries)
+
+SEARCH_QUERIES_FALLBACK_MODEL2 = get_groq_model(
+    model_name=2, temperature=0.6
+).with_structured_output(schema=SearchQueries)
+
+# Create a reusable model with fallback mechanism for search queries
+SEARCH_QUERIES_MODEL_WITH_FALLBACK = SEARCH_QUERIES_PRIMARY_MODEL.with_fallbacks(
+    fallbacks=[SEARCH_QUERIES_FALLBACK_MODEL1, SEARCH_QUERIES_FALLBACK_MODEL2],
+    exceptions_to_handle=(Exception,),
+)
 
 
 async def entity_extractor(state: KeywordState):
@@ -29,28 +74,13 @@ async def entity_extractor(state: KeywordState):
     # Prepare the prompt
     prompt: str = ENTITY_EXTRACTOR_PROMPT.format(user_article=user_article)
 
-    # Initialize primary model with structured output
-    primary_model = get_gemini_model(
-        model_name=2, temperature=0.6
-    ).with_structured_output(schema=Entities)
-
-    # Initialize fallback model with structured output
-    fallback_model = get_gemini_model(
-        model_name=3, temperature=0.6
-    ).with_structured_output(schema=Entities)
-
-    # Create a model with fallback mechanism
-    model_with_fallback = primary_model.with_fallbacks(
-        fallbacks=[fallback_model], exceptions_to_handle=(Exception,)
-    )
-    
     # initialize the list of retrieved entities
     retrieved_entities: list[str] = []
 
     try:
-        # Use the model with fallback to extract entities. The appropriate model will be chosen automatically if primary fails. 
+        # Use the model with fallback to extract entities. The appropriate model will be chosen automatically if primary fails.
         # type hinting doesn't work here because python isn't recognizing that structured output will be pydantic object.
-        entities: Entities = await model_with_fallback.ainvoke(
+        entities: Entities = await ENTITIES_MODEL_WITH_FALLBACK.ainvoke(
             input=[HumanMessage(content=prompt)]
         )  # type: ignore
 
@@ -85,49 +115,36 @@ async def competitor_analyst(state: KeywordState):
         - state.competitor_information: List of competitor data retrieved from tools.
         - state.competitive_analysis: Summary of the competitive analysis.
     """
-    # Get the input from state 
+    # Get the input from state
     user_article: str = state["user_input"]
-    entities: str = state["retrieved_entities"]
+    entities: list[str] = state["retrieved_entities"]
 
-    # prepare the prompt & call it 
+    # prepare the prompt & call it
     prompt: str = COMPETITOR_ANALYST_PROMPT.format(
-        user_article=user_article, entities=entities)
-    
-    # Initialize primary model with structured output
-    primary_model = get_gemini_model(
-        model_name=2, temperature=0.6
-    ).with_structured_output(schema=SearchQueries)
-
-    # Initialize fallback model with structured output
-    fallback_model = get_gemini_model(
-        model_name=3, temperature=0.6
-    ).with_structured_output(schema=SearchQueries)
-
-    # Create a model with fallback mechanism
-    model_with_fallback = primary_model.with_fallbacks(
-        fallbacks=[fallback_model], exceptions_to_handle=(Exception,)        
+        user_article=user_article, entities=entities
     )
 
-    # initialize the list of generated search queries 
+    # initialize the list of generated search queries
     generated_search_queries: list[str] = []
 
     try:
 
         # I got the concept of using the model with fallback, it prevents from LLM failing so, I am using it.
 
-        search_queries: SearchQueries = await model_with_fallback.ainvoke(
+        search_queries: (
+            SearchQueries
+        ) = await SEARCH_QUERIES_MODEL_WITH_FALLBACK.ainvoke(
             input=[HumanMessage(content=prompt)]
-        )
+        )  # type: ignore
 
         generated_search_queries: list[str] = search_queries.search_queries
 
-        # Execute the tool call for generated Search Queries 
-        
+        # Execute the tool call for generated Search Queries
 
     except Exception as e:
         raise RuntimeError(
             f"Search query generation failed with all available models: {str(e)}"
-        ) from e 
+        ) from e
 
     # Return the generated search queries
     print(f"Generated Search Queries: {generated_search_queries}")

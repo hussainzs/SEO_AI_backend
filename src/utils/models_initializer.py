@@ -21,12 +21,14 @@ def get_gemini_model(
     Initialize the Gemini LLM with the specified model name.
     Available model names:
 
-    for latest available models: https://ai.google.dev/gemini-api/docs/models#model-variations
-
     - (1) "gemini-2.0-flash"
     - (2) "gemini-2.5-flash-preview-04-17"
     - (3) "gemini-2.5-pro-exp-03-25"
     - (4) "gemini-1.5-pro"
+
+    \nfor latest available models: https://ai.google.dev/gemini-api/docs/models#model-variations
+    \nFor Langchain integration docs: https://python.langchain.com/api_reference/google_genai/chat_models/langchain_google_genai.chat_models.ChatGoogleGenerativeAI.html
+
 
     Args:
         model_name (int): The number of model to use. Defaults to (1) which is "gemini-2.0-flash".
@@ -63,10 +65,10 @@ def get_gemini_model(
 
 
 # Groq LLM
-def get_groq_model(model_name: int = 1) -> ChatGroq:
+def get_groq_model(model_name: int = 1, temperature: float = 0.2) -> ChatGroq:
     """
     Initialize the Groq LLM with the specified model name.
-    Available model names:
+    Available model names (numbers mapping to models):
 
     For the latest available models: https://console.groq.com/docs/models
     For rate limits: https://console.groq.com/dashboard/limits
@@ -77,6 +79,7 @@ def get_groq_model(model_name: int = 1) -> ChatGroq:
 
     Args:
         model_name (int): The number of the model to use. Defaults to (1) which is "llama3-70b-8192".
+        temperature (float): The temperature for the model. Defaults to 0.2.
 
     Returns:
         ChatGroq: The initialized Groq LLM instance of ChatGroq from Langchain integration.
@@ -102,7 +105,7 @@ def get_groq_model(model_name: int = 1) -> ChatGroq:
     # Initialize the Groq LLM with the specified model name
     groq_llm = ChatGroq(
         model=model_mapping.get(model_name, "llama3-70b-8192"),
-        temperature=0.2,
+        temperature=temperature,
         api_key=groq_api_key,
     )
 
