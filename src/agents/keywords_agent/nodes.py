@@ -12,9 +12,10 @@ from src.agents.keywords_agent.prompts import (
     ENTITY_EXTRACTOR_PROMPT,
     COMPETITOR_ANALYST_PROMPT,
     MASTERLIST_AND_PRIMARY_KEYWORD_GENERATOR_PROMPT,
+    SUGGESTIONS_GENERATOR_PROMPT,
 
 )
-from src.agents.keywords_agent.schemas import Entities, SearchQueries, keywordMaster_primary_secondarylist
+from src.agents.keywords_agent.schemas import Entities, SearchQueries, keywordMaster_primary_secondarylist, suggestiongenerator
 
 # #################
 # Initialize models for Entity Extractor Node
@@ -63,15 +64,15 @@ SEARCH_QUERIES_MODEL_WITH_FALLBACK = SEARCH_QUERIES_PRIMARY_MODEL.with_fallbacks
 # #################
 LISTS_OF_KEYWORDS_PRIMARY_MODEL = get_gemini_model(
     model_name=2, temperature=0.6
-).with_structured_output(schema=keywordMaster_primary_secondarylist)
+).with_structured_output(schema=suggestiongenerator)
 
 LISTS_OF_KEYWORDS_FALLBACK_MODEL1 = get_gemini_model(
     model_name=3, temperature=0.6
-).with_structured_output(schema=keywordMaster_primary_secondarylist)
+).with_structured_output(schema=suggestiongenerator)
 
 LISTS_OF_KEYWORDS_FALLBACK_MODEL2 = get_groq_model(
     model_name=2, temperature=0.6
-).with_structured_output(schema=keywordMaster_primary_secondarylist)
+).with_structured_output(schema=suggestiongenerator)
 
 # Create a reusable model with fallback mechanism for lists_of_keywords
 LISTS_OF_KEYWORDS_MODEL_WITH_FALLBACK = LISTS_OF_KEYWORDS_PRIMARY_MODEL.with_fallbacks(
@@ -79,7 +80,26 @@ LISTS_OF_KEYWORDS_MODEL_WITH_FALLBACK = LISTS_OF_KEYWORDS_PRIMARY_MODEL.with_fal
     exceptions_to_handle=(Exception),
 )
 
+# #################
+# Initialize models for Suggestion Generator Node
+# #################
+SUGGESTION_GENERATOR_PRIMARY_MODEL = get_gemini_model(
+    model_name=2, temperature=0.6
+).with_structured_output(schema=keywordMaster_primary_secondarylist)
 
+SUGGESTION_GENERATOR_FALLBACK_MODEL1 = get_gemini_model(
+    model_name=3, temperature=0.6
+).with_structured_output(schema=keywordMaster_primary_secondarylist)
+
+SUGGESTION_GENERATOR_FALLBACK_MODEL2 = get_groq_model(
+    model_name=2, temperature=0.6
+).with_structured_output(schema=keywordMaster_primary_secondarylist)
+
+# Create a reusable model with fallback mechanism for lists_of_keywords
+SUGGESTION_GENERATOTR_MODEL_WITH_FALLBACK = SUGGESTION_GENERATOR_PRIMARY_MODEL.with_fallbacks(
+    fallbacks=[SUGGESTION_GENERATOR_FALLBACK_MODEL1, SUGGESTION_GENERATOR_FALLBACK_MODEL2],
+    exceptions_to_handle=(Exception),
+)
 
 
 async def entity_extractor(state: KeywordState):
@@ -287,4 +307,49 @@ async def suggestions_generator(state: KeywordState):
         - state.suggested_article_headlines: List of suggested article headlines.
         - state.final_answer: Final answer paragraph.
     """
-    pass
+    # Get the input from state 
+    user_article: str = state["user_input"]
+    competitor_information: list[dict[str,Any]] = state["competitor_information"]
+    primary_keywords: list[dict[str,str]] = state["primary_keywords"]
+    secondary_keywords: list[dict[str,str]] = state["secondary_keywords"]
+
+    # Compile the prompt & call it
+    prompt: str = SUGGESTIONS_GENERATOR_PROMPT.format(
+        user_article=user_article, 
+        competitor_information=competitor_information,
+        primary_keywords=primary_keywords,
+        secondary_keywords=secondary_keywords,
+    )
+
+    # Initialize the suggestions elements
+    suggested_url_slug: str = ""
+    suggested_article_headlines: list[str] = []
+    final_answer: str = ""
+
+    try:
+
+        suggestions: suggestiongenerator = await(
+            SUGGESTION_GENERATOTR_MODEL_WITH_FALLBACK.ainvoke(
+                input=[HumanMessage(content=prompt)]
+            )
+        )
+        # Extract the suggestions
+
+        suggested_url_slug: str = suggestions.suggested_url_slug
+        suggested_article_headlines: list[str] = suggestions.suggested_article_headlines
+        final_answer: str = suggestions.final_answer
+    except Exception as e:
+        raise RuntimeError(
+            f"Suggestions generation failed: {str(e)}"
+        ) from e 
+    
+    # Return the suggestions
+    print(f"Suggested URL Slug: {suggested_url_slug}")
+    print(f"Suggested Article Headlines: {suggested_article_headlines}")
+    print(f"Final Answer: {final_answer}")
+    return {
+        "suggested_url_slug": suggested_url_slug,
+        "suggested_article_headlines": suggested_article_headlines,
+        "final_answer": final_answer
+    }
+
