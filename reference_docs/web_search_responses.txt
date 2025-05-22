@@ -86,43 +86,38 @@ CostDollars: total=0.0075
 ####################### Exa Response (parsed) ###########################
 [
     {
-        'title': 'The most important AI tool marketers have never heard of', 
         'url': 'https://searchengineland.com/rag-the-most-important-ai-tool-marketers-have-never-heard-of-454921', 
+        'title': 'The most important AI tool marketers have never heard of', 
         'score': [0.5208343267440796], 
         'published_date': '2025-05-09T00:00:00.000Z', 
-        'author': 'Vertesia', 
         'highlights': [' Just a few years ago, we assumed the only way to get accurate, relevant results from GenAI was to develop custom models. This approach, however, dramatically underestimates the time, complexity, cost and expertise involved. RAG represents a viable and cost-effective alternative.   But first, you need to have an optimized set of data. For traditional text-based marketing use cases, you should curate a collection of existing marketing content that best represents your brand, tone of voice, and how you typically structure different types of collateral and communications.']
     }, 
     {
-        'title': 'The 5 Best AI-Powered Search Engines for Enterprise (2025)', 
-        'url': 'https://www.moveworks.com/us/en/resources/blog/choosing-the-best-ai-powered-search-for-enterprises', 
+        'url': 'https://www.moveworks.com/us/en/resources/blog/choosing-the-best-ai-powered-search-for-enterprises',
+        'title': 'The 5 Best AI-Powered Search Engines for Enterprise (2025)',  
         'score': [0.49123963713645935],
         'published_date': '2025-03-05T21:21:36.000Z', 
-        'author': '', 
         'highlights': ['One of the primary benefits of enterprise search is its ability to create a unified search experience across your entire digital ecosystem. However, not all solutions have the same level of connectivity with various enterprise applications and services. Look for a solution that comes with a large selection of pre-built connectors and flexible API integrations that allow you to centralize all of your disparate data sources. Your enterprise search solution should leverage the very latest in advanced natural language processes and machine learning capabilities. Focus on search solutions that use agentic AI to incorporate reasoning into provided search results.']
     }, 
     {
-        'title': 'Top 9 RAG Tools to Boost Your LLM Workflows', 
-        'url': 'https://lakefs.io/blog/rag-tools/', 
+        'url': 'https://lakefs.io/blog/rag-tools/',
+        'title': 'Top 9 RAG Tools to Boost Your LLM Workflows',  
         'score': [0.6076027154922485], 
         'published_date': '2024-10-08T11:24:51.000Z', 
-        'author': 'Idan Novogroder', 
         'highlights': ['RAG brings together large language models (LLMs) and traditional information retrieval systems (like databases). By combining this additional knowledge with its language skills, the AI application can generate more accurate, up-to-date, and relevant responses to the business’s unique requirements. The good news is that the market is full of tools that make implementing RAG easier. The complexity of the retrieval process, the nature of the data, and the desired output quality will determine the tools you use to develop a RAG pipeline. Keep reading to learn more about the most popular RAG tools and how to pick the one that best matches your use case.']
     }, 
     {
-        'title': 'Enterprise RAG Predictions for 2025', 
-        'url': 'https://www.vectara.com/blog/top-enterprise-rag-predictions', 
+        'url': 'https://www.vectara.com/blog/top-enterprise-rag-predictions',
+        'title': 'Enterprise RAG Predictions for 2025',  
         'score': [0.5074700117111206], 
         'published_date': '2025-01-23T11:00:00.000Z', 
-        'author': '', 
         'highlights': ['3. **The quality of RAG responses will continue to improve** Better data parsing and pre-processing techniques will emerge, along with better query intelligence mechanisms and better helper-models to align output with the expectations, values, and goals. At the same time, we expect the industry will gain a better understanding of the quality/cost tradeoff for techniques that promise improved quality, e.g., Graph RAG, Contextual Retrieval, etc. 4. **Agentic RAG will be the new top-of-mind topic**, and the next wave of hype.']
     }, 
     {
-        'title': 'Top 5 Trends in Enterprise RAG', 
-        'url': 'https://www.tonic.ai/guides/enterprise-rag', 
+        'url': 'https://www.tonic.ai/guides/enterprise-rag',
+        'title': 'Top 5 Trends in Enterprise RAG',  
         'score': [0.4797796308994293], 
         'published_date': '2024-05-03T00:00:00.000Z', 
-        'author': 'AuthorTomer BenamiMay 3, 2024', 
         'highlights': ["In 2024, query routing is no longer a niche concept; it's a core component for optimizing performance and unlocking the full potential of RAG systems. By leveraging specialized LLMs for specific tasks, developers can achieve superior accuracy, efficiency, and scalability, propelling RAG technology towards a future of intelligent and versatile information processing. Vector search is a critical part of retrieving appropriate context to feed to the LLM. It works by converting text and other data into vectors which are numerical representations that capture the data’s meaning. By comparing these vectors, the system can identify data most closely related to a user’s query."]
     }
 ]
@@ -188,7 +183,8 @@ CostDollars: total=0.0075
     {
         'url': 'https://www.cnbc.com/2025/05/16/how-college-grads-can-find-a-job-in-a-tough-market.html', 
         'title': "College grads face a 'tough and competitive' job market this year, expert says - CNBC", 
-        'score': 0.2830381, 'published_date': 'Fri, 16 May 2025 10:40:01 GMT', 
+        'score': 0.2830381, 
+        'published_date': 'Fri, 16 May 2025 10:40:01 GMT', 
         'highlights': 'A majority, 62%, of the Class of 2025 are concerned about what AI will mean for their jobs, compared to 44% two years ago, according to a survey by Handshake. Graduates in the humanities and computer science are the most worried about AI\'s impact on jobs.\n"I think it\'s more about a redefinition of the entry level than it is about an elimination of the entry level," Cruzvergara said. [...] "In early January, the class of 2025 was on track to meet and even exceed the number of applications to federal government jobs," Cruzvergara said. When the executive orders hit in mid-January there was\xa0 "a pretty steep decline all of a sudden, she said.\n"The federal government is one of the largest employers in this country, and also one of the largest employers for entry-level employees as well," said Loujaina Abdelwahed, senior economist at Revelio Labs, a workforce intelligence firm. [...] College grads face a \'tough and competitive\' job market this year, expert says\nNew college graduates looking for work now are finding a tighter labor market than they expected even a few months ago.\nThe unemployment rate for recent college grads reached 5.8% in March, up from 4.6% the same time a year ago, according to an April report from the Federal Reserve Bank of New York.'
     }, 
         

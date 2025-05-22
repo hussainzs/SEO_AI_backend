@@ -125,11 +125,10 @@ class WebSearch(BaseTool):
             # we iterate through the list, grab each Result object and extract the relevant fields
             for item in response_obj.results:
                 parsed_item = {
-                    "title": item.title,
                     "url": item.url,
+                    "title": item.title,
                     "score": item.highlight_scores,
                     "published_date": item.published_date,
-                    "author": item.author,
                     "highlights": item.highlights,
                 }
                 parsed_results.append(parsed_item)
