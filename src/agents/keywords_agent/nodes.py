@@ -4,14 +4,17 @@ Write all the node functions for the keywords agent here.
 
 from src.agents.keywords_agent.state import KeywordState
 from langchain_core.messages import HumanMessage
+from typing import Any 
 
 # Entity Extractor related imports
 from src.utils.models_initializer import get_gemini_model, get_groq_model
 from src.agents.keywords_agent.prompts import (
     ENTITY_EXTRACTOR_PROMPT,
     COMPETITOR_ANALYST_PROMPT,
+    MASTERLIST_AND_PRIMARY_KEYWORD_GENERATOR_PROMPT,
+
 )
-from src.agents.keywords_agent.schemas import Entities, SearchQueries
+from src.agents.keywords_agent.schemas import Entities, SearchQueries, keywordMaster_primary_secondarylist
 
 # #################
 # Initialize models for Entity Extractor Node
@@ -54,6 +57,29 @@ SEARCH_QUERIES_MODEL_WITH_FALLBACK = SEARCH_QUERIES_PRIMARY_MODEL.with_fallbacks
     fallbacks=[SEARCH_QUERIES_FALLBACK_MODEL1, SEARCH_QUERIES_FALLBACK_MODEL2],
     exceptions_to_handle=(Exception,),
 )
+
+# #################
+# Initialize models for Competitor Analyst Node
+# #################
+LISTS_OF_KEYWORDS_PRIMARY_MODEL = get_gemini_model(
+    model_name=2, temperature=0.6
+).with_structured_output(schema=keywordMaster_primary_secondarylist)
+
+LISTS_OF_KEYWORDS_FALLBACK_MODEL1 = get_gemini_model(
+    model_name=3, temperature=0.6
+).with_structured_output(schema=keywordMaster_primary_secondarylist)
+
+LISTS_OF_KEYWORDS_FALLBACK_MODEL2 = get_groq_model(
+    model_name=2, temperature=0.6
+).with_structured_output(schema=keywordMaster_primary_secondarylist)
+
+# Create a reusable model with fallback mechanism for lists_of_keywords
+LISTS_OF_KEYWORDS_MODEL_WITH_FALLBACK = LISTS_OF_KEYWORDS_PRIMARY_MODEL.with_fallbacks(
+    fallbacks=[LISTS_OF_KEYWORDS_FALLBACK_MODEL1, LISTS_OF_KEYWORDS_FALLBACK_MODEL2],
+    exceptions_to_handle=(Exception),
+)
+
+
 
 
 async def entity_extractor(state: KeywordState):
@@ -167,6 +193,9 @@ async def google_keyword_planner(state: KeywordState):
     Updates:
         - state.keyword_planner_data: List of keyword data retrieved from GKP.
     """
+
+
+
     pass
 
 
@@ -193,7 +222,55 @@ async def masterlist_and_primary_keyword_generator(state: KeywordState):
         - state.primary_keywords: List of primary keywords with reasoning.
         - state.secondary_keywords: List of secondary keywords with reasoning.
     """
-    pass
+    # Get the GKP data, entities, and user input from state
+    gkp_data: list[dict[str, Any]] = state["keyword_planner_data"]
+    entities: list[str] = state["retrieved_entities"]
+    user_article: str = state["user_input"]
+    competitive_analysis: str = state["competitive_analysis"]
+
+    # Prepare the prompt & call it 
+    prompt: str = MASTERLIST_AND_PRIMARY_KEYWORD_GENERATOR_PROMPT.format(
+        user_article=user_article,
+        entities=entities,
+        gkp_data=gkp_data,
+        competitive_analysis= competitive_analysis,
+    )
+
+    # Initialize the lists of keywords
+    keyword_masterlist: list[dict[str, str]] = []
+    primary_keywords: list[dict[str, str]] = []
+    secondary_keywords: list[dict[str, str]] = []
+
+    try:
+
+        lists_of_keywords: (keywordMaster_primary_secondarylist) = await (
+            LISTS_OF_KEYWORDS_MODEL_WITH_FALLBACK.ainvoke(
+                input=[HumanMessage(content=prompt)]
+            )
+        )
+
+        # Extract the lists of keywords
+        keyword_masterlist: list[dict[str,str]] = lists_of_keywords.masterlist_keywords
+        primary_keywords: list[dict[str,str]] = lists_of_keywords.primary_keywords
+        secondary_keywords: list[dict[str,str]] = lists_of_keywords.secondary_keywords
+
+    except Exception as e:
+        raise RuntimeError(
+            f"Masterlist and primary keyword generation failed: {str(e)}"
+        ) from e 
+    
+    # Return the retrieved lists of keywords
+    print(f"Keywords_Masterlist: {keyword_masterlist}")
+    print(f"Primary_keywords: {primary_keywords}")
+    print(f"Secondary_keywords:{secondary_keywords}")
+
+    # update the state for the keywords_masterlist, primary_keywords and secondary_keywords
+    return {
+        "keyword_masterlist": keyword_masterlist,
+        "primary_keywords": primary_keywords,
+        "secondary_keywords": secondary_keywords
+    }
+
 
 
 async def suggestions_generator(state: KeywordState):
