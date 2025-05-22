@@ -1,7 +1,7 @@
 """
 Define the state for the Keyword Agent here.
 """
-from typing import Any
+from typing import Any, Literal
 from langgraph.graph import MessagesState
 
 
@@ -16,6 +16,7 @@ class KeywordState(MessagesState):
     generated_search_queries: list[str]
     tool_call_count: int
     web_search_results_accumulated: str
+    route_to: Literal["query_generator", "competitor_analysis"]
 
     # output from step 3: executing search queries: index = rank, dict[str, Any] = tavily/exa parsed response
     competitor_information: list[dict[str, Any]]

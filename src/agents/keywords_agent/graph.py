@@ -14,6 +14,7 @@ from src.agents.keywords_agent.nodes import (
     google_keyword_planner,
     masterlist_and_primary_keyword_generator,
     suggestions_generator,
+    router_and_state_updater,
 )
 from src.utils.settings import settings, get_key
 
@@ -36,6 +37,7 @@ graph_builder.add_node(node="entity_extractor", action=entity_extractor)
 graph_builder.add_node(node="query_generator", action=query_generator)
 graph_builder.add_node(node="competitor_analysis", action=competitor_analysis)
 graph_builder.add_node(node="tools", action=ToolNode(tools=tool_list))
+graph_builder.add_node(node="router_and_state_updater", action=router_and_state_updater)
 graph_builder.add_node(node="google_keyword_planner", action=google_keyword_planner)
 graph_builder.add_node(
     node="masterlist_and_primary_keyword_generator",
@@ -54,14 +56,15 @@ graph_builder.add_conditional_edges(
     path_map={
         # If it returns 'action', route to the 'tools' node
         "tools": "tools",
-        # If it returns '__end__', route to the 'competitor_analysis' node. This should never happen but just in case.
-        "__end__": "competitor_analysis",
+        # If it returns '__end__', route to the 'router_and_state_updater' node. This should never happen but just in case.
+        "__end__": "router_and_state_updater",
     },
 )
+graph_builder.add_edge(start_key="tools", end_key="router_and_state_updater")
 
 # this is a loopback edge to allow the agent to retry the tool call
 graph_builder.add_conditional_edges(
-    source="tools",
+    source="router_and_state_updater",
     path=route_to_query_or_analysis,
     path_map={
         "query_generator": "query_generator",
