@@ -42,3 +42,49 @@ Here is the article:
 {user_article}
 
 """
+
+MASTERLIST_AND_PRIMARY_KEYWORD_GENERATOR_PROMPT = """
+You are an expert in SEO and keyword research. You are given a draft of a news article in user input, entities, and google keyword planner data which contains keywords and their metrics related to their search volume.
+Your job is to use the provided entities which are derived from the article and content of the article in user input, and competitive analysis, in order to analyze the keywords given in google keyword planner data to evaluate relevance of each keyword. 
+Now, after evaluating relevance to content of article and competitiveness of each keyword based on the search volume, you will generate a masterlist of upto 20 keywords.
+While generating the keywords, please consider the following:
+1. masterlist of keywords you extract will be used to find the primary and secondary keywords for the article. keep this purpose in mind.
+2. Make sure you look at the metrics of each keyword.
+3. Make sure you also consider the relevance of each keyword to the content of the article, and in context of competitive analysis.
+4. Pick up to 20 keywords for the masterlist based on the above two points.
+5. Make sure there are no duplicates in the masterlist.
+6. The keywords in the masterlist should be sorted in descending order based on their search volume.
+
+Generate a masterlist of keywords and output them in the structured format:
+["keyword1", "keyword2", "keyword3", ...]
+
+7. Then, pick 3-5 primary keywords from the masterlist. 
+Please consider the following for choosing primary keywords:
+1. Primary keywords are those keywords for which we want our article to rank for. 
+2. They should have a balanced search volume and relevance to the content of the article.
+3. Each primary keyword should ideally target a significant facet of the article.
+
+Generate a list of primary keywords and output them in the structured format:
+["primary_keyword1", "primary_keyword2", "primary_keyword3", ...]
+
+8. Then, pick 3-5 secondary keywords from the masterlist.
+Please consider the following for choosing secondary keywords:
+1. These are variations, long-tail versions, synonyms, or related sub-topics to your primary keywords.
+2. They help build topical authority and capture more specific searches.
+3. They generally have lower volume but can be less competitive and highly relevant.
+4. Each will be judged based on its own google planner data metrics.
+
+Generate a list of secondary keywords and output them in the structured format:
+["secondary_keyword1", "secondary_keyword2", "secondary_keyword3", ...]
+
+Here is the article:
+{user_article}
+Here are the entities:
+{entities}
+Here is the google planner data:
+{gkp_data}
+Here is the competitive analysis:
+{competitive_analysis}
+
+
+"""
