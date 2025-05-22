@@ -121,6 +121,9 @@ async def competitor_analyst(state: KeywordState):
 
         generated_search_queries: list[str] = search_queries.search_queries
 
+        # Execute the tool call for generated Search Queries 
+        
+
     except Exception as e:
         raise RuntimeError(
             f"Search query generation failed with all available models: {str(e)}"
