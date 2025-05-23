@@ -111,30 +111,13 @@ class StructuredOutputModel(BaseModel):
     )
     web_search_results: list[WebSearchResult] = Field(
         ...,
-        description="List of web search results you would expect to get from the web search tool",
+        description="List of 3 web search results you would expect to get from the web search tool",
     )
     analysis: str = Field(
         ...,
         description="A 2 sentence analysis of why these search results are relevant to the user query"
     )
-
-# Initialize OpenAI LLM with structured output using the updated schema
-# openai_llm = ChatOpenAI(
-#     model="gpt-4o-mini",  # Changed to supported model for json_schema method
-#     temperature=0.5,
-#     timeout=None,
-#     max_retries=2,
-#     api_key=settings.OPENAI_API_KEY,
-# )
-# # openai_llm = openai_llm.bind_tools([dummy_web_search_tool])
-
-# # Use structured output with strict mode enabled for better validation
-# openai_llm = openai_llm.with_structured_output(
-#     schema=StructuredOutputModel,
-#     method="json_schema",  # Explicitly use json_schema method
-#     strict=True  # Enable strict validation
-# )
-
+    
 messages = [
     (
         "system",
@@ -144,6 +127,23 @@ messages = [
     ),
     ("human", "How is AI changing the world politics?"),
 ]
+#-------
+# # Initialize OpenAI LLM with structured output using the updated schema
+# openai_llm = ChatOpenAI(
+#     model="o4-mini-2025-04-16", 
+#     # temperature=0.5,
+#     timeout=None,
+#     max_retries=2,
+#     api_key=settings.OPENAI_API_KEY,
+# )
+# openai_llm = openai_llm.bind_tools([dummy_web_search_tool])
+
+# # Use structured output with strict mode enabled for better validation
+# openai_llm = openai_llm.with_structured_output(
+#     schema=StructuredOutputModel,
+#     method="json_schema",  # Explicitly use json_schema method
+#     strict=True  # Enable strict validation
+# )
 
 # ai_msg = openai_llm.invoke(messages)
 # print(f"{ai_msg}")
@@ -161,7 +161,7 @@ mistral_llm = ChatMistralAI(
 mistral_llm = mistral_llm.with_structured_output(
     schema=StructuredOutputModel,
     method="json_schema",  # Explicitly use json_schema method
-    strict=True  # Enable strict validation
+    # strict=True  # Enable strict validation
 )
 ai_message = mistral_llm.invoke(messages)
 print(f"{ai_message}")
