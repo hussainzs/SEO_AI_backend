@@ -5,7 +5,7 @@ Write all the node functions for the keywords agent here.
 from pprint import pprint
 from typing import Any
 from src.agents.keywords_agent.state import KeywordState
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, AIMessage
 
 # Entity Extractor related imports
 from src.utils.models_initializer import initialize_model_with_fallbacks, get_gemini_model, get_groq_model
@@ -139,52 +139,58 @@ async def query_generator(state: KeywordState):
         - state.generated_search_queries: List of generated search queries
         - state.tool_call_count: Initializes to 0 if it doesn't exist so routeing edge can increment it after making sure a tool call was made
     """
-    # check this to ensure AI made a tool call and followed instructions. this way we can add 1 to tool_call_count
-    tool_call_was_made: bool = False
+    # # check this to ensure AI made a tool call and followed instructions. this way we can add 1 to tool_call_count
+    # tool_call_was_made: bool = False
     
-    model = QUERY_GENERATOR_MODEL_WITH_FALLBACK_AND_TOOLS
-    web_search_results: str = state.get("web_search_results_accumulated", "")
+    # model = QUERY_GENERATOR_MODEL_WITH_FALLBACK_AND_TOOLS
+    # web_search_results: str = state.get("web_search_results_accumulated", "")
     
-    prompt = QUERY_GENERATOR_PROMPT.format(
-        user_article=state["user_input"],
-        entities=state["retrieved_entities"],
-        web_search_results=web_search_results,
-    )
+    # prompt = QUERY_GENERATOR_PROMPT.format(
+    #     user_article=state["user_input"],
+    #     entities=state["retrieved_entities"],
+    #     web_search_results=web_search_results,
+    # )
     
-    ai_message = await model.ainvoke([HumanMessage(content=prompt)])
+    # ai_message = await model.ainvoke([HumanMessage(content=prompt)])
     
-    # get the search queries from the tool call AI made. Here if AI did not make a tool call then it will be empty. 
-    # initialize search queries so we can append results to it
-    search_queries = []
+    # # get the search queries from the tool call AI made. Here if AI did not make a tool call then it will be empty. 
+    # # initialize search queries so we can append results to it
+    # search_queries = []
     
-    # access tool calls array in AIMessage (its always present but maybe empty if AI didn't make a tool call and misbehaved)
-    tool_calls: list[Any] = ai_message.tool_calls # type: ignore
-    for t in tool_calls:
-        # "query" below can be accessed because thats the exact name of the parameter for web_search_tool. If that ever changes this must change too!
-        query: str = t["args"]["query"]
-        search_queries.append(query)
+    # # access tool calls array in AIMessage (its always present but maybe empty if AI didn't make a tool call and misbehaved)
+    # tool_calls: list[Any] = ai_message.tool_calls # type: ignore
+    # for t in tool_calls:
+    #     # "query" below can be accessed because thats the exact name of the parameter for web_search_tool. If that ever changes this must change too!
+    #     query: str = t["args"]["query"]
+    #     search_queries.append(query)
     
-    # update tool_call_was_made variable to true if AI made a tool call. This allows us to increment the tool_call_count in the state.
-    if len(tool_calls) > 0:
-        tool_call_was_made = True
+    # # update tool_call_was_made variable to true if AI made a tool call. This allows us to increment the tool_call_count in the state.
+    # if len(tool_calls) > 0:
+    #     tool_call_was_made = True
     
-    if tool_call_was_made:
-        return {
-            # add to 'messages' so tools_condition edge can detect the tool call and route to "tools" node.
-            'messages': [ai_message], 
-            # we add search queries in the state so we can access them in the router_and_state_updater node. They are useful in formatting web_search_results_accumulated
-            'generated_search_queries': search_queries,
-            # we increment the tool_call_count so we can route to "competitor_analysis" node after 2 calls.
-            "tool_call_count": state.get("tool_call_count", 0) + 1
-        }
-    else:
-        # if AI didn't make a tool call then we will not increment the tool_call_count but still initialize to 0.
-        # this is the misbehaved state and we will route back to "entity_extractor" node to run this node again. Sometimes simple retries work. This routing is done through tools_condition edge when it doesn't detect a tool call in messages key.
-        return {
-            'messages': [ai_message], 
-            'search_queries': search_queries,
-            "tool_call_count": state.get("tool_call_count", 0)
-            }
+    # if tool_call_was_made:
+    #     return {
+    #         # add to 'messages' so tools_condition edge can detect the tool call and route to "tools" node.
+    #         'messages': [ai_message], 
+    #         # we add search queries in the state so we can access them in the router_and_state_updater node. They are useful in formatting web_search_results_accumulated
+    #         'generated_search_queries': search_queries,
+    #         # we increment the tool_call_count so we can route to "competitor_analysis" node after 2 calls.
+    #         "tool_call_count": state.get("tool_call_count", 0) + 1
+    #     }
+    # else:
+    #     # if AI didn't make a tool call then we will not increment the tool_call_count but still initialize to 0.
+    #     # this is the misbehaved state and we will route back to "entity_extractor" node to run this node again. Sometimes simple retries work. This routing is done through tools_condition edge when it doesn't detect a tool call in messages key.
+    #     return {
+    #         'messages': [ai_message], 
+    #         'search_queries': search_queries,
+    #         "tool_call_count": state.get("tool_call_count", 0)
+    #         }
+    # testing
+    return {
+        "messages": [AIMessage(content='', additional_kwargs={'tool_calls': [{'id': 'call_b2gv', 'function': {'arguments': '{"query":"Undergrad Job Market trends"}', 'name': 'dummy_web_search_tool'}, 'type': 'function'}, {'id': 'call_rd2h', 'function': {'arguments': '{"query":"How do college graduates find jobs in a tight job market?"}', 'name': 'dummy_web_search_tool'}, 'type': 'function'}]}, response_metadata={'token_usage': {'completion_tokens': 131, 'prompt_tokens': 3209, 'total_tokens': 3340, 'completion_time': 0.374285714, 'prompt_time': 0.120890975, 'queue_time': -0.526001768, 'total_time': 0.495176689}, 'model_name': 'llama3-70b-8192', 'system_fingerprint': 'fp_dd4ae1c591', 'finish_reason': 'tool_calls', 'logprobs': None}, id='run--71f319ab-15a9-4d0f-8b41-9da9adbba932-0', tool_calls=[{'name': 'dummy_web_search_tool', 'args': {'query': 'Undergrad Job Market trends'}, 'id': 'call_b2gv', 'type': 'tool_call'}, {'name': 'dummy_web_search_tool', 'args': {'query': 'How do college graduates find jobs in a tight job market?'}, 'id': 'call_rd2h', 'type': 'tool_call'}], usage_metadata={'input_tokens': 3209, 'output_tokens': 131, 'total_tokens': 3340})],
+        "search_queries": [],
+        "tool_call_count": state.get("tool_call_count", 0) + 1,
+    }
 
 async def router_and_state_updater(state: KeywordState):
     """

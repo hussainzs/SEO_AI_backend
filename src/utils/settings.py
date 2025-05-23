@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import SecretStr
 from dotenv import find_dotenv
@@ -65,6 +66,12 @@ class Settings(BaseSettings):
     OPIK_API_KEY: SecretStr | None = None
     OPIK_WORKSPACE: str | None = None
     OPIK_PROJECT_NAME: str | None = None
+    
+    # LangSmith Observability
+    LANGSMITH_TRACING: str = "true"
+    LANGSMITH_ENDPOINT: str = "https://api.smith.langchain.com"
+    LANGSMITH_API_KEY: SecretStr | None = None
+    LANGSMITH_PROJECT: str | None = None
 
     # FastAPI host and port with default values
     HOST: str = "0.0.0.0"

@@ -25,6 +25,10 @@ opik_api_key: str | None = get_key(settings.OPIK_API_KEY)
 opik_workspace: str | None = get_key(settings.OPIK_WORKSPACE)
 opik_project_name: str | None = get_key(settings.OPIK_PROJECT_NAME)
 
+# LangSmith observability (langChain automatically detects the environment variables)
+import dotenv
+dotenv.load_dotenv()
+
 # initialize graph
 graph_builder = StateGraph(state_schema=KeywordState)
 
