@@ -1,0 +1,8 @@
+{
+  "dependencies": ["./"],
+  "graphs": {
+    "agent": "./src/agents/keywords_agent/graph.py:keyword_agent"
+  },
+  "env": ".env",
+  "python_version": "3.13"
+}
