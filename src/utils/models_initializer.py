@@ -29,8 +29,8 @@ def get_gemini_model(
     - (3) "gemini-2.5-pro-exp-03-25"
     - (4) "gemini-1.5-pro"
 
-    \nfor latest available models: https://ai.google.dev/gemini-api/docs/models#model-variations
-    \nFor Langchain integration docs: https://python.langchain.com/api_reference/google_genai/chat_models/langchain_google_genai.chat_models.ChatGoogleGenerativeAI.html
+    \nFor latest available models: https://ai.google.dev/gemini-api/docs/models#model-variations
+    \nFor Langchain integration: https://python.langchain.com/api_reference/google_genai/chat_models/langchain_google_genai.chat_models.ChatGoogleGenerativeAI.html
 
 
     Args:
@@ -73,8 +73,9 @@ def get_groq_model(model_name: int = 1, temperature: float = 0.2) -> ChatGroq:
     Initialize the Groq LLM with the specified model name.
     Available model names (numbers mapping to models):
 
-    For the latest available models: https://console.groq.com/docs/models
-    For rate limits: https://console.groq.com/dashboard/limits
+    For LangChain Integration:https://python.langchain.com/api_reference/groq/chat_models/langchain_groq.chat_models.ChatGroq.html
+    \nFor the latest available models: https://console.groq.com/docs/models
+    \nFor rate limits: https://console.groq.com/dashboard/limits
 
     - (1) "llama3-70b-8192"
     - (2) "deepseek-r1-distill-llama-70b"

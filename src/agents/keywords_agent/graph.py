@@ -7,7 +7,7 @@ from langgraph.graph.state import CompiledStateGraph
 from src.agents.keywords_agent.state import KeywordState
 from src.tools.web_search_tool import WebSearch, dummy_web_search_tool
 from src.agents.keywords_agent.edges import route_to_query_or_analysis
-from src.agents.keywords_agent.nodes import (
+from src.agents.keywords_agent.test_nodes import (
     entity_extractor,
     query_generator,
     competitor_analysis,
@@ -103,6 +103,6 @@ async def run_keyword_agent_stream(user_input: str):
     async for update in keyword_agent.astream(
         input={"messages": user_input, "user_input": user_input},
         stream_mode="updates",
-        config={"callbacks": [tracer]},
+        # config={"callbacks": [tracer]},
     ):
         print(update)

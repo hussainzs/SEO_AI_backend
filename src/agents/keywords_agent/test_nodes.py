@@ -145,9 +145,6 @@ async def query_generator(state: KeywordState):
     model = QUERY_GENERATOR_MODEL_WITH_FALLBACK_AND_TOOLS
     web_search_results: str = state.get("web_search_results_accumulated", "")
     
-    # testing
-    print(f"\nweb_search_results: {web_search_results}")
-    
     prompt = QUERY_GENERATOR_PROMPT.format(
         user_article=state["user_input"],
         entities=state["retrieved_entities"],
@@ -157,9 +154,6 @@ async def query_generator(state: KeywordState):
     ai_message = await model.ainvoke([HumanMessage(content=prompt)])
     
     # get the search queries from the tool call AI made. Here if AI did not make a tool call then it will be empty. 
-    # But we did everything to ensure that AI makes a tool call.
-    print()
-    pprint(ai_message)
     # initialize search queries so we can append results to it
     search_queries = []
     
@@ -173,8 +167,6 @@ async def query_generator(state: KeywordState):
     # update tool_call_was_made variable to true if AI made a tool call. This allows us to increment the tool_call_count in the state.
     if len(tool_calls) > 0:
         tool_call_was_made = True
-
-    pprint(f"\nSearch_queries: {search_queries}\n")
     
     if tool_call_was_made:
         return {
@@ -203,54 +195,59 @@ async def router_and_state_updater(state: KeywordState):
         - state._web_search_results_accumulated: updates it with the tool response. Adds the search queries to the tool response as well.
         - state.route_to: sets it to "competitor_analysis" or "query_generator" based on the tool response. 
     """
-    # if tool call count is 0 that means no tool call was made and we should route to "query_generator" node
-    if state["tool_call_count"] == 0:
-        print("\n\nTool call count is 0. Routing to query_generator node.\n\n")
-        # if we have not called the tool yet, we will call it again
-        return {"route_to": "query_generator"}
+    # # if tool call count is 0 that means no tool call was made and we should route to "query_generator" node
+    # if state["tool_call_count"] == 0:
+    #     print("\n\nTool call count is 0. Routing to query_generator node.\n\n")
+    #     # if we have not called the tool yet, we will call it again
+    #     return {"route_to": "query_generator"}
     
-    if state["tool_call_count"] >= 2:
-        # if we have already called the tool twice, we will not call it again but we still need to update web_search_results with latest tool response (append to existing results)
-        messages: list = state["messages"]
-        web_search_results = update_web_search_results(
-            messages=messages,
-            search_queries=state["generated_search_queries"],
-            web_search_results_accumulated=state.get("web_search_results_accumulated", ""),
-        )
+    # if state["tool_call_count"] >= 2:
+    #     # if we have already called the tool twice, we will not call it again but we still need to update web_search_results with latest tool response (append to existing results)
+    #     messages: list = state["messages"]
+    #     web_search_results = update_web_search_results(
+    #         messages=messages,
+    #         search_queries=state["generated_search_queries"],
+    #         web_search_results_accumulated=state.get("web_search_results_accumulated", ""),
+    #     )
         
-        print("\n\nTool call count is 2. Routing to competitor_analysis node.\n\n")
-        return {"route_to": "competitor_analysis", "web_search_results_accumulated": web_search_results}
-    else:              
-        # Get the tool response from last two ToolMessages
-        messages: list = state["messages"]
+    #     print("\n\nTool call count is 2. Routing to competitor_analysis node.\n\n")
+    #     return {"route_to": "competitor_analysis", "web_search_results_accumulated": web_search_results}
+    # else:              
+    #     # Get the tool response from last two ToolMessages
+    #     messages: list = state["messages"]
         
-        # update the web search results with the content from the last two ToolMessages and the corresponding search queries
-        web_search_results = update_web_search_results(
-            messages=messages,
-            search_queries=state["generated_search_queries"],
-            web_search_results_accumulated=state.get("web_search_results_accumulated", ""),
-        )
+    #     # update the web search results with the content from the last two ToolMessages and the corresponding search queries
+    #     web_search_results = update_web_search_results(
+    #         messages=messages,
+    #         search_queries=state["generated_search_queries"],
+    #         web_search_results_accumulated=state.get("web_search_results_accumulated", ""),
+    #     )
         
-        # get user input and entities as well
-        user_input: str = state.get("user_input", "")
-        retrieved_entities: list[str] = state.get("retrieved_entities", [])
+    #     # get user input and entities as well
+    #     user_input: str = state.get("user_input", "")
+    #     retrieved_entities: list[str] = state.get("retrieved_entities", [])
         
-        # prepare prompt for the router model
-        prompt = ROUTE_QUERY_OR_ANALYSIS_PROMPT.format(
-            user_article=user_input,
-            entities=retrieved_entities,
-            web_search_results=web_search_results,
-        )
+    #     # prepare prompt for the router model
+    #     prompt = ROUTE_QUERY_OR_ANALYSIS_PROMPT.format(
+    #         user_article=user_input,
+    #         entities=retrieved_entities,
+    #         web_search_results=web_search_results,
+    #     )
         
-        # invoke the router model
-        router_decision: RouteToQueryOrAnalysis = await ROUTER_MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(
-            [HumanMessage(content=prompt)]
-        ) # type: ignore
+    #     # invoke the router model
+    #     router_decision: RouteToQueryOrAnalysis = await ROUTER_MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(
+    #         [HumanMessage(content=prompt)]
+    #     ) # type: ignore
 
-        return {
-            "route_to": router_decision.route,
-            "web_search_results_accumulated": web_search_results,
-        }
+    #     return {
+    #         "route_to": router_decision.route,
+    #         "web_search_results_accumulated": web_search_results,
+    #     }
+    # testing
+    return {
+        "route_to": "competitor_analysis",
+        "web_search_results_accumulated": state.get("web_search_results_accumulated", ""),
+    }
 
     
 async def competitor_analysis(state: KeywordState):
