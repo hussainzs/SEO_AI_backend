@@ -20,6 +20,7 @@ dependencies = [
     "requests (>=2.32.3,<3.0.0)",
     "tavily-python (>=0.7.1,<0.8.0)",
     "exa-py (>=1.13.1,<2.0.0)",
+    "langchain-mistralai (>=0.2.10,<0.3.0)",
 ]
 
 [tool.poetry]

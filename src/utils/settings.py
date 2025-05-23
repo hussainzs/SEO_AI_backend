@@ -57,6 +57,8 @@ class Settings(BaseSettings):
     # LLMs
     GEMINI_API_KEY: SecretStr | None = None
     GROQ_API_KEY: SecretStr | None = None
+    MISTRAL_API_KEY: SecretStr | None = None
+    OPENAI_API_KEY: SecretStr | None = None
 
     # Web Search APIs
     TAVILY_API_KEY: SecretStr | None = None
