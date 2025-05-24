@@ -72,25 +72,29 @@ Here is the history of previous web queries and their responses:
 COMPETITOR_ANALYSIS_AND_STRUCTURED_OUTPUT_PROMPT = """
 You are an SEO expert in keyword research and competitor analysis. You will receive a user_article, a list of entities and a history of web queries and their results that were executed to find competitors. 
 
-Your task is to analyze the the given information, conduct a thorough competitor analysis and generate a structured output as a response.
-One of your jobs in the structured output is to result the top 5 web search results in a structured format. Ensure to include rank, url, title, published date and highlights of the text content from the web page. You will give it a rank based on relevance and quality of competition. 1 is the highest rank. There maybe more than 5 results given to you but you should only include the top 5 results in your structured output ordered by rank.
+Your task is to analyze the given information, conduct a thorough competitor analysis and generate a structured output as a response.
 
 While conducting your analysis, please keep the following in mind:
 1) Like a true SEO expert, you should analyze all given information about the competitor in the web search results i.e. url, titles, date, highlights etc and the queries that were used to find them.
-2) You should analyze the user article and the entities against the competitor information to determine the best competitors for the user article for the targeted keywords and subtopics.
-3) In your structured output, you also have to give me the top 2 queries that gave the best web search results (if there are only 2 queries, then give me those 2 queries otherwise pick the top 2. If there are less than 2 queries than give me 1).
-4) For your structured output, you have to give a competitive analysis which is 1-2 paragraphs long. Focus on the strengths and weaknesses of the competitors, where are we lacking, what are the opportunities or content gaps we can fill, maybe a subtopic that is not covered by the competitors, etc. Make it actionable, insightful and concise with precise details.
+2) You should analyze the user article and the entities against the competitor information to determine the best competitors for the user article for the targeted keywords and subtopics. Extracted entities represent the main topics of the article and were used to generate the search queries. The web search results represent the competitors that were found using those queries.
 
-5) YOU MUST NOT make up any information on your own in search queries and web search results, you can only use the information provided to you. The 2 queries you return must exactly match queries that were used to find the competitors. The web search results you return must exactly match the web search results provided to you.
-6) You are allowed to be critical and creative in your competitor analysis paragraphs but be very precise and actionable.
+3) In your structured output, you have to give me the top 2 search queries from the web search results that gave the best results. If there are only 2 queries, then give me those 2 queries otherwise pick the top 2. If there are less than 2 queries than give me 1.
+
+4) In your structured output, you have to give me the top 5 unique web search results. The web search results should be ranked based on relevance and quality of competition (authoritative sources and competition). 1 is the highest rank. You have to provide the following information for each web search result: rank, url, title, published date, highlights (text content).
+
+5) For your structured output, you have to give a competitive analysis which is 2 paragraphs long. Focus on the strengths and weaknesses of the competitors, where are we lacking, what are the opportunities or content gaps we can fill. Make it actionable, insightful and concise with very precise details. Anyone should be able to read your competitive analysis and understand what to do next to dominate our targeted topic. Uphold the highest standards of SEO and keyword research.
+
+6) YOU MUST NOT make up any information on your own for the search queries and web search results output, you can only use the information provided to you. The 2 queries you return must exactly match queries that were used to find the competitors. The web search results you return must exactly match the web search results provided to you. If you are given less than 5 web search results, then you should return all of them. If you are given more than 5 web search results, then you should return the top 5 based on relevance and quality of competition. 
+
+6) You are allowed to be critical and creative in your competitor analysis paragraphs but be very precise and actionable. Put on your expert hat and think like a true SEO expert.
 
 Here is the user article:
 {user_article}
 
-Here are the extracted entities:
+\nHere are the extracted entities:
 {entities}
 
-Here is the history of previous web queries and their responses:
+\nHere is the history of previous web queries and their responses:
 {web_search_results}
 
 """
