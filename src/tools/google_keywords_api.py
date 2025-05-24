@@ -181,7 +181,7 @@ class GoogleKeywordsAPI:
                 )
                 response.raise_for_status()
                 # Parse and transform the response
-                return self._parse_keywords_response(response.json())
+                return await self._parse_keywords_response(response.json())
             except ConnectError:
                 raise ConnectError(f"Google Keywords API is not reachable at {endpoint}")
             except TimeoutException:
@@ -189,7 +189,7 @@ class GoogleKeywordsAPI:
             except RequestError as e:
                 raise
 
-    def _parse_keywords_response(self, response_data: dict[str, Any]) -> list[dict[str, int | str | dict[str, int]]]:
+    async def _parse_keywords_response(self, response_data: dict[str, Any]) -> list[dict[str, int | str | dict[str, int]]]:
         """
         Parse and transform the API response into a simplified format.
         Reference to `reference_docs/gkp_raw_sample_response.json` to understand the input to this method.

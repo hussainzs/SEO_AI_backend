@@ -7,7 +7,7 @@ from langgraph.graph.state import CompiledStateGraph
 from src.agents.keywords_agent.state import KeywordState
 from src.tools.web_search_tool import WebSearch, dummy_web_search_tool
 from src.agents.keywords_agent.edges import route_to_query_or_analysis
-from src.agents.keywords_agent.nodes import (
+from src.agents.keywords_agent.test_nodes import (
     entity_extractor,
     query_generator,
     competitor_analysis,
@@ -43,7 +43,7 @@ tool_list = [dummy_web_search_tool]  # testing
 graph_builder.add_node(node="entity_extractor", action=entity_extractor)
 graph_builder.add_node(node="query_generator", action=query_generator)
 graph_builder.add_node(node="competitor_analysis", action=competitor_analysis)
-graph_builder.add_node(node="tools", action=ToolNode(tools=tool_list))
+graph_builder.add_node(node="web_search_tool", action=ToolNode(tools=tool_list))
 graph_builder.add_node(node="router_and_state_updater", action=router_and_state_updater)
 graph_builder.add_node(node="google_keyword_planner1", action=google_keyword_planner1)
 graph_builder.add_node(node="google_keyword_planner2", action=google_keyword_planner2)
@@ -63,13 +63,13 @@ graph_builder.add_conditional_edges(
     source="query_generator",
     path=tools_condition,
     path_map={
-        # If it returns 'action', route to the 'tools' node
-        "tools": "tools",
+        # If it returns 'action', route to the 'web_search_tool' node
+        "tools": "web_search_tool",
         # If it returns '__end__', route to the 'router_and_state_updater' node. This should never happen but just in case.
         "__end__": "router_and_state_updater",
     },
 )
-graph_builder.add_edge(start_key="tools", end_key="router_and_state_updater")
+graph_builder.add_edge(start_key="web_search_tool", end_key="router_and_state_updater")
 
 # this is a loopback edge to allow the agent to retry the tool call
 graph_builder.add_conditional_edges(

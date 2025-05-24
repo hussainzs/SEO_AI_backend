@@ -1,21 +1,31 @@
 """
-Messy file for testing the nodes in the keywords agent.
+Write all the node functions for the keywords agent here.
 """
-
+import src.agents.keywords_agent.temp_data as temp_data
 from pprint import pprint
 from typing import Any
 from src.agents.keywords_agent.state import KeywordState
-from langchain_core.messages import HumanMessage, AIMessage
-import asyncio
+from langchain_core.messages import HumanMessage
 
-# Entity Extractor related imports
-from src.utils.models_initializer import initialize_model_with_fallbacks, get_gemini_model, get_groq_model
+from src.tools.google_keywords_api import GoogleKeywordsAPI
+from src.utils.models_initializer import (
+    initialize_model_with_fallbacks,
+    get_gemini_model,
+    get_groq_model,
+    get_mistral_model,
+    get_openai_model,
+)
 from src.agents.keywords_agent.prompts import (
     ENTITY_EXTRACTOR_PROMPT,
     QUERY_GENERATOR_PROMPT,
     ROUTE_QUERY_OR_ANALYSIS_PROMPT,
+    COMPETITOR_ANALYSIS_AND_STRUCTURED_OUTPUT_PROMPT,
 )
-from src.agents.keywords_agent.schemas import Entities, RouteToQueryOrAnalysis
+from src.agents.keywords_agent.schemas import (
+    Entities,
+    RouteToQueryOrAnalysis,
+    CompetitorAnalysisOutputModel,
+)
 from src.tools.web_search_tool import WebSearch, dummy_web_search_tool
 
 
@@ -24,11 +34,11 @@ from src.tools.web_search_tool import WebSearch, dummy_web_search_tool
 # #################
 ENTITIES_MODEL_WITH_FALLBACK_AND_STRUCTURED = initialize_model_with_fallbacks(
     primary_model_fn=get_gemini_model,
-    primary_model_kwargs={"model_name": 2, "temperature": 0.5},
-    fallback_model_fns=[get_groq_model, get_gemini_model],
+    primary_model_kwargs={"model_num": 2, "temperature": 0.5},
+    fallback_model_fns=[get_mistral_model, get_openai_model],
     fallback_model_kwargs_list=[
-        {"model_name": 1, "temperature": 0.5},
-        {"model_name": 3, "temperature": 0.2}
+        {"model_num": 1, "temperature": 0.5},
+        {"model_num": 1, "temperature": 0.5},
     ],
     structured_output_schema=Entities,
 )
@@ -36,48 +46,57 @@ ENTITIES_MODEL_WITH_FALLBACK_AND_STRUCTURED = initialize_model_with_fallbacks(
 #################
 # Query Generator Model
 #################
-# QUERY_GENERATOR_MODEL_WITH_FALLBACK_AND_TOOLS = initialize_model_with_fallbacks(
-#     primary_model_fn=get_gemini_model,
-#     primary_model_kwargs={"model_name": 1, "temperature": 0.7},
-#     fallback_model_fns=[get_groq_model, get_gemini_model],
-#     fallback_model_kwargs_list=[
-#         {"model_name": 2, "temperature": 0.7},
-#         {"model_name": 2, "temperature": 0.7}
-#     ],
-#     bind_tools=True,
-#     # tools=[WebSearch()],
-#     tools=[dummy_web_search_tool],
-#     # tool_choice="web_search_tool",
-#     tool_choice="dummy_web_search_tool", # testing
-# )
 QUERY_GENERATOR_MODEL_WITH_FALLBACK_AND_TOOLS = initialize_model_with_fallbacks(
-    primary_model_fn=get_groq_model,
-    primary_model_kwargs={"model_name": 1, "temperature": 0.7},
-    fallback_model_fns=[get_groq_model, get_gemini_model],
+    primary_model_fn=get_mistral_model,
+    primary_model_kwargs={"model_num": 1, "temperature": 0.7},
+    fallback_model_fns=[get_openai_model, get_openai_model],
     fallback_model_kwargs_list=[
-        {"model_name": 3, "temperature": 0.7},
-        {"model_name": 1, "temperature": 0.7}
+        {"model_num": 1, "temperature": 0.7},
+        {"model_num": 2, "temperature": 0.7},
     ],
     bind_tools=True,
     # tools=[WebSearch()],
-    tools=[dummy_web_search_tool],
+    tools=[dummy_web_search_tool],  # testing
     # tool_choice="web_search_tool",
-    tool_choice="dummy_web_search_tool", # testing
+    tool_choice="dummy_web_search_tool",  # testing
 )
+
 
 ##############
 # Router Model
 ##############
 ROUTER_MODEL_WITH_FALLBACK_AND_STRUCTURED = initialize_model_with_fallbacks(
-    primary_model_fn=get_gemini_model,
-    primary_model_kwargs={"model_name": 2, "temperature": 0.2},
-    fallback_model_fns=[get_groq_model, get_gemini_model],
+    primary_model_fn=get_mistral_model,
+    primary_model_kwargs={"model_num": 1, "temperature": 0.1},
+    fallback_model_fns=[get_openai_model, get_groq_model],
     fallback_model_kwargs_list=[
-        {"model_name": 1, "temperature": 0.2},
-        {"model_name": 3, "temperature": 0.2}
+        {"model_num": 1, "temperature": 0.1},
+        {"model_num": 3, "temperature": 0.1},
     ],
-    structured_output_schema=RouteToQueryOrAnalysis
+    structured_output_schema=RouteToQueryOrAnalysis,
 )
+
+# #################
+# # Competitor Analysis Model
+# #################
+COMPETITOR_ANALYSIS_MODEL_WITH_FALLBACK_AND_STRUCTURED = (
+    initialize_model_with_fallbacks(
+        primary_model_fn=get_openai_model,
+        primary_model_kwargs={"model_num": 2, "temperature": 0.3},
+        fallback_model_fns=[get_mistral_model, get_openai_model],
+        fallback_model_kwargs_list=[
+            {"model_num": 1, "temperature": 0.3},
+            {"model_num": 1, "temperature": 0.3},
+        ],
+        structured_output_schema=CompetitorAnalysisOutputModel,
+    )
+)
+
+##############
+# # Initialize Google Keyword Planner API client
+##############
+gkp = GoogleKeywordsAPI()
+
 
 async def entity_extractor(state: KeywordState):
     """
@@ -118,14 +137,13 @@ async def entity_extractor(state: KeywordState):
 
     # # Return the retrieved entities
     # print(f"Retrieved entities: {retrieved_entities}")
-    
+
     # for testing
     entities = [
-      "Undergrad Employment",
-      "College Students Unemployment",
-      "Undergrad Job Market",
+        "Undergrad Employment",
+        "College Students Unemployment",
+        "Undergrad Job Market",
     ]
-    # await asyncio.sleep(2.0)
     return {"retrieved_entities": entities}
     # return {"retrieved_entities": retrieved_entities}
 
@@ -135,7 +153,7 @@ async def query_generator(state: KeywordState):
     Takes user_input and retrieved_entities and generates search queries.
     If state['_web_search_results_accumulated'] has previous tool calls and their responses then it will also look at the tool response to previous queries and regenerate search queries.
     Its tool_choice parameter is set to "web_search_tool" to force the LLM to always use the web search tool.
-    
+
     Updates:
         - state.messages: updates it with AIMessage which should have toolCall.
         - state.generated_search_queries: List of generated search queries
@@ -143,154 +161,322 @@ async def query_generator(state: KeywordState):
     """
     # # check this to ensure AI made a tool call and followed instructions. this way we can add 1 to tool_call_count
     # tool_call_was_made: bool = False
-    
-    # model = QUERY_GENERATOR_MODEL_WITH_FALLBACK_AND_TOOLS
+
+    # # initialize search queries so we can append results to it
+    # search_queries = []
+
+    # # get current web search results from state. This will be empty if this is the first time we are calling this node.
     # web_search_results: str = state.get("web_search_results_accumulated", "")
-    
+
     # prompt = QUERY_GENERATOR_PROMPT.format(
     #     user_article=state["user_input"],
     #     entities=state["retrieved_entities"],
     #     web_search_results=web_search_results,
     # )
-    
-    # ai_message = await model.ainvoke([HumanMessage(content=prompt)])
-    
-    # # get the search queries from the tool call AI made. Here if AI did not make a tool call then it will be empty. 
-    # # initialize search queries so we can append results to it
-    # search_queries = []
-    
-    # # access tool calls array in AIMessage (its always present but maybe empty if AI didn't make a tool call and misbehaved)
-    # tool_calls: list[Any] = ai_message.tool_calls # type: ignore
+
+    # ai_message = await QUERY_GENERATOR_MODEL_WITH_FALLBACK_AND_TOOLS.ainvoke(
+    #     [HumanMessage(content=prompt)]
+    # )
+
+    # # get the search queries from the tool call AI made. Here if AI did not make a tool call then it will be empty.
+    # print()
+    # pprint(ai_message)
+
+    # # access tool calls array in AIMessage (tool_calls always present but maybe empty if AI didn't make a tool call and misbehaved)
+    # # !! we are manually extracting the tool calls, instead we could have done a structured output but models misbehave more often when they are provided both tools and structured output.
+    # tool_calls: list[Any] = ai_message.tool_calls  # type: ignore
     # for t in tool_calls:
-    #     # "query" below can be accessed because thats the exact name of the parameter for web_search_tool. If that ever changes this must change too!
+    #     # here "query" can be accessed because thats the exact name of the parameter for web_search_tool. If that ever changes this must change too!
     #     query: str = t["args"]["query"]
     #     search_queries.append(query)
-    
+
     # # update tool_call_was_made variable to true if AI made a tool call. This allows us to increment the tool_call_count in the state.
-    # if len(tool_calls) > 0:
+    # if len(tool_calls) > 0 and len(search_queries) > 0:
     #     tool_call_was_made = True
-    
+
+    # pprint(f"\nSearch_queries: {search_queries}\n")
+
     # if tool_call_was_made:
     #     return {
-    #         # add to 'messages' so tools_condition edge can detect the tool call and route to "tools" node.
-    #         'messages': [ai_message], 
+    #         # add AIMessage to 'messages' so tools_condition edge can detect the tool call and route to "tools" node.
+    #         "messages": [ai_message],
     #         # we add search queries in the state so we can access them in the router_and_state_updater node. They are useful in formatting web_search_results_accumulated
-    #         'generated_search_queries': search_queries,
-    #         # we increment the tool_call_count so we can route to "competitor_analysis" node after 2 calls.
-    #         "tool_call_count": state.get("tool_call_count", 0) + 1
+    #         "generated_search_queries": search_queries,
+    #         # increment the tool_call_count so we can route to "competitor_analysis" node after 2 calls (this sets an upper bound on the tool calls)
+    #         "tool_call_count": state.get("tool_call_count", 0) + 1,
     #     }
     # else:
     #     # if AI didn't make a tool call then we will not increment the tool_call_count but still initialize to 0.
-    #     # this is the misbehaved state and we will route back to "entity_extractor" node to run this node again. Sometimes simple retries work. This routing is done through tools_condition edge when it doesn't detect a tool call in messages key.
+    #     # this is the misbehaved state thus router_and_state_updater will route back to this node. Sometimes simple retries work.
+    #     # NOTE: This can cause infinite loop if AI keeps misbehaving (unlikely but these LLMs are unpredictable).
+    #     # TODO: add a max retry count to prevent infinite loop.
     #     return {
-    #         'messages': [ai_message], 
-    #         'search_queries': search_queries,
-    #         "tool_call_count": state.get("tool_call_count", 0)
-    #         }
-    # testing
-    # await asyncio.sleep(2.0)
+    #         "messages": [ai_message],
+    #         "search_queries": search_queries,
+    #         "tool_call_count": state.get("tool_call_count", 0),
+    #     }
     return {
-        "messages": [AIMessage(content='', additional_kwargs={'tool_calls': [{'id': 'call_b2gv', 'function': {'arguments': '{"query":"Undergrad Job Market trends"}', 'name': 'dummy_web_search_tool'}, 'type': 'function'}, {'id': 'call_rd2h', 'function': {'arguments': '{"query":"How do college graduates find jobs in a tight job market?"}', 'name': 'dummy_web_search_tool'}, 'type': 'function'}]}, response_metadata={'token_usage': {'completion_tokens': 131, 'prompt_tokens': 3209, 'total_tokens': 3340, 'completion_time': 0.374285714, 'prompt_time': 0.120890975, 'queue_time': -0.526001768, 'total_time': 0.495176689}, 'model_name': 'llama3-70b-8192', 'system_fingerprint': 'fp_dd4ae1c591', 'finish_reason': 'tool_calls', 'logprobs': None}, id='run--71f319ab-15a9-4d0f-8b41-9da9adbba932-0', tool_calls=[{'name': 'dummy_web_search_tool', 'args': {'query': 'Undergrad Job Market trends'}, 'id': 'call_b2gv', 'type': 'tool_call'}, {'name': 'dummy_web_search_tool', 'args': {'query': 'How do college graduates find jobs in a tight job market?'}, 'id': 'call_rd2h', 'type': 'tool_call'}], usage_metadata={'input_tokens': 3209, 'output_tokens': 131, 'total_tokens': 3340})],
-        "search_queries": [],
-        "tool_call_count": state.get("tool_call_count", 0) + 1,
+        "messages": temp_data.query_generator_ai_message,
+        "search_queries": temp_data.query_generator_search_queries,
+        "tool_call_count": temp_data.query_generator_tool_call_count,
     }
+
 
 async def router_and_state_updater(state: KeywordState):
     """
-    This node recieves the ToolMessage from the ToolNode and determines whether to route to the "query_generator" or "competitor_analysis" node.
-    I made this into a node instead of conditional edge because I want to be able to update the state with the tool response and the search queries.
-    
+    This node recieves the ToolMessage from the "tools" Node and determines whether to route to the "query_generator" or "competitor_analysis" node if enough quality competitors have been found.
+    I made this into a node instead of conditional edge because I want to be able to update the "web_search_results_accumulated" state with the tool response and the search queries.
+
     Updates:
         - state._web_search_results_accumulated: updates it with the tool response. Adds the search queries to the tool response as well.
-        - state.route_to: sets it to "competitor_analysis" or "query_generator" based on the tool response. 
+        - state.route_to: sets it to "competitor_analysis" or "query_generator" based on the tool response.
     """
     # # if tool call count is 0 that means no tool call was made and we should route to "query_generator" node
     # if state["tool_call_count"] == 0:
     #     print("\n\nTool call count is 0. Routing to query_generator node.\n\n")
     #     # if we have not called the tool yet, we will call it again
     #     return {"route_to": "query_generator"}
-    
+
     # if state["tool_call_count"] >= 2:
     #     # if we have already called the tool twice, we will not call it again but we still need to update web_search_results with latest tool response (append to existing results)
     #     messages: list = state["messages"]
     #     web_search_results = update_web_search_results(
     #         messages=messages,
     #         search_queries=state["generated_search_queries"],
-    #         web_search_results_accumulated=state.get("web_search_results_accumulated", ""),
+    #         web_search_results_accumulated=state.get(
+    #             "web_search_results_accumulated", ""
+    #         ),
     #     )
-        
+
     #     print("\n\nTool call count is 2. Routing to competitor_analysis node.\n\n")
-    #     return {"route_to": "competitor_analysis", "web_search_results_accumulated": web_search_results}
-    # else:              
-    #     # Get the tool response from last two ToolMessages
+    #     return {
+    #         "route_to": "competitor_analysis",
+    #         "web_search_results_accumulated": web_search_results,
+    #     }
+    # else:
+    #     # Get the tool response from last two ToolMessages. But if only 1 tool call was made then we will only have 1 ToolMessage.
     #     messages: list = state["messages"]
-        
+
     #     # update the web search results with the content from the last two ToolMessages and the corresponding search queries
     #     web_search_results = update_web_search_results(
     #         messages=messages,
     #         search_queries=state["generated_search_queries"],
-    #         web_search_results_accumulated=state.get("web_search_results_accumulated", ""),
+    #         web_search_results_accumulated=state.get(
+    #             "web_search_results_accumulated", ""
+    #         ),
     #     )
-        
+
     #     # get user input and entities as well
     #     user_input: str = state.get("user_input", "")
     #     retrieved_entities: list[str] = state.get("retrieved_entities", [])
-        
+
     #     # prepare prompt for the router model
     #     prompt = ROUTE_QUERY_OR_ANALYSIS_PROMPT.format(
     #         user_article=user_input,
     #         entities=retrieved_entities,
     #         web_search_results=web_search_results,
     #     )
-        
+
     #     # invoke the router model
-    #     router_decision: RouteToQueryOrAnalysis = await ROUTER_MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(
+    #     router_decision: (
+    #         RouteToQueryOrAnalysis
+    #     ) = await ROUTER_MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(
     #         [HumanMessage(content=prompt)]
-    #     ) # type: ignore
+    #     )  # type: ignore
 
     #     return {
     #         "route_to": router_decision.route,
     #         "web_search_results_accumulated": web_search_results,
     #     }
-    # testing
-    # await asyncio.sleep(3.0)
     return {
         "route_to": "competitor_analysis",
-        "web_search_results_accumulated": state.get("web_search_results_accumulated", ""),
+        "web_search_results_accumulated": temp_data.router_web_search_results_accumulated
     }
-    
 
-    
+
 async def competitor_analysis(state: KeywordState):
     """
-    This node gets the user_input, retrieved_entities and web_search_results from the state and conducts competitor analysis.
-    
+    This node gets the user_input, retrieved_entities and web_search_results_accumulated from the state and conducts competitor analysis.
+
     Updates:
-        - state.competitor_information: List of competitor data from top 5 search results (it may have upto 20 results). 
+        - state.competitor_information: List of competitor data from top 5 search results (it may have upto 20 results).
         - state.generated_search_queries: List of generated search queries (it may have upto 4 search queries so it must choose the top 2).
-        - state.competitive_analysis: Competitive analysis generated by our agent after comparing our article with competitor content.  
+        - state.competitive_analysis: Competitive analysis generated by our agent after comparing our article with competitor content.
     """
-    # await asyncio.sleep(2.0)
-    pass
+    # # first get the input variables from the state
+    # user_input: str = state.get("user_input", "")
+    # retrieved_entities: list[str] = state.get("retrieved_entities", [])
+    # web_search_results: str = state.get("web_search_results_accumulated", "")
 
-async def google_keyword_planner(state: KeywordState):
+    # # prepare the prompt for the competitor analysis model
+    # prompt = COMPETITOR_ANALYSIS_AND_STRUCTURED_OUTPUT_PROMPT.format(
+    #     user_article=user_input,
+    #     entities=retrieved_entities,
+    #     web_search_results=web_search_results,
+    # )
+
+    # # initialize the output variables
+    # generated_search_queries: list[str] = []
+    # competitor_information: list[dict[str, str | int]] = []
+    # competitive_analysis: str = ""
+
+    # # now invoke the model
+    # try:
+    #     # response should of type CompetitorAnalysisOutputModel
+    #     response: (
+    #         CompetitorAnalysisOutputModel
+    #     ) = await COMPETITOR_ANALYSIS_MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(
+    #         [HumanMessage(content=prompt)]
+    #     )  # type: ignore
+
+    #     # extract the output variables from the response
+    #     generated_search_queries = response.search_queries
+    #     competitive_analysis = response.competitive_analysis
+
+    #     # loop through the web search results and extract the data in our format
+    #     for result in response.web_search_results:
+    #         # create a dictionary for each result
+    #         competitor_info = {
+    #             "rank": result.rank,
+    #             "url": result.url,
+    #             "title": result.title,
+    #             "published_date": result.published_date,
+    #             "highlights": result.highlights,
+    #         }
+    #         # append the dictionary to the list
+    #         competitor_information.append(competitor_info)
+
+    # except Exception as e:
+    #     print(f"Error occurred in competitor analysis node: {e}")
+
+    # # update the state
+    # return {
+    #     "competitor_information": competitor_information,
+    #     "generated_search_queries": generated_search_queries,
+    #     "competitive_analysis": competitive_analysis,
+    # }
+    return {
+        "competitor_information": temp_data.competitor_information,
+        "generated_search_queries": temp_data.ca_generated_search_queries,
+        "competitive_analysis": temp_data.competitive_analysis,
+    }
+
+
+async def google_keyword_planner1(state: KeywordState):
     """
-    Use Google Keyword Planner (GKP) to retrieve keyword data based on the
-    generated search queries.
-
-    Steps:
-        1. Call the GKP API on seed keywords and retrieve keyword data with metrics.
-        2. Conducts two GKP API calls with same seed keywords but different seed url:
-              - use default seed url
-              - use competitor url
-
-    Note: Make parallel calls to GKP API for lower latency as each call takes 3-8 seconds.
+    Use Google Keyword Planner API to get keyword data for our article. We make 2 parallel calls, this node and google_keyword_planner2 node run in one super step in langgraph.
+    We will use state["retrieved_entities"] as seed keywords for both calls but this node uses first url in the competitor_information list and the other node uses the second url in the list.
 
     Updates:
-        - state.keyword_planner_data: List of keyword data retrieved from GKP.
+        - state.planner_list1: List of keyword data from the first GKP call
     """
-    # await asyncio.sleep(2.0)
-    pass
+    # # Get the seed keywords from the state
+    # seed_keywords: list[str] = state.get("retrieved_entities", [])
+
+    # # Get the competitor information list from the state
+    # competitor_information: list[dict[str, str | int]] = state.get(
+    #     "competitor_information", []
+    # )
+
+    # # Get the first URL from the competitor information (assumes at least one entry exists)
+    # top_url: str = competitor_information[0]["url"]  # type: ignore
+
+    # # Fetch keyword planner data using the helper function
+    # planner_list1: list[dict[str, str | int]] = await fetch_gkp_keywords(
+    #     seed_keywords=seed_keywords, url=top_url
+    # )
+
+    # # Update the state with the results
+    # return {"planner_list1": planner_list1}
+    return {"planner_list1": temp_data.planner_list1}
+
+
+async def google_keyword_planner2(state: KeywordState):
+    """
+    Use Google Keyword Planner API to get keyword data for our article. We make 2 parallel calls, this node and google_keyword_planner1 node run in one super step in langgraph.
+    We will use state["retrieved_entities"] as seed keywords for both calls but this node uses second url in the competitor_information list and the other node uses the first url in the list.
+
+    Updates:
+        - state.planner_list2: List of keyword data from the second GKP call
+    """
+    # # Get the seed keywords from the state
+    # seed_keywords: list[str] = state.get("retrieved_entities", [])
+
+    # # Get the competitor information list from the state
+    # competitor_information: list[dict[str, str | int]] = state.get(
+    #     "competitor_information", []
+    # )
+
+    # # We need to find the URL for the competitor with rank=2.
+    # # We cannot simply take the second object in the list because sometimes there are multiple objects with rank=1 (LLM might have misbehaved).
+    # # Therefore, we loop through the array and select the first object where rank==2. This should be quick though it won't really have O(n) complexity.
+    # second_url: str = ""
+    # for competitor in competitor_information:
+    #     rank = competitor.get("rank", None)
+    #     # ensure rank is not None and equal 2
+    #     if isinstance(rank, int) and rank == 2:
+    #         second_url: str = competitor["url"]  # type: ignore
+    #         break
+
+    # # Fetch keyword planner data using the helper function
+    # planner_list2: list[dict[str, str | int]] = await fetch_gkp_keywords(
+    #     seed_keywords=seed_keywords, url=second_url
+    # )
+
+    # # Update the state with the results
+    # return {"planner_list2": planner_list2}
+    return {"planner_list2": temp_data.planner_list2}
+
+
+async def keyword_data_synthesizer(state: KeywordState):
+    """
+    Merges, Deduplicates and Sorts the keyword planner data from both GKP calls and combines them into a single list.
+    \nMerge and Deduplication happens in O(n+m) using hash set where n and m are the lengths of the two lists.
+    \nSorting happens in O(nlogn) using Timsort (Python's built-in sort algorithm) where n is the length of the combined list.
+    \nThis is a single step in the langgraph and runs after both GKP calls are completed.
+
+    Updates:
+        - state.keyword_planner_data: Combined and sorted list of keyword data from both GKP calls.
+    """
+    # # Retrieve the two lists of keyword data from the state, defaulting to empty lists if not present (though it should be present)
+    # planner_list1: list[dict[str, int | str | dict[str, int]]] = state.get(
+    #     "planner_list1", []
+    # )
+    # planner_list2: list[dict[str, int | str | dict[str, int]]] = state.get(
+    #     "planner_list2", []
+    # )
+
+    # # Initialize a set to track unique keyword texts for deduplication
+    # seen_keywords: set[str] = set()
+
+    # # Initialize a list to store the combined and deduplicated keywords
+    # combined_keywords: list[dict[str, int | str | dict[str, int]]] = []
+
+    # # Merge and deduplicate both lists in a single pass
+    # for keyword_list in (planner_list1, planner_list2):
+    #     # iterate through the objects in each list
+    #     for keyword_data in keyword_list:
+    #         keyword_text: str = str(keyword_data.get("text", ""))
+
+    #         # Only add the keyword if it has not been seen before and is not empty
+    #         if keyword_text and keyword_text not in seen_keywords:
+    #             seen_keywords.add(keyword_text)
+    #             combined_keywords.append(keyword_data)
+
+    # # Sort the combined list by 'average_monthly_searches' in descending order
+    # try:
+    #     # the key will be an int but type checker isn't identifying that GKP parser will always only add int to this field so we use type: ignore
+    #     combined_keywords.sort(
+    #         key=lambda x: int(x.get("average_monthly_searches", 0)),  # type: ignore
+    #         reverse=True,
+    #     )
+    # except Exception as sort_error:
+    #     # Handle any sorting errors gracefully and print a meaningful message
+    #     print(f"Error sorting combined keyword data: {sort_error}")
+
+    # # Return the updated state with the combined keyword planner data
+    # return {"keyword_planner_data": combined_keywords}
+    return {"keyword_planner_data": temp_data.keyword_planner_data}
 
 
 async def masterlist_and_primary_keyword_generator(state: KeywordState):
@@ -316,7 +502,6 @@ async def masterlist_and_primary_keyword_generator(state: KeywordState):
         - state.primary_keywords: List of primary keywords with reasoning.
         - state.secondary_keywords: List of secondary keywords with reasoning.
     """
-    # await asyncio.sleep(2.0)
     pass
 
 
@@ -334,15 +519,13 @@ async def suggestions_generator(state: KeywordState):
         - state.suggested_article_headlines: List of suggested article headlines.
         - state.final_answer: Final answer paragraph.
     """
-    # await asyncio.sleep(2.0)
     pass
+
 
 # utility function to help update web search. since we needed it twice i made it a function
 
-def update_web_search_results(
-    messages: list,
-    search_queries: list[str],
-    web_search_results_accumulated: str
+async def update_web_search_results(
+    messages: list, search_queries: list[str], web_search_results_accumulated: str
 ) -> str:
     """
     Update the accumulated web search results with the content from the last two ToolMessages and the corresponding search queries.
@@ -368,7 +551,7 @@ def update_web_search_results(
     # Loop through the last two messages and extract their content
     for index in range(start_index, len(messages)):
         message = messages[index]
-        # Ensure the message has a 'content' attribute so that we know its output from a ToolMessage
+        # Ensure the message has a 'content' attribute so that we know its an output from a ToolMessage
         if hasattr(message, "content"):
             if index == start_index:
                 first_tool_response = message.content
@@ -394,3 +577,31 @@ def update_web_search_results(
         )
 
     return web_search_results
+
+
+async def fetch_gkp_keywords(
+    seed_keywords: list[str], url: str
+) -> list[dict[str, str | int]]:
+    """
+    Fetch keyword data from Google Keyword Planner API for given seed keywords and a competitor URL.
+
+    This helper function is used by both google_keyword_planner1 and google_keyword_planner2 nodes to avoid code duplication.
+    It performs an asynchronous API call to the Google Keyword Planner and returns the resulting keyword data.
+
+    Args:
+        seed_keywords (list[str]): List of seed keywords to use for the API call.
+        url (str): The competitor URL to use for the API call.
+
+    Returns:
+        list[dict[str, str | int]]: List of keyword data dictionaries returned by the API.
+    """
+    planner_list: list[dict[str, str | int]] = []
+    try:
+        # Await the async API call to ensure non-blocking execution in LangGraph's async loop
+        response: list[dict[str, str | int]] = await gkp.generate_keywords(
+            keywords=seed_keywords, url=url
+        )
+        planner_list = response
+    except Exception as e:
+        print(f"Error occurred in fetch_gkp_keywords: {e}")
+    return planner_list
