@@ -7,7 +7,7 @@ from typing import Any
 from src.agents.keywords_agent.state import KeywordState
 from langchain_core.messages import HumanMessage
 
-# Entity Extractor related imports
+from src.tools.google_keywords_api import GoogleKeywordsAPI
 from src.utils.models_initializer import (
     initialize_model_with_fallbacks,
     get_gemini_model,
@@ -91,6 +91,11 @@ COMPETITOR_ANALYSIS_MODEL_WITH_FALLBACK_AND_STRUCTURED = (
         structured_output_schema=CompetitorAnalysisOutputModel,
     )
 )
+
+##############
+# # Initialize Google Keyword Planner API client
+##############
+gkp = GoogleKeywordsAPI()
 
 
 async def entity_extractor(state: KeywordState):
@@ -342,24 +347,108 @@ async def competitor_analysis(state: KeywordState):
         "competitive_analysis": competitive_analysis,
     }
 
-
-async def google_keyword_planner(state: KeywordState):
+async def google_keyword_planner1(state: KeywordState):
     """
-    Use Google Keyword Planner (GKP) to retrieve keyword data based on the
-    generated search queries.
+    Use Google Keyword Planner API to get keyword data for our article. We make 2 parallel calls, this node and google_keyword_planner2 node run in one super step in langgraph.
+    We will use state["retrieved_entities"] as seed keywords for both calls but this node uses first url in the competitor_information list and the other node uses the second url in the list.
+    
+    Updates:
+        - state.planner_list1: List of keyword data from the first GKP call
+    """
+    # Get the seed keywords from the state
+    seed_keywords: list[str] = state.get("retrieved_entities", [])
+    
+    # Get the competitor information list from the state
+    competitor_information: list[dict[str, str | int]] = state.get("competitor_information", [])
+    
+    # Get the first URL from the competitor information (assumes at least one entry exists)
+    top_url: str = competitor_information[0]["url"]  # type: ignore
 
-    Steps:
-        1. Call the GKP API on seed keywords and retrieve keyword data with metrics.
-        2. Conducts two GKP API calls with same seed keywords but different seed url:
-              - use default seed url
-              - use competitor url
+    # Fetch keyword planner data using the helper function
+    planner_list1: list[dict[str, str | int]] = await fetch_gkp_keywords(seed_keywords=seed_keywords, url=top_url)
 
-    Note: Make parallel calls to GKP API for lower latency as each call takes 3-8 seconds.
+    # Update the state with the results
+    return {
+        "planner_list1": planner_list1
+    }
+
+async def google_keyword_planner2(state: KeywordState):
+    """
+    Use Google Keyword Planner API to get keyword data for our article. We make 2 parallel calls, this node and google_keyword_planner1 node run in one super step in langgraph.
+    We will use state["retrieved_entities"] as seed keywords for both calls but this node uses second url in the competitor_information list and the other node uses the first url in the list.
 
     Updates:
-        - state.keyword_planner_data: List of keyword data retrieved from GKP.
+        - state.planner_list2: List of keyword data from the second GKP call
     """
-    pass
+    # Get the seed keywords from the state
+    seed_keywords: list[str] = state.get("retrieved_entities", [])
+    
+    # Get the competitor information list from the state
+    competitor_information: list[dict[str, str | int]] = state.get("competitor_information", [])
+
+    # We need to find the URL for the competitor with rank=2.
+    # We cannot simply take the second object in the list because sometimes there are multiple objects with rank=1 (LLM might have misbehaved).
+    # Therefore, we loop through the array and select the first object where rank==2. This should be quick though it won't really have O(n) complexity.
+    second_url: str = ""
+    for competitor in competitor_information:
+        rank = competitor.get("rank", None)
+        # ensure rank is not None and equal 2
+        if isinstance(rank, int) and rank == 2:
+            second_url: str = competitor["url"]  # type: ignore
+            break
+
+    # Fetch keyword planner data using the helper function
+    planner_list2: list[dict[str, str | int]] = await fetch_gkp_keywords(seed_keywords=seed_keywords, url=second_url)
+
+    # Update the state with the results
+    return {
+        "planner_list2": planner_list2
+    }
+
+async def keyword_data_synthesizer(state: KeywordState):
+    """
+    Merges, Deduplicates and Sorts the keyword planner data from both GKP calls and combines them into a single list. 
+    \nMerge and Deduplication happens in O(n+m) using hash set where n and m are the lengths of the two lists.
+    \nSorting happens in O(nlogn) using Timsort (Python's built-in sort algorithm) where n is the length of the combined list.
+    \nThis is a single step in the langgraph and runs after both GKP calls are completed.
+
+    Updates:
+        - state.keyword_planner_data: Combined and sorted list of keyword data from both GKP calls.
+    """
+    # Retrieve the two lists of keyword data from the state, defaulting to empty lists if not present (though it should be present)
+    planner_list1: list[dict[str, int | str | dict[str, int]]] = state.get("planner_list1", [])
+    planner_list2: list[dict[str, int | str | dict[str, int]]] = state.get("planner_list2", [])
+
+    # Initialize a set to track unique keyword texts for deduplication
+    seen_keywords: set[str] = set()
+    
+    # Initialize a list to store the combined and deduplicated keywords
+    combined_keywords: list[dict[str, int | str | dict[str, int]]] = []
+
+    # Merge and deduplicate both lists in a single pass
+    for keyword_list in (planner_list1, planner_list2):
+        # iterate through the objects in each list
+        for keyword_data in keyword_list:
+            keyword_text: str = str(keyword_data.get("text", ""))
+            
+            # Only add the keyword if it has not been seen before and is not empty
+            if keyword_text and keyword_text not in seen_keywords:
+                seen_keywords.add(keyword_text)
+                combined_keywords.append(keyword_data)
+
+    # Sort the combined list by 'average_monthly_searches' in descending order
+    try:
+        # the key will be an int but type checker isn't identifying that GKP parser will always only add int to this field so we use type: ignore
+        combined_keywords.sort(
+            key=lambda x: int(x.get("average_monthly_searches", 0)), # type: ignore
+            reverse=True
+        )
+    except Exception as sort_error:
+        # Handle any sorting errors gracefully and print a meaningful message
+        print(f"Error sorting combined keyword data: {sort_error}")
+
+    # Return the updated state with the combined keyword planner data
+    return {"keyword_planner_data": combined_keywords}
 
 
 async def masterlist_and_primary_keyword_generator(state: KeywordState):
@@ -408,7 +497,7 @@ async def suggestions_generator(state: KeywordState):
 # utility function to help update web search. since we needed it twice i made it a function
 
 
-def update_web_search_results(
+async def update_web_search_results(
     messages: list, search_queries: list[str], web_search_results_accumulated: str
 ) -> str:
     """
@@ -461,3 +550,26 @@ def update_web_search_results(
         )
 
     return web_search_results
+
+async def fetch_gkp_keywords(seed_keywords: list[str], url: str) -> list[dict[str, str | int]]:
+    """
+    Fetch keyword data from Google Keyword Planner API for given seed keywords and a competitor URL.
+
+    This helper function is used by both google_keyword_planner1 and google_keyword_planner2 nodes to avoid code duplication.
+    It performs an asynchronous API call to the Google Keyword Planner and returns the resulting keyword data.
+
+    Args:
+        seed_keywords (list[str]): List of seed keywords to use for the API call.
+        url (str): The competitor URL to use for the API call.
+
+    Returns:
+        list[dict[str, str | int]]: List of keyword data dictionaries returned by the API.
+    """
+    planner_list: list[dict[str, str | int]] = []
+    try:
+        # Await the async API call to ensure non-blocking execution in LangGraph's async loop
+        response: list[dict[str, str | int]] = await gkp.generate_keywords(keywords=seed_keywords, url=url)
+        planner_list = response
+    except Exception as e:
+        print(f"Error occurred in fetch_gkp_keywords: {e}")
+    return planner_list
