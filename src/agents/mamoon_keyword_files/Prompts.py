@@ -9,7 +9,6 @@ While generating the keywords, please consider the following:
 2. Make sure you look at the metrics of each keyword.
 3. Make sure you also consider the relevance of each keyword to the content of the article, and in context of competitive analysis.
 4. Pick up to 20 keywords for the masterlist based on the above two points.
-5. Make sure there are no duplicates in the masterlist.
 6. The keywords in the masterlist should be sorted in descending order based on their monthly_search_volumes.
 
 Generate a masterlist of keywords and output them in the structured format:
@@ -36,8 +35,8 @@ Please consider the following for choosing secondary keywords:
 Generate a list of secondary keywords and reasoning output them in the structured format:
 ["secondary_keyword1":"reasoning", "secondary_keyword2":"reasoning", "secondary_keyword3":"reasoning", ...]
 
-Here is the article:
-{user_article}
+Here is the article: 
+{user_article} 
 Here are the entities:
 {entities}
 Here is the google planner data:

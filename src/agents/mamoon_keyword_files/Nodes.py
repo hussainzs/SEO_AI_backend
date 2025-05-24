@@ -80,7 +80,9 @@ async def masterlist_and_primary_keyword_generator(state: KeywordState):
         - state.secondary_keywords: List of secondary keywords with reasoning.
     """
     # Get the GKP data, entities, and user input from state
-    gkp_data: list[dict[str, Any]] = state["keyword_planner_data"]
+    import json
+
+    gkp_data: str = json.dumps(state["keyword_planner_data"])
     entities: list[str] = state["retrieved_entities"]
     user_article: str = state["user_input"]
     competitive_analysis: str = state["competitive_analysis"]

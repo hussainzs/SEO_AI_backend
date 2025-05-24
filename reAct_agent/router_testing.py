@@ -1,6 +1,4 @@
 
-
-
 """
 We will create an routing agent that is capable of answering queries related to the on-going world events, Travel information, Travel restrictions and
 get streaming output which will be sent to FASTAPI.
