@@ -8,13 +8,24 @@ from src.agents.keywords_agent.state import KeywordState
 from langchain_core.messages import HumanMessage
 
 # Entity Extractor related imports
-from src.utils.models_initializer import initialize_model_with_fallbacks, get_gemini_model, get_groq_model
+from src.utils.models_initializer import (
+    initialize_model_with_fallbacks, 
+    get_gemini_model, 
+    get_groq_model,
+    get_mistral_model,
+    get_openai_model
+)
 from src.agents.keywords_agent.prompts import (
     ENTITY_EXTRACTOR_PROMPT,
     QUERY_GENERATOR_PROMPT,
     ROUTE_QUERY_OR_ANALYSIS_PROMPT,
+    COMPETITOR_ANALYSIS_AND_STRUCTURED_OUTPUT_PROMPT
 )
-from src.agents.keywords_agent.schemas import Entities, RouteToQueryOrAnalysis
+from src.agents.keywords_agent.schemas import (
+    Entities, 
+    RouteToQueryOrAnalysis,
+    CompetitorAnalysisOutputModel
+)
 from src.tools.web_search_tool import WebSearch, dummy_web_search_tool
 
 
@@ -24,10 +35,10 @@ from src.tools.web_search_tool import WebSearch, dummy_web_search_tool
 ENTITIES_MODEL_WITH_FALLBACK_AND_STRUCTURED = initialize_model_with_fallbacks(
     primary_model_fn=get_gemini_model,
     primary_model_kwargs={"model_name": 2, "temperature": 0.5},
-    fallback_model_fns=[get_groq_model, get_gemini_model],
+    fallback_model_fns=[get_mistral_model, get_openai_model],
     fallback_model_kwargs_list=[
         {"model_name": 1, "temperature": 0.5},
-        {"model_name": 3, "temperature": 0.2}
+        {"model_name": 1, "temperature": 0.5}
     ],
     structured_output_schema=Entities,
 )
@@ -35,47 +46,48 @@ ENTITIES_MODEL_WITH_FALLBACK_AND_STRUCTURED = initialize_model_with_fallbacks(
 #################
 # Query Generator Model
 #################
-# QUERY_GENERATOR_MODEL_WITH_FALLBACK_AND_TOOLS = initialize_model_with_fallbacks(
-#     primary_model_fn=get_gemini_model,
-#     primary_model_kwargs={"model_name": 1, "temperature": 0.7},
-#     fallback_model_fns=[get_groq_model, get_gemini_model],
-#     fallback_model_kwargs_list=[
-#         {"model_name": 2, "temperature": 0.7},
-#         {"model_name": 2, "temperature": 0.7}
-#     ],
-#     bind_tools=True,
-#     # tools=[WebSearch()],
-#     tools=[dummy_web_search_tool],
-#     # tool_choice="web_search_tool",
-#     tool_choice="dummy_web_search_tool", # testing
-# )
 QUERY_GENERATOR_MODEL_WITH_FALLBACK_AND_TOOLS = initialize_model_with_fallbacks(
-    primary_model_fn=get_groq_model,
+    primary_model_fn=get_mistral_model,
     primary_model_kwargs={"model_name": 1, "temperature": 0.7},
-    fallback_model_fns=[get_groq_model, get_gemini_model],
+    fallback_model_fns=[get_openai_model, get_openai_model],
     fallback_model_kwargs_list=[
-        {"model_name": 3, "temperature": 0.7},
-        {"model_name": 1, "temperature": 0.7}
+        {"model_name": 1, "temperature": 0.7},
+        {"model_name": 2, "temperature": 0.7}
     ],
     bind_tools=True,
     # tools=[WebSearch()],
-    tools=[dummy_web_search_tool],
+    tools=[dummy_web_search_tool], # testing
     # tool_choice="web_search_tool",
     tool_choice="dummy_web_search_tool", # testing
 )
+
 
 ##############
 # Router Model
 ##############
 ROUTER_MODEL_WITH_FALLBACK_AND_STRUCTURED = initialize_model_with_fallbacks(
-    primary_model_fn=get_gemini_model,
-    primary_model_kwargs={"model_name": 2, "temperature": 0.2},
-    fallback_model_fns=[get_groq_model, get_gemini_model],
+    primary_model_fn=get_mistral_model,
+    primary_model_kwargs={"model_name": 1, "temperature": 0.1},
+    fallback_model_fns=[get_openai_model, get_groq_model],
     fallback_model_kwargs_list=[
-        {"model_name": 1, "temperature": 0.2},
-        {"model_name": 3, "temperature": 0.2}
+        {"model_name": 1, "temperature": 0.1},
+        {"model_name": 3, "temperature": 0.1}
     ],
     structured_output_schema=RouteToQueryOrAnalysis
+)
+
+# #################
+# # Competitor Analysis Model
+# #################
+COMPETITOR_ANALYSIS_MODEL_WITH_FALLBACK_AND_STRUCTURED = initialize_model_with_fallbacks(
+    primary_model_fn=get_openai_model,
+    primary_model_kwargs={"model_name": 2, "temperature": 0.3},
+    fallback_model_fns=[get_mistral_model, get_openai_model],
+    fallback_model_kwargs_list=[
+        {"model_name": 1, "temperature": 0.3},
+        {"model_name": 1, "temperature": 0.3}
+    ],
+    structured_output_schema=CompetitorAnalysisOutputModel,
 )
 
 async def entity_extractor(state: KeywordState):
@@ -221,7 +233,7 @@ async def router_and_state_updater(state: KeywordState):
         print("\n\nTool call count is 2. Routing to competitor_analysis node.\n\n")
         return {"route_to": "competitor_analysis", "web_search_results_accumulated": web_search_results}
     else:              
-        # Get the tool response from last two ToolMessages
+        # Get the tool response from last two ToolMessages. But if only 1 tool call was made then we will only have 1 ToolMessage.
         messages: list = state["messages"]
         
         # update the web search results with the content from the last two ToolMessages and the corresponding search queries
@@ -255,14 +267,63 @@ async def router_and_state_updater(state: KeywordState):
     
 async def competitor_analysis(state: KeywordState):
     """
-    This node gets the user_input, retrieved_entities and web_search_results from the state and conducts competitor analysis.
+    This node gets the user_input, retrieved_entities and web_search_results_accumulated from the state and conducts competitor analysis.
     
     Updates:
         - state.competitor_information: List of competitor data from top 5 search results (it may have upto 20 results). 
         - state.generated_search_queries: List of generated search queries (it may have upto 4 search queries so it must choose the top 2).
         - state.competitive_analysis: Competitive analysis generated by our agent after comparing our article with competitor content.  
     """
-    pass
+    # first get the input variables from the state
+    user_input: str = state.get("user_input", "")
+    retrieved_entities: list[str] = state.get("retrieved_entities", [])
+    web_search_results: str = state.get("web_search_results_accumulated", "")
+    
+    # prepare the prompt for the competitor analysis model
+    prompt = COMPETITOR_ANALYSIS_AND_STRUCTURED_OUTPUT_PROMPT.format(
+        user_article=user_input,
+        entities=retrieved_entities,
+        web_search_results=web_search_results,
+    )
+    
+    # initialize the output variables
+    generated_search_queries: list[str] = []
+    competitor_information: list[dict[str, str | int]] = []
+    competitive_analysis: str = ""
+    
+    # now invoke the model
+    try:
+        # response should of type CompetitorAnalysisOutputModel
+        response: CompetitorAnalysisOutputModel = await COMPETITOR_ANALYSIS_MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(
+            [HumanMessage(content=prompt)]
+        ) # type: ignore
+
+        # extract the output variables from the response
+        generated_search_queries = response.search_queries
+        competitive_analysis = response.competitive_analysis
+        
+        # loop through the web search results and extract the data in our format
+        for result in response.web_search_results:
+            # create a dictionary for each result
+            competitor_info = {
+                "rank": result.rank,
+                "url": result.url,
+                "title": result.title,
+                "published_date": result.published_date,
+                "highlights": result.highlights,
+            }
+            # append the dictionary to the list
+            competitor_information.append(competitor_info)
+        
+    except Exception as e:
+        print(f"Error occurred in competitor analysis node: {e}")
+        
+    # update the state
+    return {
+        "competitor_information": competitor_information,
+        "generated_search_queries": generated_search_queries,
+        "competitive_analysis": competitive_analysis
+    }
 
 async def google_keyword_planner(state: KeywordState):
     """
@@ -356,7 +417,7 @@ def update_web_search_results(
     # Loop through the last two messages and extract their content
     for index in range(start_index, len(messages)):
         message = messages[index]
-        # Ensure the message has a 'content' attribute so that we know its output from a ToolMessage
+        # Ensure the message has a 'content' attribute so that we know its an output from a ToolMessage
         if hasattr(message, "content"):
             if index == start_index:
                 first_tool_response = message.content
