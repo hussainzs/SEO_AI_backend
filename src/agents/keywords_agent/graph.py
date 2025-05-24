@@ -11,7 +11,9 @@ from src.agents.keywords_agent.nodes import (
     entity_extractor,
     query_generator,
     competitor_analysis,
-    google_keyword_planner,
+    google_keyword_planner1,
+    google_keyword_planner2,
+    keyword_data_synthesizer,
     masterlist_and_primary_keyword_generator,
     suggestions_generator,
     router_and_state_updater,
@@ -27,6 +29,7 @@ opik_project_name: str | None = get_key(settings.OPIK_PROJECT_NAME)
 
 # LangSmith observability (langChain automatically detects the environment variables)
 import dotenv
+
 dotenv.load_dotenv()
 
 # initialize graph
@@ -34,7 +37,7 @@ graph_builder = StateGraph(state_schema=KeywordState)
 
 # initialize tools
 # tool_list = [WebSearch()]
-tool_list = [dummy_web_search_tool] #testing
+tool_list = [dummy_web_search_tool]  # testing
 
 # Add Nodes
 graph_builder.add_node(node="entity_extractor", action=entity_extractor)
@@ -42,7 +45,9 @@ graph_builder.add_node(node="query_generator", action=query_generator)
 graph_builder.add_node(node="competitor_analysis", action=competitor_analysis)
 graph_builder.add_node(node="tools", action=ToolNode(tools=tool_list))
 graph_builder.add_node(node="router_and_state_updater", action=router_and_state_updater)
-graph_builder.add_node(node="google_keyword_planner", action=google_keyword_planner)
+graph_builder.add_node(node="google_keyword_planner1", action=google_keyword_planner1)
+graph_builder.add_node(node="google_keyword_planner2", action=google_keyword_planner2)
+graph_builder.add_node(node="keyword_data_synthesizer", action=keyword_data_synthesizer)
 graph_builder.add_node(
     node="masterlist_and_primary_keyword_generator",
     action=masterlist_and_primary_keyword_generator,
@@ -75,12 +80,27 @@ graph_builder.add_conditional_edges(
         "competitor_analysis": "competitor_analysis",
     },
 )
+# add parallel edges from competitor_analysis to google_keyword_planner1 and google_keyword_planner2
 graph_builder.add_edge(
     start_key="competitor_analysis",
-    end_key="google_keyword_planner",
+    end_key="google_keyword_planner1",
 )
 graph_builder.add_edge(
-    start_key="google_keyword_planner",
+    start_key="competitor_analysis",
+    end_key="google_keyword_planner2",
+)
+# add edges from google_keyword_planner1 and google_keyword_planner2 to keyword_data_synthesizer
+graph_builder.add_edge(
+    start_key="google_keyword_planner1",
+    end_key="keyword_data_synthesizer",
+)
+graph_builder.add_edge(
+    start_key="google_keyword_planner2",
+    end_key="keyword_data_synthesizer",
+)
+# now synthesizer will route to masterlist_and_primary_keyword_generator
+graph_builder.add_edge(
+    start_key="keyword_data_synthesizer",
     end_key="masterlist_and_primary_keyword_generator",
 )
 graph_builder.add_edge(

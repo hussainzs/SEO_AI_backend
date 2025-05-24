@@ -161,7 +161,7 @@ async def query_generator(state: KeywordState):
     """
     # check this to ensure AI made a tool call and followed instructions. this way we can add 1 to tool_call_count
     tool_call_was_made: bool = False
-    
+
     # initialize search queries so we can append results to it
     search_queries = []
 
@@ -208,7 +208,7 @@ async def query_generator(state: KeywordState):
     else:
         # if AI didn't make a tool call then we will not increment the tool_call_count but still initialize to 0.
         # this is the misbehaved state thus router_and_state_updater will route back to this node. Sometimes simple retries work.
-        # NOTE: This can cause infinite loop if AI keeps misbehaving (unlikely but these LLMs are unpredictable). 
+        # NOTE: This can cause infinite loop if AI keeps misbehaving (unlikely but these LLMs are unpredictable).
         # TODO: add a max retry count to prevent infinite loop.
         return {
             "messages": [ai_message],
@@ -347,30 +347,34 @@ async def competitor_analysis(state: KeywordState):
         "competitive_analysis": competitive_analysis,
     }
 
+
 async def google_keyword_planner1(state: KeywordState):
     """
     Use Google Keyword Planner API to get keyword data for our article. We make 2 parallel calls, this node and google_keyword_planner2 node run in one super step in langgraph.
     We will use state["retrieved_entities"] as seed keywords for both calls but this node uses first url in the competitor_information list and the other node uses the second url in the list.
-    
+
     Updates:
         - state.planner_list1: List of keyword data from the first GKP call
     """
     # Get the seed keywords from the state
     seed_keywords: list[str] = state.get("retrieved_entities", [])
-    
+
     # Get the competitor information list from the state
-    competitor_information: list[dict[str, str | int]] = state.get("competitor_information", [])
-    
+    competitor_information: list[dict[str, str | int]] = state.get(
+        "competitor_information", []
+    )
+
     # Get the first URL from the competitor information (assumes at least one entry exists)
     top_url: str = competitor_information[0]["url"]  # type: ignore
 
     # Fetch keyword planner data using the helper function
-    planner_list1: list[dict[str, str | int]] = await fetch_gkp_keywords(seed_keywords=seed_keywords, url=top_url)
+    planner_list1: list[dict[str, str | int]] = await fetch_gkp_keywords(
+        seed_keywords=seed_keywords, url=top_url
+    )
 
     # Update the state with the results
-    return {
-        "planner_list1": planner_list1
-    }
+    return {"planner_list1": planner_list1}
+
 
 async def google_keyword_planner2(state: KeywordState):
     """
@@ -382,9 +386,11 @@ async def google_keyword_planner2(state: KeywordState):
     """
     # Get the seed keywords from the state
     seed_keywords: list[str] = state.get("retrieved_entities", [])
-    
+
     # Get the competitor information list from the state
-    competitor_information: list[dict[str, str | int]] = state.get("competitor_information", [])
+    competitor_information: list[dict[str, str | int]] = state.get(
+        "competitor_information", []
+    )
 
     # We need to find the URL for the competitor with rank=2.
     # We cannot simply take the second object in the list because sometimes there are multiple objects with rank=1 (LLM might have misbehaved).
@@ -398,16 +404,17 @@ async def google_keyword_planner2(state: KeywordState):
             break
 
     # Fetch keyword planner data using the helper function
-    planner_list2: list[dict[str, str | int]] = await fetch_gkp_keywords(seed_keywords=seed_keywords, url=second_url)
+    planner_list2: list[dict[str, str | int]] = await fetch_gkp_keywords(
+        seed_keywords=seed_keywords, url=second_url
+    )
 
     # Update the state with the results
-    return {
-        "planner_list2": planner_list2
-    }
+    return {"planner_list2": planner_list2}
+
 
 async def keyword_data_synthesizer(state: KeywordState):
     """
-    Merges, Deduplicates and Sorts the keyword planner data from both GKP calls and combines them into a single list. 
+    Merges, Deduplicates and Sorts the keyword planner data from both GKP calls and combines them into a single list.
     \nMerge and Deduplication happens in O(n+m) using hash set where n and m are the lengths of the two lists.
     \nSorting happens in O(nlogn) using Timsort (Python's built-in sort algorithm) where n is the length of the combined list.
     \nThis is a single step in the langgraph and runs after both GKP calls are completed.
@@ -416,12 +423,16 @@ async def keyword_data_synthesizer(state: KeywordState):
         - state.keyword_planner_data: Combined and sorted list of keyword data from both GKP calls.
     """
     # Retrieve the two lists of keyword data from the state, defaulting to empty lists if not present (though it should be present)
-    planner_list1: list[dict[str, int | str | dict[str, int]]] = state.get("planner_list1", [])
-    planner_list2: list[dict[str, int | str | dict[str, int]]] = state.get("planner_list2", [])
+    planner_list1: list[dict[str, int | str | dict[str, int]]] = state.get(
+        "planner_list1", []
+    )
+    planner_list2: list[dict[str, int | str | dict[str, int]]] = state.get(
+        "planner_list2", []
+    )
 
     # Initialize a set to track unique keyword texts for deduplication
     seen_keywords: set[str] = set()
-    
+
     # Initialize a list to store the combined and deduplicated keywords
     combined_keywords: list[dict[str, int | str | dict[str, int]]] = []
 
@@ -430,7 +441,7 @@ async def keyword_data_synthesizer(state: KeywordState):
         # iterate through the objects in each list
         for keyword_data in keyword_list:
             keyword_text: str = str(keyword_data.get("text", ""))
-            
+
             # Only add the keyword if it has not been seen before and is not empty
             if keyword_text and keyword_text not in seen_keywords:
                 seen_keywords.add(keyword_text)
@@ -440,8 +451,8 @@ async def keyword_data_synthesizer(state: KeywordState):
     try:
         # the key will be an int but type checker isn't identifying that GKP parser will always only add int to this field so we use type: ignore
         combined_keywords.sort(
-            key=lambda x: int(x.get("average_monthly_searches", 0)), # type: ignore
-            reverse=True
+            key=lambda x: int(x.get("average_monthly_searches", 0)),  # type: ignore
+            reverse=True,
         )
     except Exception as sort_error:
         # Handle any sorting errors gracefully and print a meaningful message
@@ -495,7 +506,6 @@ async def suggestions_generator(state: KeywordState):
 
 
 # utility function to help update web search. since we needed it twice i made it a function
-
 
 async def update_web_search_results(
     messages: list, search_queries: list[str], web_search_results_accumulated: str
@@ -551,7 +561,10 @@ async def update_web_search_results(
 
     return web_search_results
 
-async def fetch_gkp_keywords(seed_keywords: list[str], url: str) -> list[dict[str, str | int]]:
+
+async def fetch_gkp_keywords(
+    seed_keywords: list[str], url: str
+) -> list[dict[str, str | int]]:
     """
     Fetch keyword data from Google Keyword Planner API for given seed keywords and a competitor URL.
 
@@ -568,7 +581,9 @@ async def fetch_gkp_keywords(seed_keywords: list[str], url: str) -> list[dict[st
     planner_list: list[dict[str, str | int]] = []
     try:
         # Await the async API call to ensure non-blocking execution in LangGraph's async loop
-        response: list[dict[str, str | int]] = await gkp.generate_keywords(keywords=seed_keywords, url=url)
+        response: list[dict[str, str | int]] = await gkp.generate_keywords(
+            keywords=seed_keywords, url=url
+        )
         planner_list = response
     except Exception as e:
         print(f"Error occurred in fetch_gkp_keywords: {e}")
