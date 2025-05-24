@@ -111,7 +111,7 @@ def get_mistral_model(model_num: int = 1, temperature: float = 0.5) -> ChatMistr
 
 # Gemini LLM
 def get_gemini_model(
-    model_name: int = 1, temperature: float = 0.5
+    model_num: int = 1, temperature: float = 0.5
 ) -> ChatGoogleGenerativeAI:
     """
     Initialize the Gemini LLM with the specified model name.
@@ -151,7 +151,7 @@ def get_gemini_model(
 
     # Initialize the Gemini LLM with the specified model name
     gemini_llm = ChatGoogleGenerativeAI(
-        model=model_mapping.get(model_name, "gemini-2.0-flash"),
+        model=model_mapping.get(model_num, "gemini-2.0-flash"),
         temperature=temperature,
         google_api_key=gemini_api_key,
         max_retries=2,
@@ -161,7 +161,7 @@ def get_gemini_model(
 
 
 # Groq LLM
-def get_groq_model(model_name: int = 1, temperature: float = 0.2) -> ChatGroq:
+def get_groq_model(model_num: int = 1, temperature: float = 0.2) -> ChatGroq:
     """
     Initialize the Groq LLM with the specified model name.
     Available model names (numbers mapping to models):
@@ -201,7 +201,7 @@ def get_groq_model(model_name: int = 1, temperature: float = 0.2) -> ChatGroq:
 
     # Initialize the Groq LLM with the specified model name
     groq_llm = ChatGroq(
-        model=model_mapping.get(model_name, "llama3-70b-8192"),
+        model=model_mapping.get(model_num, "llama3-70b-8192"),
         temperature=temperature,
         api_key=groq_api_key,
     )
