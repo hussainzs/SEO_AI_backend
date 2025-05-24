@@ -189,10 +189,11 @@ class GoogleKeywordsAPI:
             except RequestError as e:
                 raise
 
-    def _parse_keywords_response(self, response_data: dict[str, Any]) -> list[dict[str, Any]]:
+    def _parse_keywords_response(self, response_data: dict[str, Any]) -> list[dict[str, int | str | dict[str, int]]]:
         """
         Parse and transform the API response into a simplified format.
-        Reference to `reference_docs/gkp_raw_sample_response.json` to understand the response structure.
+        Reference to `reference_docs/gkp_raw_sample_response.json` to understand the input to this method.
+        Reference to `reference_docs/gkp_refined_response.json` to understand the output of this method.
 
         Args:
             response_data: The raw API response data.

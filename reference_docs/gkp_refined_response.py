@@ -9,7 +9,7 @@ The response is a list of dictionaries, each containing keyword data.
 it will look like this (sorted by average monthly searches highest to lowest):
 """
 
-gkp_refined_response = [
+gkp_refined_response: list[dict[str, int | str | dict[str, int]]] = [
     {
         "average_monthly_searches": 13600000,
         "competition": "LOW",
