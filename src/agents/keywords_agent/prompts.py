@@ -4,7 +4,7 @@ Don't use any explicit system prompts since some models we use don't support the
 Instead create one prompt which has system instructions and input variables for user input and any other variables.
 """
 ENTITY_EXTRACTOR_PROMPT = """
-You are an expert in SEO and keyword research. You are given a draft of a news article.
+You are an expert in Search Engine Optimization (SEO) and keyword research. You are given a draft of a news article.
 Your job is to extract the most important and representative entities from the article.
 
 While extracting the entities, please consider the following:
@@ -52,7 +52,7 @@ Here is our user article:
 """
 
 ROUTE_QUERY_OR_ANALYSIS_PROMPT = """
-You are an SEO expert in keyword research and competitor analysis. You will recieve a user_article, a list of entities and a history of web queries that were executed to find competitors. Your task is to determine whether to generate new search queries or to conduct a competitor analysis based on the provided information.
+You are an Search Engine Optimization (SEO) expert in keyword research and competitor analysis. You will recieve a user_article, a list of entities and a history of web queries that were executed to find competitors. Your task is to determine whether to generate new search queries or to conduct a competitor analysis based on the provided information.
 
 NOTE: Take a critical look at the web search results and the user article. If you think the web results (titles, urls, content) are good competitors and relevant to the user article then you should route to the competitor analysis node. If you think they are not sufficient for SEO competitor analysis, then you should route to the query generator node that tries to find new competitors.
 
@@ -70,7 +70,7 @@ Here is the history of previous web queries and their responses:
 """
 
 COMPETITOR_ANALYSIS_AND_STRUCTURED_OUTPUT_PROMPT = """
-You are an SEO expert in keyword research and competitor analysis. You will receive a user_article, a list of entities and a history of web queries and their results that were executed to find competitors. 
+You are an Search Engine Optimization (SEO) expert in keyword research and competitor analysis. You will receive a user_article, a list of entities and a history of web queries and their results that were executed to find competitors. 
 
 Your task is to analyze the given information, conduct a thorough competitor analysis and generate a structured output as a response.
 
@@ -80,7 +80,7 @@ While conducting your analysis, please keep the following in mind:
 
 3) In your structured output, you have to give me the top 2 search queries from the web search results that gave the best results. If there are only 2 queries, then give me those 2 queries otherwise pick the top 2. If there are less than 2 queries than give me 1.
 
-4) In your structured output, you have to give me the top 5 unique web search results. The web search results should be ranked based on relevance and quality of competition (authoritative sources and competition). 1 is the highest rank. You have to provide the following information for each web search result: rank, url, title, published date, highlights (text content).
+4) In your structured output, you have to give me the top 5 unique web search results. The web search results should be ranked based on relevance and quality of competition (authoritative sources and competition). 1 is the highest rank. You have to provide the following information for each web search result: rank, url, title, published date, highlights (text content). For highlights, extract as much text content as possible from the web search result, do not summarize or paraphrase however do not make up any content not provided in the web search results
 
 5) For your structured output, you have to give a competitive analysis which is 2 paragraphs long. Focus on the strengths and weaknesses of the competitors, where are we lacking, what are the opportunities or content gaps we can fill. Make it actionable, insightful and concise with very precise details. Anyone should be able to read your competitive analysis and understand what to do next to dominate our targeted topic. Uphold the highest standards of SEO and keyword research.
 
@@ -96,5 +96,49 @@ Here is the user article:
 
 \nHere is the history of previous web queries and their responses:
 {web_search_results}
+
+"""
+
+MASTERLIST_PRIMARY_SECONDARY_KEYWORD_GENERATOR_PROMPT = """
+You are an Search Engine Optimization (SEO) expert in keyword research and competitor analysis. You will be provided a user article, a list of entities representing the main topics of the article, information about the competitors found through web search queries which includes: their URLs, titles, published dates, and highlights from the web page content. We then fed the entities to Google Keyword Planner (GKP) including top 2 competitor urls and GKP recommended keywords ideal for the provided seed url websites and entities. GKP also gave very useful metrics for each keyword that you will take into account. 
+
+While conducing your analysis, please keep the following in mind:
+1) Your first task is to analyze all of the information provided to you and generate a masterlist of keywords. This masterlist contains the top 10 keywords that are IDEAL for our user article to dominate the topic and keywords in SEO. To do this well, be critical and put your analytical hat on as an SEO expert skilled with industry standard keyword research and competitor analysis utilizing all of the data you are provided. From competitor analysis, web search results and search queries, understand how headlines were written, what keywords were being emphasized, what can you gather from highlights, what do the search queries help you understand about the competitors and their content etc.
+
+2) You must also look at the keyword metrics provided by GKP and the monthly search volume from every month last year to understand any seasonal trends. average_monthly_searches provides a average popularity but seasonality trends are very important as well.
+Clarification on "competition_index": This is a score from 0 to 100 that indicates the level of competition for a keyword based on the number of ad slots filled compared to the total number of ad slots available. It is calculated using the formula: Number of ad slots filled / Total number of ad slots available. Higher values indicate more competition and potentially higher costs to bid for that keyword.
+"competition" is either LOW, MEDIUM or HIGH.
+
+3) Your second task is to identify primary and secondary keywords from the masterlist. Primary keywords are the most important keywords that should be used in the article. Secondary keywords are also important but not as critical as primary keywords. You should provide 2-3 primary keywords and 3-5 secondary keywords. Each keyword should be accompanied by a reasoning paragraph explaining quantitatively and qualitatively why this keyword is ideal for SEO based on all the information you have. Include the keyword metrics in your reasoning, any seasonal trends and any other information you used to determine that keyword and its importance. 
+
+For your output, consider the following instructions important: 
+1) The masterlist should be sorted in descending order based on average_monthly_searches. It is a list of objects (representing each keyword) with the following keys: text, monthly_search_volume, competition, competition_index, rank. Here rank represents the rank of the keyword in the masterlist that you determined. All of the keys and values should be string. only include the keys mentioned here from the data and do not include any less or more keys. 
+
+VERY IMPORTANT: masterlist information should exactly match the information provided to you by GKP. DO NOT make up any information on your own. All the keys and values should be exactly as provided to you by GKP. You are only allowed to add rank to each object but every other key and value that you add matches the information provided to you by GKP. Only include the top 10 keywords and only the keys I asked you to include for each keyword.
+
+2) The primary and secondary keywords should be a list of objects, each object has key=keyword text, value=reasoning. reasoning is a paragraph explaining quantitatively and qualitatively why this keyword is ideal for SEO based on all the information you have. Be very precise, add the numbers, critical analysis and other information you used to determine that keyword and its importance.
+
+VERY IMPORTANT: the primary and secondary keywords must be selected from the masterlist you generated. Their text should match exactly the text from GKP and masterlist.
+
+Caution: keywords may seem very similar but they have slight differences that are very important. I.e. Penn medicine vs Penn medicine hospital are different keywords but they have very different search volumes and competition. This must be considered.
+
+
+Here is the user article:
+{user_article}
+
+Here are the extracted entities:
+{entities}
+
+Here are the search queries that were executed to find competitors:
+{generated_search_queries}
+
+Here are the top web search results obtained for each query:
+{competitor_information}
+
+We also conducted brief competitor analysis and here is a paragraph of that to get you started:
+{competitor_analysis}
+
+Here is the keyword planner data by Google Keyword Planner:
+{keyword_planner_data}
 
 """
