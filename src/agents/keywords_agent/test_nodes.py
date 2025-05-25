@@ -3,6 +3,7 @@ Write all the node functions for the keywords agent here.
 """
 import src.agents.keywords_agent.temp_data as temp_data
 from pprint import pprint
+import json
 from typing import Any
 from src.agents.keywords_agent.state import KeywordState
 from langchain_core.messages import HumanMessage
@@ -20,11 +21,15 @@ from src.agents.keywords_agent.prompts import (
     QUERY_GENERATOR_PROMPT,
     ROUTE_QUERY_OR_ANALYSIS_PROMPT,
     COMPETITOR_ANALYSIS_AND_STRUCTURED_OUTPUT_PROMPT,
+    MASTERLIST_PRIMARY_SECONDARY_KEYWORD_GENERATOR_PROMPT,
+    SUGGESTION_GENERATOR_PROMPT
 )
 from src.agents.keywords_agent.schemas import (
     Entities,
     RouteToQueryOrAnalysis,
     CompetitorAnalysisOutputModel,
+    MasterlistAndPrimarySecondaryKeywords,
+    SuggestionGeneratorModel
 )
 from src.tools.web_search_tool import WebSearch, dummy_web_search_tool
 
@@ -96,6 +101,34 @@ COMPETITOR_ANALYSIS_MODEL_WITH_FALLBACK_AND_STRUCTURED = (
 # # Initialize Google Keyword Planner API client
 ##############
 gkp = GoogleKeywordsAPI()
+
+##############
+# # Masterlist and Primary Keyword Model
+##############
+MPS_MODEL_WITH_FALLBACK_AND_STRUCTURED = initialize_model_with_fallbacks(
+    primary_model_fn=get_openai_model,
+    primary_model_kwargs={"model_num": 2, "temperature": 0.5},
+    fallback_model_fns=[get_mistral_model, get_openai_model],
+    fallback_model_kwargs_list=[
+        {"model_num": 1, "temperature": 0.5},
+        {"model_num": 1, "temperature": 0.5},
+    ],
+    structured_output_schema=MasterlistAndPrimarySecondaryKeywords,
+)
+
+################
+# # Suggestions Generator Model
+################
+SUGGESTIONS_MODEL_WITH_FALLBACK_AND_STRUCTURED = initialize_model_with_fallbacks(
+    primary_model_fn=get_mistral_model,
+    primary_model_kwargs={"model_num": 1, "temperature": 0.5},
+    fallback_model_fns=[get_openai_model, get_gemini_model],
+    fallback_model_kwargs_list=[
+        {"model_num": 1, "temperature": 0.5},
+        {"model_num": 2, "temperature": 0.5},
+    ],
+    structured_output_schema=SuggestionGeneratorModel,
+)
 
 
 async def entity_extractor(state: KeywordState):
@@ -486,23 +519,66 @@ async def masterlist_and_primary_keyword_generator(state: KeywordState):
     Steps:
         1. Analyze the GKP data from the previous step.
         2. We can have maximum of 50 keywords from the previous steps (25 max per GKP call).
-        3. First get rid of any duplicates.
-        4. Determine the relevancy of each keyword based to our user_input and competitive analysis.
-        5. Look at the metrics for each relevant keyword.
+        3. Determine the relevancy of each keyword based on our user_input and competitor_information.
         6. Pick up to 20 keywords based on the relevancy and metrics.
-        7. Get a masterlist of keywords sorted by descending order. output this.
+        7. Get a masterlist of keywords sorted by descending order: list of objects has {text, monthly_searches, competition, competition_index, relevancy_score}.
 
         8. Then pick 3-5 primary keywords from the masterlist.
         9. Pick 3-5 secondary keywords from the masterlist. output this as well. each with a short paragraph of quantitative and qualitative reasoning.
-
-    Warning: LLM might not give the correct names for the keywords. Match them to original keywords and call LLM again if needed.
 
     Updates:
         - state.keyword_masterlist: List of refined keywords.
         - state.primary_keywords: List of primary keywords with reasoning.
         - state.secondary_keywords: List of secondary keywords with reasoning.
     """
-    pass
+    # extract all the input data from the state
+    user_input: str = state.get("user_input", "")
+    retrieved_entities: list[str] = state.get("retrieved_entities", [])
+    competitor_information: list[dict[str, str | int]] = state.get(
+        "competitor_information", []
+    )
+    search_queries: list[str] = state.get("generated_search_queries", [])
+    competitor_analysis: str = state.get("competitive_analysis", "")
+    keyword_planner_data: list[dict[str, int | str | dict[str, int]]] = state.get(
+        "keyword_planner_data", []
+    )
+    # format some input vars for inserting into the prompt as string
+    keyword_planner_data_str: str = json.dumps(keyword_planner_data, indent=2)
+    
+    # initialize the output variables
+    keyword_masterlist: list[dict[str, str]] = []
+    primary_keywords: list[dict[str, str]] = []
+    secondary_keywords: list[dict[str, str]] = []
+    
+    # prepare the prompt for the masterlist and primary keyword generator model
+    prompt = MASTERLIST_PRIMARY_SECONDARY_KEYWORD_GENERATOR_PROMPT.format(
+        user_article=user_input,
+        entities=retrieved_entities,
+        generated_search_queries=search_queries,
+        competitor_information=competitor_information,
+        competitor_analysis=competitor_analysis,
+        keyword_planner_data=keyword_planner_data_str
+    )
+
+    try:
+        response: MasterlistAndPrimarySecondaryKeywords = await MPS_MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(
+            [HumanMessage(content=prompt)]
+        ) # type: ignore
+        
+        # Convert each Pydantic model in the lists to a dict for state compatibility
+        keyword_masterlist = [item.model_dump() for item in response.keyword_masterlist]
+        primary_keywords = [item.model_dump() for item in response.primary_keywords]
+        secondary_keywords = [item.model_dump() for item in response.secondary_keywords]
+        
+    except Exception as e:
+        print(f"Error occurred in masterlist and primary keyword generator node: {e}")
+    
+    # update the state with the results
+    return {
+        "keyword_masterlist": keyword_masterlist,
+        "primary_keywords": primary_keywords,
+        "secondary_keywords": secondary_keywords,
+    }
 
 
 async def suggestions_generator(state: KeywordState):
@@ -519,7 +595,52 @@ async def suggestions_generator(state: KeywordState):
         - state.suggested_article_headlines: List of suggested article headlines.
         - state.final_answer: Final answer paragraph.
     """
-    pass
+    # get input data from the state
+    user_input: str = state.get("user_input", "")
+    primary_keywords: list[dict[str, str]] = state.get(
+        "primary_keywords", []
+    )
+    secondary_keywords: list[dict[str, str]] = state.get(
+        "secondary_keywords", []
+    )
+    competitor_information: list[dict[str, str | int]] = state.get(
+        "competitor_information", []
+    )
+    competitor_analysis: str = state.get("competitive_analysis", "")
+    
+    # initialize the output variables
+    suggested_url_slug: str = ""
+    suggested_article_headlines: list[str] = []
+    final_answer: str = ""
+    
+    # prepare the prompt for the suggestions generator model
+    prompt = SUGGESTION_GENERATOR_PROMPT.format(
+        user_article=user_input,
+        primary_keywords=primary_keywords,
+        secondary_keywords=secondary_keywords,
+        competitor_information=competitor_information,
+        competitor_analysis=competitor_analysis
+    )
+    
+    try:
+        response: SuggestionGeneratorModel = await SUGGESTIONS_MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(
+            [HumanMessage(content=prompt)]
+        )  # type: ignore
+
+        # extract the output variables from the response
+        suggested_url_slug = response.suggested_url_slug
+        suggested_article_headlines = response.suggested_article_headlines
+        final_answer = response.final_suggestions
+
+    except Exception as e:
+        print(f"Error occurred in suggestions generator node: {e}")
+        
+    # update the state with the results
+    return {
+        "suggested_url_slug": suggested_url_slug,
+        "suggested_article_headlines": suggested_article_headlines,
+        "final_answer": final_answer,
+    }
 
 
 # utility function to help update web search. since we needed it twice i made it a function

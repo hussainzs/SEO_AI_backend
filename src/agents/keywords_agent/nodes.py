@@ -534,7 +534,6 @@ async def masterlist_and_primary_keyword_generator(state: KeywordState):
         "keyword_planner_data", []
     )
     # format some input vars for inserting into the prompt as string
-    competitor_information_str: str = json.dumps(competitor_information, indent=2)
     keyword_planner_data_str: str = json.dumps(keyword_planner_data, indent=2)
     
     # initialize the output variables
@@ -544,23 +543,23 @@ async def masterlist_and_primary_keyword_generator(state: KeywordState):
     
     # prepare the prompt for the masterlist and primary keyword generator model
     prompt = MASTERLIST_PRIMARY_SECONDARY_KEYWORD_GENERATOR_PROMPT.format(
-        user_input=user_input,
+        user_article=user_input,
         entities=retrieved_entities,
         generated_search_queries=search_queries,
-        competitor_information=competitor_information_str,
+        competitor_information=competitor_information,
         competitor_analysis=competitor_analysis,
         keyword_planner_data=keyword_planner_data_str
     )
 
     try:
-        response: MasterlistAndPrimarySecondaryKeywords = MPS_MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(
+        response: MasterlistAndPrimarySecondaryKeywords = await MPS_MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(
             [HumanMessage(content=prompt)]
         ) # type: ignore
         
-        # extract the output variables from the response
-        keyword_masterlist = response.keyword_masterlist
-        primary_keywords = response.primary_keywords
-        secondary_keywords = response.secondary_keywords
+        # Convert each Pydantic model in the lists to a dict for state compatibility
+        keyword_masterlist = [item.model_dump() for item in response.keyword_masterlist]
+        primary_keywords = [item.model_dump() for item in response.primary_keywords]
+        secondary_keywords = [item.model_dump() for item in response.secondary_keywords]
         
     except Exception as e:
         print(f"Error occurred in masterlist and primary keyword generator node: {e}")
@@ -600,9 +599,6 @@ async def suggestions_generator(state: KeywordState):
     )
     competitor_analysis: str = state.get("competitive_analysis", "")
     
-    # convert competitor information to string for inserting into the prompt
-    competitor_information_str: str = json.dumps(competitor_information, indent=2)
-    
     # initialize the output variables
     suggested_url_slug: str = ""
     suggested_article_headlines: list[str] = []
@@ -610,15 +606,15 @@ async def suggestions_generator(state: KeywordState):
     
     # prepare the prompt for the suggestions generator model
     prompt = SUGGESTION_GENERATOR_PROMPT.format(
-        user_input=user_input,
+        user_article=user_input,
         primary_keywords=primary_keywords,
         secondary_keywords=secondary_keywords,
-        competitor_information=competitor_information_str,
+        competitor_information=competitor_information,
         competitor_analysis=competitor_analysis
     )
     
     try:
-        response: SuggestionGeneratorModel = SUGGESTIONS_MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(
+        response: SuggestionGeneratorModel = await SUGGESTIONS_MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(
             [HumanMessage(content=prompt)]
         )  # type: ignore
 
