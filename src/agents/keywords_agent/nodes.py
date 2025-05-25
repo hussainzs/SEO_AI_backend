@@ -38,9 +38,9 @@ from src.tools.web_search_tool import WebSearch, dummy_web_search_tool
 # Entity Extractor Model
 # #################
 ENTITIES_MODEL_WITH_FALLBACK_AND_STRUCTURED = initialize_model_with_fallbacks(
-    primary_model_fn=get_gemini_model,
+    primary_model_fn=get_mistral_model,
     primary_model_kwargs={"model_num": 2, "temperature": 0.5},
-    fallback_model_fns=[get_mistral_model, get_openai_model],
+    fallback_model_fns=[get_groq_model, get_openai_model],
     fallback_model_kwargs_list=[
         {"model_num": 1, "temperature": 0.5},
         {"model_num": 1, "temperature": 0.5},
@@ -60,10 +60,10 @@ QUERY_GENERATOR_MODEL_WITH_FALLBACK_AND_TOOLS = initialize_model_with_fallbacks(
         {"model_num": 2, "temperature": 0.7},
     ],
     bind_tools=True,
-    # tools=[WebSearch()],
-    tools=[dummy_web_search_tool],  # testing
-    # tool_choice="web_search_tool",
-    tool_choice="dummy_web_search_tool",  # testing
+    tools=[WebSearch()],
+    # tools=[dummy_web_search_tool],  # testing
+    tool_choice="web_search_tool",
+    # tool_choice="dummy_web_search_tool",  # testing
 )
 
 
@@ -143,42 +143,35 @@ async def entity_extractor(state: KeywordState):
     Updates:
         - state.retrieved_entities: List of extracted entities.
     """
-    # # Get user input from state
-    # user_article: str = state["user_input"]
+    # Get user input from state
+    user_article: str = state["user_input"]
 
-    # # Prepare the prompt
-    # prompt: str = ENTITY_EXTRACTOR_PROMPT.format(user_article=user_article)
+    # Prepare the prompt
+    prompt: str = ENTITY_EXTRACTOR_PROMPT.format(user_article=user_article)
 
-    # # initialize the list of retrieved entities
-    # retrieved_entities: list[str] = []
+    # initialize the list of retrieved entities
+    retrieved_entities: list[str] = []
 
-    # try:
-    #     # Use the model with fallback to extract entities. The appropriate model will be chosen automatically if primary fails.
-    #     # type hinting doesn't work here because python isn't recognizing that structured output will be pydantic object.
-    #     entities: Entities = await ENTITIES_MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(
-    #         input=[HumanMessage(content=prompt)]
-    #     )  # type: ignore
+    try:
+        # Use the model with fallback to extract entities. The appropriate model will be chosen automatically if primary fails.
+        # type hinting doesn't work here because python isn't recognizing that structured output will be pydantic object.
+        entities: Entities = await ENTITIES_MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(
+            input=[HumanMessage(content=prompt)]
+        )  # type: ignore
 
-    #     # Extract the list of entities
-    #     retrieved_entities: list[str] = entities.entities
+        # Extract the list of entities
+        retrieved_entities: list[str] = entities.entities
 
-    # except Exception as e:
-    #     # This will only trigger if both models fail
-    #     raise RuntimeError(
-    #         f"Entity extraction failed with all available models: {str(e)}"
-    #     ) from e
+    except Exception as e:
+        # This will only trigger if both models fail
+        raise RuntimeError(
+            f"Entity extraction failed with all available models: {str(e)}"
+        ) from e
 
-    # # Return the retrieved entities
-    # print(f"Retrieved entities: {retrieved_entities}")
-
-    # for testing
-    entities = [
-        "Undergrad Employment",
-        "College Students Unemployment",
-        "Undergrad Job Market",
-    ]
-    return {"retrieved_entities": entities}
-    # return {"retrieved_entities": retrieved_entities}
+    # Return the retrieved entities
+    print(f"Retrieved entities: {retrieved_entities}")
+    
+    return {"retrieved_entities": retrieved_entities}
 
 
 async def query_generator(state: KeywordState):
@@ -212,8 +205,9 @@ async def query_generator(state: KeywordState):
     )
 
     # get the search queries from the tool call AI made. Here if AI did not make a tool call then it will be empty.
-    print()
+    print("\n ----------- API MESSAGE FROM INSIDE QUERY GENERATOR NODE ----------: \n")
     pprint(ai_message)
+    print("------------------------------------------------------------------------\n\n")
 
     # access tool calls array in AIMessage (tool_calls always present but maybe empty if AI didn't make a tool call and misbehaved)
     # !! we are manually extracting the tool calls, instead we could have done a structured output but models misbehave more often when they are provided both tools and structured output.
@@ -268,7 +262,7 @@ async def router_and_state_updater(state: KeywordState):
     if state["tool_call_count"] >= 2:
         # if we have already called the tool twice, we will not call it again but we still need to update web_search_results with latest tool response (append to existing results)
         messages: list = state["messages"]
-        web_search_results = update_web_search_results(
+        web_search_results = await update_web_search_results(
             messages=messages,
             search_queries=state["generated_search_queries"],
             web_search_results_accumulated=state.get(
@@ -286,7 +280,7 @@ async def router_and_state_updater(state: KeywordState):
         messages: list = state["messages"]
 
         # update the web search results with the content from the last two ToolMessages and the corresponding search queries
-        web_search_results = update_web_search_results(
+        web_search_results = await update_web_search_results(
             messages=messages,
             search_queries=state["generated_search_queries"],
             web_search_results_accumulated=state.get(

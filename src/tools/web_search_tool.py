@@ -16,7 +16,7 @@ Tavily Docs: https://docs.tavily.com/sdk/python/reference#tavily-search
 
 Exa Docs: https://docs.exa.ai/sdks/python-sdk-specification#search-and-contents-method
 """
-chat_client: Literal["tavily", "exa"] = "exa"
+chat_client: Literal["tavily", "exa"] = "tavily"
 
 # NOTE: refer to `reference_docs/web_search_responses.txt` for expected raw response from Tavily and Exa and parsed refined responses.
 

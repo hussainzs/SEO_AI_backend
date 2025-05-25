@@ -28,3 +28,27 @@ Even those who do land jobs are often underwhelmed by the pay. A ZipRecruiter re
 
 While the outlook isn’t all doom and gloom—many companies still plan to promote and offer raises—the message is clear: today’s grads need to stay flexible, realistic, and ready to adapt in a workforce that’s evolving fast.
 """
+
+sample_input3 = """
+Judge orders Penn Professor Michael Mann to pay over $477,000 in fees from defamation case:
+
+A District of Columbia judge ordered Presidential Distinguished Professor of Earth and Environmental Science Michael Mann to pay additional legal fees to his opponents in a defamation case, further unraveling his victory from last year.
+
+After winning his defamation case against bloggers Rand Simberg and Mark Steyn last year, Mann — Penn’s vice provost for climate science, policy, and action — has been ordered to pay attorneys’ fees totaling $477,350.80 based on the dismissal of three of his claims in 2019. The defendants filed the motion for fees under D.C.’s Anti-SLAPP Act, which is intended to protect those exercising free speech from frivolous defamation lawsuits. 
+
+“My lawyers and I believe that yesterday’s fee award entered by the trial court was not correctly decided, and we intend to seek further review of that award,” Mann wrote in a statement to The Daily Pennsylvanian. “In the meantime, we also are pursuing an appeal from the trial court’s earlier ruling reducing the punitive damages awarded to me by the jury and other errors.”
+
+The May 22 decision marks yet another shift in Mann’s initial victory in his February 2024 defamation case, in which he was awarded more than $1 million in damages against Simberg, a former adjunct fellow at the Competitive Enterprise Institute, and Steyn, a contributor to the National Review. Mann alleged that Simberg and Steyn had defamed him in a series of blog posts discrediting his climate change research in 2012.
+
+In his most recent opinion, D.C. Superior Court Judge Alfred S. Irving, Jr. wrote that “CEI and Mr. Simberg were successful on the appeal of their anti-SLAPP motion and any other conclusion would be untenable under the terms of the statute and the Court of Appeals’ construction of the statute.”
+
+As a result, Irving found that CEI and Simberg were “presumptively entitled to attorneys’ fees.” Irving’s decision followed a January ruling that ordered Mann to pay $530,000 to the National Review based on the same statute. 
+
+In March, Irving sanctioned Mann and his legal team for providing misleading and inconsistent information during the trial. Irving called disparities in the case “an affront to the Court’s authority” and referred to the “bad-faith trial misconduct” of Mann and his legal team. He also threw out the earlier penalty owed by Steyn and reduced the damages to $5,000, stating that the verdict against Steyn was “grossly excessive.”
+
+Mann's legal team presented a chart listing a grant that Mann allegedly lost due to the defamatory remarks as $9.7 million. However, in a separate testimony, Mann stated the grant was worth $112,000. Comparing Mann’s grant income before and after the accusations from Simberg and Steyn, Mann's lawyers initially claimed a disparity of $2.8 million, while a corrected calculation put the difference at $2.37 million.
+
+"I am pleased the court upheld the jury’s verdict on the hockey stick graph, the defamatory statements, and the injury to my good name," Mann posted on his X account following the issuing of the sanctions. "I am confident neither I nor my lawyers did anything wrong during the trial."
+
+Mann’s X account has amassed more than 200,000 followers, and he has been referred to by NPR as a figure “among the world's most renowned climate scientists.” Mann is also the director of the Penn Center for Science, Sustainability, and the Media. Before beginning his position at Penn in 2022, Mann taught at Penn State for 17 years. 
+"""
