@@ -52,3 +52,29 @@ Mann's legal team presented a chart listing a grant that Mann allegedly lost due
 
 Mann’s X account has amassed more than 200,000 followers, and he has been referred to by NPR as a figure “among the world's most renowned climate scientists.” Mann is also the director of the Penn Center for Science, Sustainability, and the Media. Before beginning his position at Penn in 2022, Mann taught at Penn State for 17 years. 
 """
+
+sample_input4 = """
+Speaker Mike Johnson is urging Senate Republicans not to greatly alter the sweeping spending and tax cuts bill that the House GOP managed to advance in a laborious back-and-forth process last week.
+
+There are early signs that some Republican senators will not heed that call.
+
+President Donald Trump’s “big, beautiful bill” — aimed at advancing much of his domestic policy agenda in a single package — hangs in the balance.
+
+Here’s where things stand:
+
+Johnson’s pitch: The House speaker told CNN’s Jake Tapper today that if senators make too many changes to the bill his chamber advanced, he may not be able to pass it back through the House and send it to Trump’s desk.
+
+“I have a very delicate balance here, very delicate equilibrium that we’ve reached over a long period of time, and it’s best not to meddle with it too much,” Johnson said.
+
+The speaker claimed scores of the bill predicting it will increase the national debt — a key GOP sticking point — are “dramatically overstated.”
+
+GOP critics: Republican Sen. Ron Johnson has emerged as a key skeptic. The Wisconsin lawmaker told CNN he believes there’s enough GOP resistance to halt Trump’s bill in the Senate if major changes aren’t made to the legislation.
+
+The senator is pushing for deeper spending cuts, arguing this is Congress’ “only chance” to reset to a “reasonable, pre-pandemic level of spending.”
+
+Republican Sen. Rand Paul, a leading deficit hawk, said on “Fox News Sunday” that he will not vote for the legislation unless a debt ceiling increase is removed, calling the bill’s spending cuts “wimpy and anemic.”
+
+And other critics, including Sens. Lisa Murkowski of Alaska and Josh Hawley of Missouri, have cited concerns about the bill’s changes to Medicaid and tax credit levels.
+
+Democrats pile on: Lacking a majority in either chamber, Democrats have focused on highlighting the perceived winners and losers of the bill in its current form. Analysts say millions of low-income Americans stand to lose benefits, while the wealthy would see most of the windfall from tax cuts.
+"""
