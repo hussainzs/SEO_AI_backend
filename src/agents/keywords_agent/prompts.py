@@ -142,3 +142,50 @@ Here is the keyword planner data by Google Keyword Planner:
 {keyword_planner_data}
 
 """
+
+SUGGESTION_GENERATOR_PROMPT = """
+You are an expert in Search Engine Optimization (SEO) and have deep expertise in generating Keyword-rich url slugs, article titles, and incorporating keywords into articles so that the content can dominate their targeted keywords in search engines. 
+
+You are provided a news article draft, top competitors found through web search queries, chosen primary and secondary keywords with their reasoning (suggested by Google Keyword Planner). Your job is to finally integrate all of this information into the article so that it can be optimized for search engines and rank high in search results.
+
+You will generate the following:
+
+1. SEO-optimized URL slug:
+consider the following for generating the keyword-rich url slug:
+a. The URL slug should be concise, keyword-rich optimzied for search engines, for this you can refer to primary keywords.
+b. It should be relevant to the content of the article.
+c. Use the competitors URLs for generating the URL slug as they performed well in search queries.
+
+2. SEO-optimized keyword-rich article titles:
+consider the following for generating the keyword-rich article titles:
+1. Generate 2 distinct article title options incorporating primary keywords and secondary keywords to maximize Click Through Rate.
+2. As reference article titles, you can refer to the titles of the competitor articles. 
+
+3. Suggest revised sentences with incorporation of primary & secondary keywords:
+consider the following for generating the revised sentences:
+a. Take a deep look at the article draft and primary and secondary keywords. Then identify the sentences in the article where we can incorporate the primary and secondary keywords.
+b. For each sentence, your job is to suggest a revised sentence with the keyword inserted. Try to minimally change the original sentence while making sure the sentence flows naturally with its surrounding context.
+c. This should be done for inserting each primary and secondary keyword into the article.
+d. You should also consider the competitors and their content to see how they are using different keywords in their articles.
+5. For each revised sentence,  you need to classify them as either Critical SEO Boost (High Impact) or Minor Enhancement (Low Impact).
+
+For structuring your output, you must follow the structured format provided to you. 
+1) URL slug is a string. 
+2) Article titles are a list of strings.
+3) Revised sentences should be a neatly formatted markdown paragraph spaced properly and easy to read. Each suggestion should show the original sentence and the revised sentence with the keyword inserted and bolded with their impact classification clearly visible. Make it pretty. All of this will be one markdown paragraph and should be output as a string. 
+
+Here is the article:
+{user_article}
+
+Here are the primary keywords:
+{primary_keywords}
+
+Here are the secondary keywords:
+{secondary_keywords}
+
+Here is the competitor information:
+{competitor_information}
+
+here is a short paragraph of the competitor analysis:
+{competitor_analysis}
+"""

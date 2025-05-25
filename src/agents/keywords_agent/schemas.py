@@ -89,3 +89,23 @@ class MasterlistAndPrimarySecondaryKeywords(BaseModel):
         ...,
         description="List of 3-5 secondary keywords with their respective reasoning. Each object has key=keyword, value=reasoning. reasoning is a paragraph explaining quantitatively and qualitatively why this keyword is ideal for SEO based on all the information you have.",
     )
+    
+class SuggestionGeneratorModel(BaseModel):
+    """
+    Generated suggestions related to url slug, article titles, and revised sentences with keywords inserted in it
+    
+    """
+    suggested_url_slug: str = Field(
+        ...,
+        description = "Keyword-rich url slug"
+    )
+
+    suggested_article_headlines: list[str] = Field(
+        ...,
+        description = "List of 2 SEO-optimized keyword-rich article titles optimized for Click-Through Rate (CTR)"
+    )
+
+    final_suggestions: str = Field(
+        ...,
+        description = "Revised sentences with incorporation of primary & secondary keywords"
+    )

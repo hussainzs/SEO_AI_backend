@@ -21,13 +21,15 @@ from src.agents.keywords_agent.prompts import (
     QUERY_GENERATOR_PROMPT,
     ROUTE_QUERY_OR_ANALYSIS_PROMPT,
     COMPETITOR_ANALYSIS_AND_STRUCTURED_OUTPUT_PROMPT,
-    MASTERLIST_PRIMARY_SECONDARY_KEYWORD_GENERATOR_PROMPT
+    MASTERLIST_PRIMARY_SECONDARY_KEYWORD_GENERATOR_PROMPT,
+    SUGGESTION_GENERATOR_PROMPT
 )
 from src.agents.keywords_agent.schemas import (
     Entities,
     RouteToQueryOrAnalysis,
     CompetitorAnalysisOutputModel,
-    MasterlistAndPrimarySecondaryKeywords
+    MasterlistAndPrimarySecondaryKeywords,
+    SuggestionGeneratorModel
 )
 from src.tools.web_search_tool import WebSearch, dummy_web_search_tool
 
@@ -112,6 +114,20 @@ MPS_MODEL_WITH_FALLBACK_AND_STRUCTURED = initialize_model_with_fallbacks(
         {"model_num": 1, "temperature": 0.5},
     ],
     structured_output_schema=MasterlistAndPrimarySecondaryKeywords,
+)
+
+################
+# # Suggestions Generator Model
+################
+SUGGESTIONS_MODEL_WITH_FALLBACK_AND_STRUCTURED = initialize_model_with_fallbacks(
+    primary_model_fn=get_mistral_model,
+    primary_model_kwargs={"model_num": 1, "temperature": 0.5},
+    fallback_model_fns=[get_openai_model, get_gemini_model],
+    fallback_model_kwargs_list=[
+        {"model_num": 1, "temperature": 0.5},
+        {"model_num": 2, "temperature": 0.5},
+    ],
+    structured_output_schema=SuggestionGeneratorModel,
 )
 
 
@@ -571,7 +587,55 @@ async def suggestions_generator(state: KeywordState):
         - state.suggested_article_headlines: List of suggested article headlines.
         - state.final_answer: Final answer paragraph.
     """
-    pass
+    # get input data from the state
+    user_input: str = state.get("user_input", "")
+    primary_keywords: list[dict[str, str]] = state.get(
+        "primary_keywords", []
+    )
+    secondary_keywords: list[dict[str, str]] = state.get(
+        "secondary_keywords", []
+    )
+    competitor_information: list[dict[str, str | int]] = state.get(
+        "competitor_information", []
+    )
+    competitor_analysis: str = state.get("competitive_analysis", "")
+    
+    # convert competitor information to string for inserting into the prompt
+    competitor_information_str: str = json.dumps(competitor_information, indent=2)
+    
+    # initialize the output variables
+    suggested_url_slug: str = ""
+    suggested_article_headlines: list[str] = []
+    final_answer: str = ""
+    
+    # prepare the prompt for the suggestions generator model
+    prompt = SUGGESTION_GENERATOR_PROMPT.format(
+        user_input=user_input,
+        primary_keywords=primary_keywords,
+        secondary_keywords=secondary_keywords,
+        competitor_information=competitor_information_str,
+        competitor_analysis=competitor_analysis
+    )
+    
+    try:
+        response: SuggestionGeneratorModel = SUGGESTIONS_MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(
+            [HumanMessage(content=prompt)]
+        )  # type: ignore
+
+        # extract the output variables from the response
+        suggested_url_slug = response.suggested_url_slug
+        suggested_article_headlines = response.suggested_article_headlines
+        final_answer = response.final_suggestions
+
+    except Exception as e:
+        print(f"Error occurred in suggestions generator node: {e}")
+        
+    # update the state with the results
+    return {
+        "suggested_url_slug": suggested_url_slug,
+        "suggested_article_headlines": suggested_article_headlines,
+        "final_answer": final_answer,
+    }
 
 
 # utility function to help update web search. since we needed it twice i made it a function
