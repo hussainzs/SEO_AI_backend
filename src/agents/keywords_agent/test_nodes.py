@@ -8,6 +8,7 @@ import json
 from typing import Any
 from src.agents.keywords_agent.state import KeywordState
 from langchain_core.messages import HumanMessage
+from langgraph.config import get_stream_writer
 
 from src.tools.google_keywords_api import GoogleKeywordsAPI
 from src.utils.models_initializer import (
@@ -33,7 +34,6 @@ from src.agents.keywords_agent.schemas import (
     SuggestionGeneratorModel
 )
 from src.tools.web_search_tool import WebSearch, dummy_web_search_tool
-
 
 # #################
 # Entity Extractor Model
@@ -175,12 +175,17 @@ async def entity_extractor(state: KeywordState):
 
     # for testing
     # add async timeout to simulate the model call
+    ## stream writer by langgraph for custom streaming
+    stream_writer = get_stream_writer()
+    stream_writer({"type": "internal", "node": "entity_extractor", "content": "Starting entity extraction..."})
     await asyncio.sleep(2)
+    
     entities = [
         "Undergrad Employment",
         "College Students Unemployment",
         "Undergrad Job Market",
     ]
+    stream_writer({"type": "internal", "node": "entity_extractor", "content": entities})
     return {"retrieved_entities": entities}
   
 

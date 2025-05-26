@@ -7,6 +7,7 @@ import json
 from typing import Any
 from src.agents.keywords_agent.state import KeywordState
 from langchain_core.messages import HumanMessage
+from langgraph.config import get_stream_writer
 
 from src.tools.google_keywords_api import GoogleKeywordsAPI
 from src.utils.models_initializer import (
@@ -141,6 +142,10 @@ async def entity_extractor(state: KeywordState):
     Updates:
         - state.retrieved_entities: List of extracted entities.
     """
+    # initialize custom stream writer for langgraph to emit functions to frontend
+    stream_writer = get_stream_writer()
+    stream_writer({"type": "internal", "node": "entity_extractor", "content": "Extracting entities from your article to understand the topic better."})
+    
     # Get user input from state
     user_article: str = state["user_input"]
 
@@ -169,6 +174,7 @@ async def entity_extractor(state: KeywordState):
     # Return the retrieved entities
     print(f"Retrieved entities: {retrieved_entities}")
     
+    stream_writer({"type": "internal", "node": "entity_extractor", "content": retrieved_entities})
     return {"retrieved_entities": retrieved_entities}
 
 
@@ -183,6 +189,10 @@ async def query_generator(state: KeywordState):
         - state.generated_search_queries: List of generated search queries
         - state.tool_call_count: Initializes to 0 if it doesn't exist so routeing edge can increment it after making sure a tool call was made
     """
+    # initialize custom stream writer for langgraph to emit functions to frontend
+    stream_writer = get_stream_writer()
+    stream_writer({"type": "internal", "node": "query_generator", "content": "Generating search queries to find your competitors..."})
+
     # check this to ensure AI made a tool call and followed instructions. this way we can add 1 to tool_call_count
     tool_call_was_made: bool = False
 
@@ -202,13 +212,8 @@ async def query_generator(state: KeywordState):
         [HumanMessage(content=prompt)]
     )
 
-    # get the search queries from the tool call AI made. Here if AI did not make a tool call then it will be empty.
-    print("\n ----------- API MESSAGE FROM INSIDE QUERY GENERATOR NODE ----------: \n")
-    pprint(ai_message)
-    print("------------------------------------------------------------------------\n\n")
-
     # access tool calls array in AIMessage (tool_calls always present but maybe empty if AI didn't make a tool call and misbehaved)
-    # !! we are manually extracting the tool calls, instead we could have done a structured output but models misbehave more often when they are provided both tools and structured output.
+    # !! we are manually extracting the tool calls, instead we COULD have done a structured output but models misbehave more often when they are provided both tools and structured output.
     tool_calls: list[Any] = ai_message.tool_calls  # type: ignore
     for t in tool_calls:
         # here "query" can be accessed because thats the exact name of the parameter for web_search_tool. If that ever changes this must change too!
@@ -219,7 +224,8 @@ async def query_generator(state: KeywordState):
     if len(tool_calls) > 0 and len(search_queries) > 0:
         tool_call_was_made = True
 
-    pprint(f"\nSearch_queries: {search_queries}\n")
+    # stream these search queries to the frontend so user can see them
+    stream_writer({"type": "internal", "node": "query_generator", "content": search_queries})
 
     if tool_call_was_made:
         return {
