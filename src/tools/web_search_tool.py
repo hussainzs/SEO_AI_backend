@@ -1,3 +1,4 @@
+import asyncio
 from typing import Any, Literal, Optional
 
 from src.utils.models_initializer import get_tavily_client, get_exa_client
@@ -201,7 +202,7 @@ class WebSearch(BaseTool):
 
 # Create a dummy web search tool for testing
 @tool
-def dummy_web_search_tool(query: str) -> str:
+async def dummy_web_search_tool(query: str) -> str:
     """
     Dummy web search tool that returns a hardcoded response.
     This is used for testing purposes only.
@@ -209,6 +210,7 @@ def dummy_web_search_tool(query: str) -> str:
     Args:
         query (str): The search query to execute.
     """
+    await asyncio.sleep(2.4)  # simulate network delay
     return str(
         [
             {

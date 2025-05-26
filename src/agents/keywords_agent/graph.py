@@ -7,7 +7,7 @@ from langgraph.graph.state import CompiledStateGraph
 from src.agents.keywords_agent.state import KeywordState
 from src.tools.web_search_tool import WebSearch, dummy_web_search_tool
 from src.agents.keywords_agent.edges import route_to_query_or_analysis
-from src.agents.keywords_agent.nodes import (
+from src.agents.keywords_agent.test_nodes import (
     entity_extractor,
     query_generator,
     competitor_analysis,
@@ -36,8 +36,8 @@ dotenv.load_dotenv()
 graph_builder = StateGraph(state_schema=KeywordState)
 
 # initialize tools
-tool_list = [WebSearch()]
-# tool_list = [dummy_web_search_tool]  # testing
+# tool_list = [WebSearch()]
+tool_list = [dummy_web_search_tool]  # testing
 
 # Add Nodes
 graph_builder.add_node(node="entity_extractor", action=entity_extractor)

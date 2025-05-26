@@ -31,7 +31,7 @@ from src.agents.keywords_agent.schemas import (
     MasterlistAndPrimarySecondaryKeywords,
     SuggestionGeneratorModel
 )
-from src.tools.web_search_tool import WebSearch, dummy_web_search_tool
+from src.tools.web_search_tool import WebSearch
 
 
 # #################
@@ -61,9 +61,7 @@ QUERY_GENERATOR_MODEL_WITH_FALLBACK_AND_TOOLS = initialize_model_with_fallbacks(
     ],
     bind_tools=True,
     tools=[WebSearch()],
-    # tools=[dummy_web_search_tool],  # testing
     tool_choice="web_search_tool",
-    # tool_choice="dummy_web_search_tool",  # testing
 )
 
 

@@ -1,6 +1,7 @@
 """
 Write all the node functions for the keywords agent here.
 """
+import asyncio
 import src.agents.keywords_agent.temp_data as temp_data
 from pprint import pprint
 import json
@@ -170,16 +171,18 @@ async def entity_extractor(state: KeywordState):
 
     # # Return the retrieved entities
     # print(f"Retrieved entities: {retrieved_entities}")
+    # return {"retrieved_entities": retrieved_entities}
 
     # for testing
+    # add async timeout to simulate the model call
+    await asyncio.sleep(2)
     entities = [
         "Undergrad Employment",
         "College Students Unemployment",
         "Undergrad Job Market",
     ]
     return {"retrieved_entities": entities}
-    # return {"retrieved_entities": retrieved_entities}
-
+  
 
 async def query_generator(state: KeywordState):
     """
@@ -248,6 +251,8 @@ async def query_generator(state: KeywordState):
     #         "search_queries": search_queries,
     #         "tool_call_count": state.get("tool_call_count", 0),
     #     }
+    # for testing
+    await asyncio.sleep(2.6)  # simulate model call delay
     return {
         "messages": temp_data.query_generator_ai_message,
         "search_queries": temp_data.query_generator_search_queries,
@@ -321,6 +326,7 @@ async def router_and_state_updater(state: KeywordState):
     #         "route_to": router_decision.route,
     #         "web_search_results_accumulated": web_search_results,
     #     }
+    await asyncio.sleep(2.1)  # simulate model call delay
     return {
         "route_to": "competitor_analysis",
         "web_search_results_accumulated": temp_data.router_web_search_results_accumulated
@@ -388,6 +394,7 @@ async def competitor_analysis(state: KeywordState):
     #     "generated_search_queries": generated_search_queries,
     #     "competitive_analysis": competitive_analysis,
     # }
+    await asyncio.sleep(20)
     return {
         "competitor_information": temp_data.competitor_information,
         "generated_search_queries": temp_data.ca_generated_search_queries,
@@ -421,6 +428,7 @@ async def google_keyword_planner1(state: KeywordState):
 
     # # Update the state with the results
     # return {"planner_list1": planner_list1}
+    await asyncio.sleep(5.1)
     return {"planner_list1": temp_data.planner_list1}
 
 
@@ -458,6 +466,7 @@ async def google_keyword_planner2(state: KeywordState):
 
     # # Update the state with the results
     # return {"planner_list2": planner_list2}
+    await asyncio.sleep(4.2)
     return {"planner_list2": temp_data.planner_list2}
 
 
@@ -531,53 +540,59 @@ async def masterlist_and_primary_keyword_generator(state: KeywordState):
         - state.primary_keywords: List of primary keywords with reasoning.
         - state.secondary_keywords: List of secondary keywords with reasoning.
     """
-    # extract all the input data from the state
-    user_input: str = state.get("user_input", "")
-    retrieved_entities: list[str] = state.get("retrieved_entities", [])
-    competitor_information: list[dict[str, str | int]] = state.get(
-        "competitor_information", []
-    )
-    search_queries: list[str] = state.get("generated_search_queries", [])
-    competitor_analysis: str = state.get("competitive_analysis", "")
-    keyword_planner_data: list[dict[str, int | str | dict[str, int]]] = state.get(
-        "keyword_planner_data", []
-    )
-    # format some input vars for inserting into the prompt as string
-    keyword_planner_data_str: str = json.dumps(keyword_planner_data, indent=2)
+    # # extract all the input data from the state
+    # user_input: str = state.get("user_input", "")
+    # retrieved_entities: list[str] = state.get("retrieved_entities", [])
+    # competitor_information: list[dict[str, str | int]] = state.get(
+    #     "competitor_information", []
+    # )
+    # search_queries: list[str] = state.get("generated_search_queries", [])
+    # competitor_analysis: str = state.get("competitive_analysis", "")
+    # keyword_planner_data: list[dict[str, int | str | dict[str, int]]] = state.get(
+    #     "keyword_planner_data", []
+    # )
+    # # format some input vars for inserting into the prompt as string
+    # keyword_planner_data_str: str = json.dumps(keyword_planner_data, indent=2)
     
-    # initialize the output variables
-    keyword_masterlist: list[dict[str, str]] = []
-    primary_keywords: list[dict[str, str]] = []
-    secondary_keywords: list[dict[str, str]] = []
+    # # initialize the output variables
+    # keyword_masterlist: list[dict[str, str]] = []
+    # primary_keywords: list[dict[str, str]] = []
+    # secondary_keywords: list[dict[str, str]] = []
     
-    # prepare the prompt for the masterlist and primary keyword generator model
-    prompt = MASTERLIST_PRIMARY_SECONDARY_KEYWORD_GENERATOR_PROMPT.format(
-        user_article=user_input,
-        entities=retrieved_entities,
-        generated_search_queries=search_queries,
-        competitor_information=competitor_information,
-        competitor_analysis=competitor_analysis,
-        keyword_planner_data=keyword_planner_data_str
-    )
+    # # prepare the prompt for the masterlist and primary keyword generator model
+    # prompt = MASTERLIST_PRIMARY_SECONDARY_KEYWORD_GENERATOR_PROMPT.format(
+    #     user_article=user_input,
+    #     entities=retrieved_entities,
+    #     generated_search_queries=search_queries,
+    #     competitor_information=competitor_information,
+    #     competitor_analysis=competitor_analysis,
+    #     keyword_planner_data=keyword_planner_data_str
+    # )
 
-    try:
-        response: MasterlistAndPrimarySecondaryKeywords = await MPS_MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(
-            [HumanMessage(content=prompt)]
-        ) # type: ignore
+    # try:
+    #     response: MasterlistAndPrimarySecondaryKeywords = await MPS_MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(
+    #         [HumanMessage(content=prompt)]
+    #     ) # type: ignore
         
-        # Convert each Pydantic model in the lists to a dict for state compatibility
-        keyword_masterlist = [item.model_dump() for item in response.keyword_masterlist]
-        primary_keywords = [item.model_dump() for item in response.primary_keywords]
-        secondary_keywords = [item.model_dump() for item in response.secondary_keywords]
+    #     # Convert each Pydantic model in the lists to a dict for state compatibility
+    #     keyword_masterlist = [item.model_dump() for item in response.keyword_masterlist]
+    #     primary_keywords = [item.model_dump() for item in response.primary_keywords]
+    #     secondary_keywords = [item.model_dump() for item in response.secondary_keywords]
         
-    except Exception as e:
-        print(f"Error occurred in masterlist and primary keyword generator node: {e}")
+    # except Exception as e:
+    #     print(f"Error occurred in masterlist and primary keyword generator node: {e}")
     
-    # update the state with the results
+    # # update the state with the results
+    # return {
+    #     "keyword_masterlist": keyword_masterlist,
+    #     "primary_keywords": primary_keywords,
+    #     "secondary_keywords": secondary_keywords,
+    # }
+    await asyncio.sleep(18) 
     return {
-        "keyword_masterlist": keyword_masterlist,
-        "primary_keywords": primary_keywords,
-        "secondary_keywords": secondary_keywords,
+        "keyword_masterlist": temp_data.keyword_masterlist,
+        "primary_keywords": temp_data.primary_keywords,
+        "secondary_keywords": temp_data.secondary_keywords
     }
 
 
@@ -595,51 +610,57 @@ async def suggestions_generator(state: KeywordState):
         - state.suggested_article_headlines: List of suggested article headlines.
         - state.final_answer: Final answer paragraph.
     """
-    # get input data from the state
-    user_input: str = state.get("user_input", "")
-    primary_keywords: list[dict[str, str]] = state.get(
-        "primary_keywords", []
-    )
-    secondary_keywords: list[dict[str, str]] = state.get(
-        "secondary_keywords", []
-    )
-    competitor_information: list[dict[str, str | int]] = state.get(
-        "competitor_information", []
-    )
-    competitor_analysis: str = state.get("competitive_analysis", "")
+    # # get input data from the state
+    # user_input: str = state.get("user_input", "")
+    # primary_keywords: list[dict[str, str]] = state.get(
+    #     "primary_keywords", []
+    # )
+    # secondary_keywords: list[dict[str, str]] = state.get(
+    #     "secondary_keywords", []
+    # )
+    # competitor_information: list[dict[str, str | int]] = state.get(
+    #     "competitor_information", []
+    # )
+    # competitor_analysis: str = state.get("competitive_analysis", "")
     
-    # initialize the output variables
-    suggested_url_slug: str = ""
-    suggested_article_headlines: list[str] = []
-    final_answer: str = ""
+    # # initialize the output variables
+    # suggested_url_slug: str = ""
+    # suggested_article_headlines: list[str] = []
+    # final_answer: str = ""
     
-    # prepare the prompt for the suggestions generator model
-    prompt = SUGGESTION_GENERATOR_PROMPT.format(
-        user_article=user_input,
-        primary_keywords=primary_keywords,
-        secondary_keywords=secondary_keywords,
-        competitor_information=competitor_information,
-        competitor_analysis=competitor_analysis
-    )
+    # # prepare the prompt for the suggestions generator model
+    # prompt = SUGGESTION_GENERATOR_PROMPT.format(
+    #     user_article=user_input,
+    #     primary_keywords=primary_keywords,
+    #     secondary_keywords=secondary_keywords,
+    #     competitor_information=competitor_information,
+    #     competitor_analysis=competitor_analysis
+    # )
     
-    try:
-        response: SuggestionGeneratorModel = await SUGGESTIONS_MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(
-            [HumanMessage(content=prompt)]
-        )  # type: ignore
+    # try:
+    #     response: SuggestionGeneratorModel = await SUGGESTIONS_MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(
+    #         [HumanMessage(content=prompt)]
+    #     )  # type: ignore
 
-        # extract the output variables from the response
-        suggested_url_slug = response.suggested_url_slug
-        suggested_article_headlines = response.suggested_article_headlines
-        final_answer = response.final_suggestions
+    #     # extract the output variables from the response
+    #     suggested_url_slug = response.suggested_url_slug
+    #     suggested_article_headlines = response.suggested_article_headlines
+    #     final_answer = response.final_suggestions
 
-    except Exception as e:
-        print(f"Error occurred in suggestions generator node: {e}")
+    # except Exception as e:
+    #     print(f"Error occurred in suggestions generator node: {e}")
         
-    # update the state with the results
+    # # update the state with the results
+    # return {
+    #     "suggested_url_slug": suggested_url_slug,
+    #     "suggested_article_headlines": suggested_article_headlines,
+    #     "final_answer": final_answer,
+    # }
+    await asyncio.sleep(13) 
     return {
-        "suggested_url_slug": suggested_url_slug,
-        "suggested_article_headlines": suggested_article_headlines,
-        "final_answer": final_answer,
+        "suggested_url_slug": temp_data.suggested_url_slug,
+        "suggested_article_headlines": temp_data.suggested_article_headlines,
+        "final_answer": temp_data.final_answer
     }
 
 
