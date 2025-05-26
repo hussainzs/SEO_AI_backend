@@ -2,9 +2,10 @@
 Write all the node functions for the keywords agent here.
 """
 
-from pprint import pprint
 import json
 from typing import Any
+
+from httpx import stream
 from src.agents.keywords_agent.state import KeywordState
 from langchain_core.messages import HumanMessage
 from langgraph.config import get_stream_writer
@@ -23,14 +24,14 @@ from src.agents.keywords_agent.prompts import (
     ROUTE_QUERY_OR_ANALYSIS_PROMPT,
     COMPETITOR_ANALYSIS_AND_STRUCTURED_OUTPUT_PROMPT,
     MASTERLIST_PRIMARY_SECONDARY_KEYWORD_GENERATOR_PROMPT,
-    SUGGESTION_GENERATOR_PROMPT
+    SUGGESTION_GENERATOR_PROMPT,
 )
 from src.agents.keywords_agent.schemas import (
     Entities,
     RouteToQueryOrAnalysis,
     CompetitorAnalysisOutputModel,
     MasterlistAndPrimarySecondaryKeywords,
-    SuggestionGeneratorModel
+    SuggestionGeneratorModel,
 )
 from src.tools.web_search_tool import WebSearch
 
@@ -144,8 +145,15 @@ async def entity_extractor(state: KeywordState):
     """
     # initialize custom stream writer for langgraph to emit functions to frontend
     stream_writer = get_stream_writer()
-    stream_writer({"type": "internal", "node": "entity_extractor", "content": "Extracting entities from your article to understand the topic better."})
-    
+    stream_writer(
+        {
+            "type": "internal",
+            "event_status": "new",
+            "node": "entity_extractor",
+            "content": "Extracting entities from your article to understand the topic better.",
+        }
+    )
+
     # Get user input from state
     user_article: str = state["user_input"]
 
@@ -166,15 +174,33 @@ async def entity_extractor(state: KeywordState):
         retrieved_entities: list[str] = entities.entities
 
     except Exception as e:
-        # This will only trigger if both models fail
-        raise RuntimeError(
-            f"Entity extraction failed with all available models: {str(e)}"
-        ) from e
+        stream_writer(
+            {
+                "type": "error",
+                "event_status": "new",
+                "node": "entity_extractor",
+                "content": f"Error encountered in Entity Extraction: {str(e)}",
+            }
+        )
+        # if error has occured we will terminate the connection with frontend and user should see error message.
+        print(f"Error encountered in Entity Extraction: {e}")
 
-    # Return the retrieved entities
-    print(f"Retrieved entities: {retrieved_entities}")
-    
-    stream_writer({"type": "internal", "node": "entity_extractor", "content": retrieved_entities})
+    stream_writer(
+        {
+            "type": "success",
+            "event_status": "old",
+            "node": "entity_extractor",
+            "content": f"Entities extracted successfully!",
+        }
+    )
+    stream_writer(
+        {
+            "type": "internal_content",
+            "event_status": "old",
+            "node": "entity_extractor",
+            "content": retrieved_entities,
+        }
+    )
     return {"retrieved_entities": retrieved_entities}
 
 
@@ -191,7 +217,14 @@ async def query_generator(state: KeywordState):
     """
     # initialize custom stream writer for langgraph to emit functions to frontend
     stream_writer = get_stream_writer()
-    stream_writer({"type": "internal", "node": "query_generator", "content": "Generating search queries to find your competitors..."})
+    stream_writer(
+        {
+            "type": "internal",
+            "event_status": "new",
+            "node": "query_generator",
+            "content": "Generating search queries to find your competitors...",
+        }
+    )
 
     # check this to ensure AI made a tool call and followed instructions. this way we can add 1 to tool_call_count
     tool_call_was_made: bool = False
@@ -208,44 +241,71 @@ async def query_generator(state: KeywordState):
         web_search_results=web_search_results,
     )
 
-    ai_message = await QUERY_GENERATOR_MODEL_WITH_FALLBACK_AND_TOOLS.ainvoke(
-        [HumanMessage(content=prompt)]
-    )
+    try:
+        ai_message = await QUERY_GENERATOR_MODEL_WITH_FALLBACK_AND_TOOLS.ainvoke(
+            [HumanMessage(content=prompt)]
+        )
 
-    # access tool calls array in AIMessage (tool_calls always present but maybe empty if AI didn't make a tool call and misbehaved)
-    # !! we are manually extracting the tool calls, instead we COULD have done a structured output but models misbehave more often when they are provided both tools and structured output.
-    tool_calls: list[Any] = ai_message.tool_calls  # type: ignore
-    for t in tool_calls:
-        # here "query" can be accessed because thats the exact name of the parameter for web_search_tool. If that ever changes this must change too!
-        query: str = t["args"]["query"]
-        search_queries.append(query)
+        # access tool calls array in AIMessage (tool_calls always present but maybe empty if AI didn't make a tool call and misbehaved)
+        # !! we are manually extracting the tool calls, instead we COULD have done a structured output but models misbehave more often when they are provided both tools and structured output.
+        tool_calls: list[Any] = ai_message.tool_calls  # type: ignore
+        for t in tool_calls:
+            # here "query" can be accessed because thats the exact name of the parameter for web_search_tool. If that ever changes this must change too!
+            query: str = t["args"]["query"]
+            search_queries.append(query)
 
-    # update tool_call_was_made variable to true if AI made a tool call. This allows us to increment the tool_call_count in the state.
-    if len(tool_calls) > 0 and len(search_queries) > 0:
-        tool_call_was_made = True
+        # update tool_call_was_made variable to true if AI made a tool call. This allows us to increment the tool_call_count in the state.
+        if len(tool_calls) > 0 and len(search_queries) > 0:
+            stream_writer(
+                {
+                    "type": "success",
+                    "event_status": "old",
+                    "node": "query_generator",
+                    "content": "Queries generated successfully!",
+                }
+            )
+            tool_call_was_made = True
 
-    # stream these search queries to the frontend so user can see them
-    stream_writer({"type": "internal", "node": "query_generator", "content": search_queries})
+        # stream these search queries to the frontend so user can see them
+        stream_writer(
+            {
+                "type": "internal_content",
+                "event_status": "old",
+                "node": "query_generator",
+                "content": search_queries,
+            }
+        )
 
-    if tool_call_was_made:
-        return {
-            # add AIMessage to 'messages' so tools_condition edge can detect the tool call and route to "tools" node.
-            "messages": [ai_message],
-            # we add search queries in the state so we can access them in the router_and_state_updater node. They are useful in formatting web_search_results_accumulated
-            "generated_search_queries": search_queries,
-            # increment the tool_call_count so we can route to "competitor_analysis" node after 2 calls (this sets an upper bound on the tool calls)
-            "tool_call_count": state.get("tool_call_count", 0) + 1,
-        }
-    else:
-        # if AI didn't make a tool call then we will not increment the tool_call_count but still initialize to 0.
-        # this is the misbehaved state thus router_and_state_updater will route back to this node. Sometimes simple retries work.
-        # NOTE: This can cause infinite loop if AI keeps misbehaving (unlikely but these LLMs are unpredictable).
-        # TODO: add a max retry count to prevent infinite loop.
-        return {
-            "messages": [ai_message],
-            "search_queries": search_queries,
-            "tool_call_count": state.get("tool_call_count", 0),
-        }
+        if tool_call_was_made:
+            return {
+                # add AIMessage to 'messages' so tools_condition edge can detect the tool call and route to "tools" node.
+                "messages": [ai_message],
+                # we add search queries in the state so we can access them in the router_and_state_updater node. They are useful in formatting web_search_results_accumulated
+                "generated_search_queries": search_queries,
+                # increment the tool_call_count so we can route to "competitor_analysis" node after 2 calls (this sets an upper bound on the tool calls)
+                "tool_call_count": state.get("tool_call_count", 0) + 1,
+            }
+        else:
+            # if AI didn't make a tool call then we will not increment the tool_call_count but still initialize to 0.
+            # this is the misbehaved state thus router_and_state_updater will route back to this node. Sometimes simple retries work.
+            # NOTE: This can cause infinite loop if AI keeps misbehaving (unlikely but these LLMs are unpredictable).
+            # TODO: add a max retry count to prevent infinite loop.
+            return {
+                "messages": [ai_message],
+                "search_queries": search_queries,
+                "tool_call_count": state.get("tool_call_count", 0),
+            }
+
+    except Exception as e:
+        stream_writer(
+            {
+                "type": "error",
+                "event_status": "new",
+                "node": "query_generator",
+                "content": f"Error encountered in Query Generation: {str(e)}",
+            }
+        )
+        print(f"Error encountered in Query Generation: {e}")
 
 
 async def router_and_state_updater(state: KeywordState):
@@ -257,13 +317,32 @@ async def router_and_state_updater(state: KeywordState):
         - state._web_search_results_accumulated: updates it with the tool response. Adds the search queries to the tool response as well.
         - state.route_to: sets it to "competitor_analysis" or "query_generator" based on the tool response.
     """
+    # initialize custom stream writer for langgraph to emit functions to frontend
+    stream_writer = get_stream_writer()
+    stream_writer(
+        {
+            "type": "internal",
+            "event_status": "new",
+            "node": "query_analyzer",
+            "content": "Determining if we have enough quality competitors to proceed with competitor analysis...",
+        }
+    )
+
     # if tool call count is 0 that means no tool call was made and we should route to "query_generator" node
     if state["tool_call_count"] == 0:
-        print("\n\nTool call count is 0. Routing to query_generator node.\n\n")
+        stream_writer(
+            {
+                "type": "internal",
+                "event_status": "old",
+                "node": "query_analyzer",
+                "content": "Something went wrong and no query was generated by the AI. Routing back to query generator",
+            }
+        )
         # if we have not called the tool yet, we will call it again
         return {"route_to": "query_generator"}
 
     if state["tool_call_count"] >= 2:
+
         # if we have already called the tool twice, we will not call it again but we still need to update web_search_results with latest tool response (append to existing results)
         messages: list = state["messages"]
         web_search_results = await update_web_search_results(
@@ -274,7 +353,14 @@ async def router_and_state_updater(state: KeywordState):
             ),
         )
 
-        print("\n\nTool call count is 2. Routing to competitor_analysis node.\n\n")
+        stream_writer(
+            {
+                "type": "internal",
+                "event_status": "old",
+                "node": "query_analyzer",
+                "content": "Found enough competitors, transferring to competitor analyst for further processing",
+            }
+        )
         return {
             "route_to": "competitor_analysis",
             "web_search_results_accumulated": web_search_results,
@@ -310,6 +396,26 @@ async def router_and_state_updater(state: KeywordState):
             [HumanMessage(content=prompt)]
         )  # type: ignore
 
+        # stream the decision to the frontend
+        if router_decision.route == "competitor_analysis":
+            stream_writer(
+                {
+                    "type": "internal",
+                    "event_status": "old",
+                    "node": "query_analyzer",
+                    "content": "Enough quality competitors found, routing to competitor analysis node for further processing",
+                }
+            )
+        elif router_decision.route == "query_generator":
+            stream_writer(
+                {
+                    "type": "internal",
+                    "event_status": "old",
+                    "node": "query_analyzer",
+                    "content": "Not enough quality competitors found, routing back to query generator node to generate more queries and find more competitors",
+                }
+            )
+
         return {
             "route_to": router_decision.route,
             "web_search_results_accumulated": web_search_results,
@@ -326,6 +432,16 @@ async def competitor_analysis(state: KeywordState):
         - state.competitive_analysis: Competitive analysis generated by our agent after comparing our article with competitor content.
         - state.web_search_results_accumulated: Cleans up the space by setting it to "" so garbage collector can clean it up.
     """
+    # initialize custom stream writer for langgraph to emit functions to frontend
+    stream_writer = get_stream_writer()
+    stream_writer(
+        {
+            "type": "internal",
+            "node": "competitor_analyst",
+            "content": "Conducting competitor analysis on the top search results to gather insights",
+        }
+    )
+
     # first get the input variables from the state
     user_input: str = state.get("user_input", "")
     retrieved_entities: list[str] = state.get("retrieved_entities", [])
@@ -533,12 +649,12 @@ async def masterlist_and_primary_keyword_generator(state: KeywordState):
     )
     # format some input vars for inserting into the prompt as string
     keyword_planner_data_str: str = json.dumps(keyword_planner_data, indent=2)
-    
+
     # initialize the output variables
     keyword_masterlist: list[dict[str, str]] = []
     primary_keywords: list[dict[str, str]] = []
     secondary_keywords: list[dict[str, str]] = []
-    
+
     # prepare the prompt for the masterlist and primary keyword generator model
     prompt = MASTERLIST_PRIMARY_SECONDARY_KEYWORD_GENERATOR_PROMPT.format(
         user_article=user_input,
@@ -546,22 +662,24 @@ async def masterlist_and_primary_keyword_generator(state: KeywordState):
         generated_search_queries=search_queries,
         competitor_information=competitor_information,
         competitor_analysis=competitor_analysis,
-        keyword_planner_data=keyword_planner_data_str
+        keyword_planner_data=keyword_planner_data_str,
     )
 
     try:
-        response: MasterlistAndPrimarySecondaryKeywords = await MPS_MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(
+        response: (
+            MasterlistAndPrimarySecondaryKeywords
+        ) = await MPS_MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(
             [HumanMessage(content=prompt)]
-        ) # type: ignore
-        
+        )  # type: ignore
+
         # Convert each Pydantic model in the lists to a dict for state compatibility
         keyword_masterlist = [item.model_dump() for item in response.keyword_masterlist]
         primary_keywords = [item.model_dump() for item in response.primary_keywords]
         secondary_keywords = [item.model_dump() for item in response.secondary_keywords]
-        
+
     except Exception as e:
         print(f"Error occurred in masterlist and primary keyword generator node: {e}")
-    
+
     # update the state with the results
     return {
         "keyword_masterlist": keyword_masterlist,
@@ -586,33 +704,31 @@ async def suggestions_generator(state: KeywordState):
     """
     # get input data from the state
     user_input: str = state.get("user_input", "")
-    primary_keywords: list[dict[str, str]] = state.get(
-        "primary_keywords", []
-    )
-    secondary_keywords: list[dict[str, str]] = state.get(
-        "secondary_keywords", []
-    )
+    primary_keywords: list[dict[str, str]] = state.get("primary_keywords", [])
+    secondary_keywords: list[dict[str, str]] = state.get("secondary_keywords", [])
     competitor_information: list[dict[str, str | int]] = state.get(
         "competitor_information", []
     )
     competitor_analysis: str = state.get("competitive_analysis", "")
-    
+
     # initialize the output variables
     suggested_url_slug: str = ""
     suggested_article_headlines: list[str] = []
     final_answer: str = ""
-    
+
     # prepare the prompt for the suggestions generator model
     prompt = SUGGESTION_GENERATOR_PROMPT.format(
         user_article=user_input,
         primary_keywords=primary_keywords,
         secondary_keywords=secondary_keywords,
         competitor_information=competitor_information,
-        competitor_analysis=competitor_analysis
+        competitor_analysis=competitor_analysis,
     )
-    
+
     try:
-        response: SuggestionGeneratorModel = await SUGGESTIONS_MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(
+        response: (
+            SuggestionGeneratorModel
+        ) = await SUGGESTIONS_MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(
             [HumanMessage(content=prompt)]
         )  # type: ignore
 
@@ -623,7 +739,7 @@ async def suggestions_generator(state: KeywordState):
 
     except Exception as e:
         print(f"Error occurred in suggestions generator node: {e}")
-        
+
     # update the state with the results
     return {
         "suggested_url_slug": suggested_url_slug,
@@ -633,6 +749,7 @@ async def suggestions_generator(state: KeywordState):
 
 
 # utility function to help update web search. since we needed it twice i made it a function
+
 
 async def update_web_search_results(
     messages: list, search_queries: list[str], web_search_results_accumulated: str
