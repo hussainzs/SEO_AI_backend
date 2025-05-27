@@ -550,8 +550,8 @@ async def google_keyword_planner1(state: KeywordState):
     stream_writer({
         "type": "internal",
         "event_status": "new",
-        "node": "Google Keyword Planner 1",
-        "content": "Using Google keyword planner to get keyword recommendations for your article",
+        "node": "Google Keyword Planner",
+        "content": "Using Google keyword planner to get keyword recommendations for your article. Running parallel calls to get many different keywords",
     })
     
     # Get the seed keywords from the state
@@ -570,12 +570,6 @@ async def google_keyword_planner1(state: KeywordState):
         planner_list1: list[dict[str, str | int]] = await fetch_gkp_keywords(
             seed_keywords=seed_keywords, url=top_url
         )
-        stream_writer({
-            "type": "internal",
-            "event_status": "old",
-            "node": "Google Keyword Planner 1",
-            "content": f"Found {len(planner_list1)} keywords!",
-        })
         
         # Update the state with the results
         return {"planner_list1": planner_list1}
@@ -599,12 +593,7 @@ async def google_keyword_planner2(state: KeywordState):
         - state.planner_list2: List of keyword data from the second GKP call
     """
     stream_writer = get_stream_writer()
-    stream_writer({
-        "type": "internal",
-        "event_status": "new",
-        "node": "Google Keyword Planner 2",
-        "content": "Using Google Keyword Planner again to get more keyword recommendations this time considering your competitors",
-    })
+
     # Get the seed keywords from the state
     seed_keywords: list[str] = state.get("retrieved_entities", [])
 
@@ -629,12 +618,6 @@ async def google_keyword_planner2(state: KeywordState):
             seed_keywords=seed_keywords, url=second_url
         )
 
-        stream_writer({
-            "type": "internal",
-            "event_status": "old",
-            "node": "Google Keyword Planner 2",
-            "content": f"Found {len(planner_list2)} more keywords!",
-        })
         # Update the state with the results
         return {"planner_list2": planner_list2}
 
@@ -659,12 +642,6 @@ async def keyword_data_synthesizer(state: KeywordState):
         - state.keyword_planner_data: Combined and sorted list of keyword data from both GKP calls.
     """
     stream_writer = get_stream_writer()
-    stream_writer({
-        "type": "internal",
-        "event_status": "new",
-        "node": "Keywords Synthesizer",
-        "content": "Combining and deduplicating keyword planner data collected from both GKP calls...",
-    })
     
     # Retrieve the two lists of keyword data from the state, defaulting to empty lists if not present (though it should be present)
     planner_list1: list[dict[str, int | str | dict[str, int]]] = state.get(
@@ -673,6 +650,21 @@ async def keyword_data_synthesizer(state: KeywordState):
     planner_list2: list[dict[str, int | str | dict[str, int]]] = state.get(
         "planner_list2", []
     )
+    size: int = len(planner_list1) + len(planner_list2)
+    
+    stream_writer({
+        "type": "internal",
+        "event_status": "old",
+        "node": "Google Keyword Planner",
+        "content": f"Google Keyword Planner recommendations received! Found a total of {size} keywords.",
+    })
+    
+    stream_writer({
+        "type": "internal",
+        "event_status": "new",
+        "node": "Keywords Synthesizer",
+        "content": f"Now combining and deduplicating those {size} keywords to get unique keywords ...",
+    })
 
     # Initialize a set to track unique keyword texts for deduplication
     seen_keywords: set[str] = set()
@@ -703,7 +695,7 @@ async def keyword_data_synthesizer(state: KeywordState):
             "type": "internal",
             "event_status": "old",
             "node": "Keywords Synthesizer",
-            "content": f"Combined and sorted all keywords, finalized {len(combined_keywords)} unique keywords!",
+            "content": f"Combined and sorted all keywords, finalized {len(combined_keywords)} unique keywords for your article!",
         })
         
         # Return the updated state with the combined keyword planner data
@@ -748,7 +740,7 @@ async def masterlist_and_primary_keyword_generator(state: KeywordState):
         "type": "internal",
         "event_status": "new",
         "node": "Masterlist and Primary Keyword Generator",
-        "content": "Generating a masterlist of most relevant keywords for your article and selecting top primary and secondary keywords. Sometimes this takes a few seconds to effectively extract everything...",
+        "content": "Generating a masterlist of most relevant keywords for your article and selecting SEO optimized primary and secondary keywords. Sometimes this takes a few seconds to effectively extract everything...",
     })
     
     # extract all the input data from the state
@@ -826,6 +818,7 @@ async def masterlist_and_primary_keyword_generator(state: KeywordState):
             "node": "Masterlist and Primary Keyword Generator",
             "content": f"Error occurred in masterlist and primary keyword generator node: {str(e)}",
         })
+
 
 async def suggestions_generator(state: KeywordState):
     """

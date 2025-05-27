@@ -164,15 +164,16 @@ consider the following for generating the keyword-rich article titles:
 3. Suggest revised sentences with incorporation of primary & secondary keywords:
 consider the following for generating the revised sentences:
 a. Take a deep look at the article draft and primary and secondary keywords. Then identify the sentences in the article where we can incorporate the primary and secondary keywords.
-b. For each sentence, your job is to suggest a revised sentence with the keyword inserted. Try to minimally change the original sentence while making sure the sentence flows naturally with its surrounding context.
+b. For each sentence, your job is to suggest a revised sentence with the keyword inserted. Try to minimally change the original sentence while making sure the sentence flows naturally with its surrounding context. This is very important as we want to keep the original meaning and intent of the sentence. If you find yourself changing the meaning of the sentence to insert the keyword as an effective way to insert the keywords then you can do that but make a note of it in your output for that sentence and explain quantitatively and qualitatively why this is a good change in 1 sentence. 
 c. This should be done for inserting each primary and secondary keyword into the article.
 d. You should also consider the competitors and their content to see how they are using different keywords in their articles.
 5. For each revised sentence,  you need to classify them as either Critical SEO Boost (High Impact) or Minor Enhancement (Low Impact).
+6. Make sure you first show high impact revisions and then low impact revisions in your output.
 
 For structuring your output, you must follow the structured format provided to you. 
 1) URL slug is a string. 
 2) Article titles are a list of strings.
-3) Revised sentences should be a neatly formatted markdown paragraph spaced properly and easy to read. Each suggestion should show the original sentence and the revised sentence with the keyword inserted and bolded with their impact classification clearly visible. Make it pretty. All of this will be one markdown paragraph and should be output as a string. 
+3) Revised sentences should be a neatly formatted markdown paragraph spaced properly and easy to read. Each suggestion should show the original sentence and the revised sentence with the keyword inserted and bolded with their impact classification clearly visible and an explanation only if necessary. Make it pretty and well formatted and structured. All of this will be one markdown paragraph and should be output as a string as required by the structured format.
 
 Here is the article:
 {user_article}
