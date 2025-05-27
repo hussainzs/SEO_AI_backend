@@ -1,3 +1,6 @@
+# typing
+from typing import AsyncGenerator
+
 # Langgraph imports
 from langgraph.graph import StateGraph, START, END
 from langgraph.prebuilt import ToolNode, tools_condition
@@ -122,13 +125,29 @@ tracer = OpikTracer(
 
 
 # Run the agent
-async def run_keyword_agent_stream(user_input: str):
+async def run_keyword_agent_stream(user_input: str) -> AsyncGenerator:
 
-    async for update in keyword_agent.astream(
-        input={"messages": user_input, "user_input": user_input},
-        stream_mode="custom",
-        config={"callbacks": [tracer]},
-    ):
-        print("\n\n******************")
-        print(update)
-        print("\n")
+    try:
+        async for update in keyword_agent.astream(
+            input={"messages": user_input, "user_input": user_input},
+            stream_mode="custom",
+            config={"callbacks": [tracer]},
+        ):
+            print("\n\n******************")
+            print(update)
+            print("\n")
+            
+            # check if error was yielded, in which case we yield that error message but break the graph execution
+            if isinstance(update, dict) and update.get("type") == "error":
+                yield update
+                break
+            
+            # otherwise we can yield the update as a normal event and keep the graph execution going
+            yield update
+        
+        # Yield a final message indicating completion so connection can be closed gracefully
+        yield {"type": "complete", "content": "Agent workflow completed"}
+
+    except Exception as e:
+        print(f"Error initializing agent: {e}")
+        yield {"type": "error", "content": str(e)}

@@ -171,7 +171,7 @@ async def entity_extractor(state: KeywordState):
 
         # Extract the list of entities
         retrieved_entities: list[str] = entities.entities
-        
+
         stream_writer(
             {
                 "type": "internal",
@@ -387,7 +387,7 @@ async def router_and_state_updater(state: KeywordState):
             entities=retrieved_entities,
             web_search_results=web_search_results,
         )
-        
+
         try:
             # invoke the router model
             router_decision: (
@@ -420,7 +420,7 @@ async def router_and_state_updater(state: KeywordState):
                 "route_to": router_decision.route,
                 "web_search_results_accumulated": web_search_results,
             }
-            
+
         except Exception as e:
             stream_writer(
                 {
@@ -496,15 +496,17 @@ async def competitor_analysis(state: KeywordState):
             }
             # append the dictionary to the list
             competitor_information.append(competitor_info)
-        
+
         # stream the competitor information to the frontend
-        stream_writer({
-            "type": "internal",
-            "event_status": "old",
-            "node": "Competitor Analysis",
-            "content": "Phew! Competitor analysis completed successfully yay!",
-        })
-        
+        stream_writer(
+            {
+                "type": "internal",
+                "event_status": "old",
+                "node": "Competitor Analysis",
+                "content": "Phew! Competitor analysis completed successfully yay!",
+            }
+        )
+
         # this data will be used by frontend in the answer box (it will be stored until all internal steps finish and then will be displayed)
         stream_writer(
             {
@@ -529,12 +531,14 @@ async def competitor_analysis(state: KeywordState):
 
     except Exception as e:
         print(f"Error occurred in competitor analysis node: {e}")
-        stream_writer({
-            "type": "error",
-            "event_status": "new",
-            "node": "Competitor Analysis",
-            "content": f"Error occured in competitor analysis node: {str(e)}",
-        })
+        stream_writer(
+            {
+                "type": "error",
+                "event_status": "new",
+                "node": "Competitor Analysis",
+                "content": f"Error occured in competitor analysis node: {str(e)}",
+            }
+        )
 
 
 async def google_keyword_planner1(state: KeywordState):
@@ -547,13 +551,15 @@ async def google_keyword_planner1(state: KeywordState):
     """
     # custom stream writer for langgraph to emit functions to frontend
     stream_writer = get_stream_writer()
-    stream_writer({
-        "type": "internal",
-        "event_status": "new",
-        "node": "Google Keyword Planner",
-        "content": "Using Google keyword planner to get keyword recommendations for your article. Running parallel calls to get many different keywords",
-    })
-    
+    stream_writer(
+        {
+            "type": "internal",
+            "event_status": "new",
+            "node": "Google Keyword Planner",
+            "content": "Using Google keyword planner to get keyword recommendations for your article. Running parallel calls to get many different keywords",
+        }
+    )
+
     # Get the seed keywords from the state
     seed_keywords: list[str] = state.get("retrieved_entities", [])
 
@@ -561,7 +567,7 @@ async def google_keyword_planner1(state: KeywordState):
     competitor_information: list[dict[str, str | int]] = state.get(
         "competitor_information", []
     )
-    
+
     try:
         # Get the first URL from the competitor information (assumes at least one entry exists)
         top_url: str = competitor_information[0]["url"]  # type: ignore
@@ -570,18 +576,20 @@ async def google_keyword_planner1(state: KeywordState):
         planner_list1: list[dict[str, str | int]] = await fetch_gkp_keywords(
             seed_keywords=seed_keywords, url=top_url
         )
-        
+
         # Update the state with the results
         return {"planner_list1": planner_list1}
-    
+
     except Exception as e:
         print(f"Error occurred in Google Keyword Planner 1 node: {e}")
-        stream_writer({
-            "type": "error",
-            "event_status": "new",
-            "node": "Google Keyword Planner 1",
-            "content": f"Error occurred in Google Keyword Planner 1 node: {str(e)}",
-        })
+        stream_writer(
+            {
+                "type": "error",
+                "event_status": "new",
+                "node": "Google Keyword Planner 1",
+                "content": f"Error occurred in Google Keyword Planner 1 node: {str(e)}",
+            }
+        )
 
 
 async def google_keyword_planner2(state: KeywordState):
@@ -623,13 +631,15 @@ async def google_keyword_planner2(state: KeywordState):
 
     except Exception as e:
         print(f"Error occurred in Google Keyword Planner 2 node: {e}")
-        stream_writer({
-            "type": "error",
-            "event_status": "new",
-            "node": "Google Keyword Planner 2",
-            "content": f"Error occurred in Google Keyword Planner 2 node: {str(e)}",
-        })
-        
+        stream_writer(
+            {
+                "type": "error",
+                "event_status": "new",
+                "node": "Google Keyword Planner 2",
+                "content": f"Error occurred in Google Keyword Planner 2 node: {str(e)}",
+            }
+        )
+
 
 async def keyword_data_synthesizer(state: KeywordState):
     """
@@ -642,7 +652,7 @@ async def keyword_data_synthesizer(state: KeywordState):
         - state.keyword_planner_data: Combined and sorted list of keyword data from both GKP calls.
     """
     stream_writer = get_stream_writer()
-    
+
     # Retrieve the two lists of keyword data from the state, defaulting to empty lists if not present (though it should be present)
     planner_list1: list[dict[str, int | str | dict[str, int]]] = state.get(
         "planner_list1", []
@@ -651,20 +661,24 @@ async def keyword_data_synthesizer(state: KeywordState):
         "planner_list2", []
     )
     size: int = len(planner_list1) + len(planner_list2)
-    
-    stream_writer({
-        "type": "internal",
-        "event_status": "old",
-        "node": "Google Keyword Planner",
-        "content": f"Google Keyword Planner recommendations received! Found a total of {size} keywords.",
-    })
-    
-    stream_writer({
-        "type": "internal",
-        "event_status": "new",
-        "node": "Keywords Synthesizer",
-        "content": f"Now combining and deduplicating those {size} keywords to get unique keywords ...",
-    })
+
+    stream_writer(
+        {
+            "type": "internal",
+            "event_status": "old",
+            "node": "Google Keyword Planner",
+            "content": f"Google Keyword Planner recommendations received! Found a total of {size} keywords.",
+        }
+    )
+
+    stream_writer(
+        {
+            "type": "internal",
+            "event_status": "new",
+            "node": "Keywords Synthesizer",
+            "content": f"Now combining and deduplicating those {size} keywords to get unique keywords ...",
+        }
+    )
 
     # Initialize a set to track unique keyword texts for deduplication
     seen_keywords: set[str] = set()
@@ -690,14 +704,16 @@ async def keyword_data_synthesizer(state: KeywordState):
             key=lambda x: int(x.get("average_monthly_searches", 0)),  # type: ignore
             reverse=True,
         )
-        
-        stream_writer({
-            "type": "internal",
-            "event_status": "old",
-            "node": "Keywords Synthesizer",
-            "content": f"Combined and sorted all keywords, finalized {len(combined_keywords)} unique keywords for your article!",
-        })
-        
+
+        stream_writer(
+            {
+                "type": "internal",
+                "event_status": "old",
+                "node": "Keywords Synthesizer",
+                "content": f"Combined and sorted all keywords, finalized {len(combined_keywords)} unique keywords for your article!",
+            }
+        )
+
         # Return the updated state with the combined keyword planner data
         return {
             "keyword_planner_data": combined_keywords,
@@ -708,12 +724,14 @@ async def keyword_data_synthesizer(state: KeywordState):
     except Exception as sort_error:
         # Handle any sorting errors gracefully and print a meaningful message
         print(f"Error sorting combined keyword data: {sort_error}")
-        stream_writer({
-            "type": "error",
-            "event_status": "new",
-            "node": "Keywords Synthesizer",
-            "content": f"Error occurred while sorting keywords: {str(sort_error)}",
-        })
+        stream_writer(
+            {
+                "type": "error",
+                "event_status": "new",
+                "node": "Keywords Synthesizer",
+                "content": f"Error occurred while sorting keywords: {str(sort_error)}",
+            }
+        )
 
 
 async def masterlist_and_primary_keyword_generator(state: KeywordState):
@@ -736,13 +754,15 @@ async def masterlist_and_primary_keyword_generator(state: KeywordState):
         - state.secondary_keywords: List of secondary keywords with reasoning.
     """
     stream_writer = get_stream_writer()
-    stream_writer({
-        "type": "internal",
-        "event_status": "new",
-        "node": "Masterlist and Primary Keyword Generator",
-        "content": "Generating a masterlist of most relevant keywords for your article and selecting SEO optimized primary and secondary keywords. Sometimes this takes a few seconds to effectively extract everything...",
-    })
-    
+    stream_writer(
+        {
+            "type": "internal",
+            "event_status": "new",
+            "node": "Masterlist and Primary Keyword Generator",
+            "content": "Generating a masterlist of most relevant keywords for your article and selecting SEO optimized primary and secondary keywords. Sometimes this takes a few seconds to effectively extract everything...",
+        }
+    )
+
     # extract all the input data from the state
     user_input: str = state.get("user_input", "")
     retrieved_entities: list[str] = state.get("retrieved_entities", [])
@@ -783,26 +803,30 @@ async def masterlist_and_primary_keyword_generator(state: KeywordState):
         keyword_masterlist = [item.model_dump() for item in response.keyword_masterlist]
         primary_keywords = [item.model_dump() for item in response.primary_keywords]
         secondary_keywords = [item.model_dump() for item in response.secondary_keywords]
-        
-        stream_writer({
-            "type": "internal",
-            "event_status": "old",
-            "node": "Masterlist and Primary Keyword Generator",
-            "content": f"Generated masterlist with {len(keyword_masterlist)} keywords, selected {len(primary_keywords)} primary and {len(secondary_keywords)} secondary keywords",
-        })
-        
+
+        stream_writer(
+            {
+                "type": "internal",
+                "event_status": "old",
+                "node": "Masterlist and Primary Keyword Generator",
+                "content": f"Generated masterlist with {len(keyword_masterlist)} keywords, selected {len(primary_keywords)} primary and {len(secondary_keywords)} secondary keywords",
+            }
+        )
+
         # stream the results to the frontend so that they can be displayed in the answer box
-        stream_writer({
-            "type": "answer",
-            "event_status": "new",
-            "node": "Masterlist and Primary Keyword Generator",
-            "content": {
-                "keyword_masterlist": keyword_masterlist,
-                "primary_keywords": primary_keywords,
-                "secondary_keywords": secondary_keywords,
-            },
-        })
-        
+        stream_writer(
+            {
+                "type": "answer",
+                "event_status": "new",
+                "node": "Masterlist and Primary Keyword Generator",
+                "content": {
+                    "keyword_masterlist": keyword_masterlist,
+                    "primary_keywords": primary_keywords,
+                    "secondary_keywords": secondary_keywords,
+                },
+            }
+        )
+
         # update the state with the results
         return {
             "keyword_masterlist": keyword_masterlist,
@@ -812,12 +836,14 @@ async def masterlist_and_primary_keyword_generator(state: KeywordState):
 
     except Exception as e:
         print(f"Error occurred in masterlist and primary keyword generator node: {e}")
-        stream_writer({
-            "type": "error",
-            "event_status": "new",
-            "node": "Masterlist and Primary Keyword Generator",
-            "content": f"Error occurred in masterlist and primary keyword generator node: {str(e)}",
-        })
+        stream_writer(
+            {
+                "type": "error",
+                "event_status": "new",
+                "node": "Masterlist and Primary Keyword Generator",
+                "content": f"Error occurred in masterlist and primary keyword generator node: {str(e)}",
+            }
+        )
 
 
 async def suggestions_generator(state: KeywordState):
@@ -835,13 +861,15 @@ async def suggestions_generator(state: KeywordState):
         - state.final_answer: Final answer paragraph.
     """
     stream_writer = get_stream_writer()
-    stream_writer({
-        "type": "internal",
-        "event_status": "new",
-        "node": "Suggestions Generator",
-        "content": "Generating final suggestions for URL slug, article headlines, and final answer using all the information collected so far...",
-    })
-    
+    stream_writer(
+        {
+            "type": "internal",
+            "event_status": "new",
+            "node": "Suggestions Generator",
+            "content": "Generating final suggestions for URL slug, article headlines, and final answer using all the information collected so far...",
+        }
+    )
+
     # get input data from the state
     user_input: str = state.get("user_input", "")
     primary_keywords: list[dict[str, str]] = state.get("primary_keywords", [])
@@ -876,27 +904,31 @@ async def suggestions_generator(state: KeywordState):
         suggested_url_slug = response.suggested_url_slug
         suggested_article_headlines = response.suggested_article_headlines
         final_answer = response.final_suggestions
-        
+
         # stream the suggestions to the frontend
-        stream_writer({
-            "type": "internal",
-            "event_status": "old",
-            "node": "Suggestions Generator",
-            "content": f"Generated suggestion susccessfully!",
-        })
-        
+        stream_writer(
+            {
+                "type": "internal",
+                "event_status": "old",
+                "node": "Suggestions Generator",
+                "content": f"Generated suggestion susccessfully!",
+            }
+        )
+
         # stream the answer as well so that it can be displayed in the answer box
-        stream_writer({
-            "type": "answer",
-            "event_status": "new",
-            "node": "Suggestions Generator",
-            "content": {
-                "suggested_url_slug": suggested_url_slug,
-                "suggested_article_headlines": suggested_article_headlines,
-                "final_answer": final_answer,
-            },
-        })
-        
+        stream_writer(
+            {
+                "type": "answer",
+                "event_status": "new",
+                "node": "Suggestions Generator",
+                "content": {
+                    "suggested_url_slug": suggested_url_slug,
+                    "suggested_article_headlines": suggested_article_headlines,
+                    "final_answer": final_answer,
+                },
+            }
+        )
+
         # update the state with the results
         return {
             "suggested_url_slug": suggested_url_slug,
@@ -906,11 +938,20 @@ async def suggestions_generator(state: KeywordState):
 
     except Exception as e:
         print(f"Error occurred in suggestions generator node: {e}")
+        stream_writer(
+            {
+                "type": "error",
+                "event_status": "new",
+                "node": "Suggestions Generator",
+                "content": f"Error occurred in suggestions generator node: {str(e)}",
+            }
+        )
 
 
 #################
 # # utility functions to help update web search. since we needed it twice i made it a function
 #################
+
 
 async def update_web_search_results(
     messages: list, search_queries: list[str], web_search_results_accumulated: str
