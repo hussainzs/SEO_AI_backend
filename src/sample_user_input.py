@@ -78,3 +78,75 @@ And other critics, including Sens. Lisa Murkowski of Alaska and Josh Hawley of M
 
 Democrats pile on: Lacking a majority in either chamber, Democrats have focused on highlighting the perceived winners and losers of the bill in its current form. Analysts say millions of low-income Americans stand to lose benefits, while the wealthy would see most of the windfall from tax cuts.
 """
+
+sample_input5 = """
+My Husband And I Assumed We Would Have Kids. A Dog Changed Our Minds.
+
+My husband, Nate, and I used to assume we’d have kids. We were both from the Ozarks and married young — plenty of time. But as our friends began to replace papasans and beer bongs with bouncy swings, we instead moved to New York City and later New Orleans (and then back to New York City). We got our first passports. I got a staff job at a magazine and found my career to be exhilarating.
+
+As we grew up together, we fell more in love, but the desire for children never arrived.
+
+By the time we had been married for 11 years, I was 35 years old and Nate was 37 — the age range my friends were dubbing the “closing door moment.” We knew we should make a final decision about what our family would look like. Did I need to freeze my eggs? Did I even have eggs? How would children fit into the life of a travel writer? Did we want children at all?
+
+While many people I knew were catching baby fever, I ached for a dog, and found myself covertly snapping photos of strangers’ pets on the street. Once, during a cocktail party, I told a fellow guest that I’d prefer to give birth to a puppy. No one wants to hear that confession. People instead want to hear that you love the smell of babies. But that wasn’t our life … not yet, anyway.
+
+A dog, however, was a no-brainer. We already had a cat we called Kitty Fat Pants: a portly feline who showed up on a neighbor’s doorstep while they were making a meatloaf. For me, having animals was natural; I grew up in a houseful of them. We had cats, dogs, birds, a ferret and even a miniature pig named Mabel.
+
+Nate and I met our dog in Louisiana, a 4-year-old-ish black rescue Lab-shepherd mix we named Delta Burke. It was an homage to the raven-haired diva from “Designing Women,” one of my favorite sitcoms as a child. Our Delta’s coat was the same glossy black and she was born in the South but had little else in common with the star.
+
+Instead of Suzanne Sugarbaker sass, our Delta whimpered and cried constantly for her first few months at our house, allowing us little sleep coupled with an excruciating amount of worry. She was a trepidatious eater, afraid to walk through doorways and did not want to be cuddled. I’ve heard many mothers murmur the mantra that the days are long but the years are short, and it rang true to me. I wasn’t a mother struggling through overnights with an infant, but making sure this animal felt at home became my most important task.
+
+It wasn’t long before Delta slowly started to turn a corner. She learned that we were her protectors. She soon took to greeting me at my bedside each morning and liked to nuzzle her nose near my chest. Her age didn’t matter yet.
+
+It was ours that did. Our door was starting to close.
+
+Delta fit perfectly into our little family. She became calm over the years. She seemed happy. As she creeped up in age, my husband and I often discussed how distraught we’d be when she was no longer with us. I’m a type-A planner and was prepared to be unmoored by the grieving period. I once told Nate to lock me in a padded room with a sedative after she left us.
+
+Grief was not foreign to either of us. While we were in our early 20s, my husband saw his father die of a heart attack while watching the MLB All-Star game. Three years later, I found my own father dead, pills scattered on his bedside table. But those were humans, parents. We expected it to feel different when our pets passed on.
+
+Most of my childhood animals died of old age, were occasionally run over by vehicles or scampered away into the woods forever. We weren’t the type of family who had our animals’ teeth cleaned or sent off for a doggie DNA kit — let alone take them to the vet to be peacefully euthanized.
+
+Kitty Fat Pants, Delta’s sister, lived to be about 15 years old, and while I knew it was getting close to her life’s end, our final visit to the vet concluded with our veterinarian telling us that it was indeed “time.” Our Kitty had an inoperative tumor. This would be my first experience with euthanasia. I grief-panicked, and the conversation went something like this:
+
+Vet: Would you like to have Kitty cremated and keep the ashes?
+
+Me: No, but I would like you to cut off her paw and give it to me before I leave.
+
+Vet: Pardon?
+
+Me: (Incredulous): I want one of her paws. I’m open to any of the four, but I want to take one home and put it on a keychain.
+
+Vet: Like the rabbit keychains from the ’80s? We don’t do that. Do you want her ashes instead?
+
+I did not.
+
+When we returned home from the vet, Delta Burke gave us her typical greeting; the type that makes a person feel like the most important human to ever have lived and breathed. You’d have thought Beyoncé walked through our front door. Losing Kitty Fat Pants was devastating. But there was no more reliable comfort than Delta spilling her love all over us.
+
+Delta had lived in New Orleans, Northern California and New York City. She had put her paws in the Atlantic and Pacific. She even stayed at The Plaza Hotel and was given a custom bath robe. We were the couple who treated our dog like the child we never had — and learned that we never wanted.
+
+We called Delta our doghter. We also called her Nubby for her nub tail. We called her Deltini, as in, “Deltini, do you want a martini? Or perhaps a peach bellini?” But the most appropriate nickname for Delta was Mrs. Velvet Ears, another riff on a comedy from the ’80s. I’d spend hours stroking those soft fur triangles and would then whisper into them how much I adored her.
+
+By the time we reached out early 40s, we’d been married for 21 years, and had come to a very satisfying decision: Nate would get a vasectomy. (Snip snip! Bag of frozen peas! Voila!)
+
+When our vet told us that Delta wouldn’t have much time left, we planned a road trip — one of her favorite activities. She loved the car, her head perched out the rolled-down window, tongue flapping in the wind. We were on our way to Oklahoma City, where my husband, Nate, would be on assignment for three months, and had rented an Airbnb with a large backyard for her to roam. Her last year was to be a celebration.
+
+But Delta’s time with us turned out to be much shorter.
+
+The previous month had been a flurry of at-home vet visits, trying to determine why our girl had no appetite and took to hiding under the bed. Her sight had deteriorated, but we were sure that once she got a whiff of that rich red dirt in Oklahoma, she’d be zooming around the lawn.
+
+On the drive out, we stopped in our hometown in the Ozarks and were surrounded by our entire family while Delta lay with labored breath in front of the fireplace. The next morning, we knew.
+
+After scrambling to find a vet, we secured an appointment within two hours time. Her appointment for death was set for 10:30 a.m. She was then 14 years old by the LSPCA’s estimate.
+
+It’s utterly bizarre to know exactly how much time you have left with your beloved pet. The kind stranger who would serve as Delta’s death vet gave us five minutes to say goodbye. The time was agonizing but allowed us to hug her. It gave us time to tell our Deltini that we loved her. Time to whisper in the velvet triangles on her head.
+
+As my husband and I sobbed into her fur, I asked him, “Do you think this vet would let us have one of her ears?” Instead, we snipped off a tuft of her soft black hair and placed it in a Ziplock baggie.
+
+Right now is the first time my husband and I have ever lived without an animal in our home. That Airbnb in Oklahoma is void of dog hair and lazy snoring. I’ve not had the heart to sit in the backyard. We recently went to the local Walmart and I cried fat tears as we passed Pup-Peroni and dog decor, emblazoned with a snappy quote and a paw print. I would have scoffed at those signs in the past, but someday we’ll get another dog, and perhaps I’ll hang one next to the toothbrush holder.
+
+But not yet. Right now, we’re navigating life as temporary empty-nesters, unmoored by grief and trading trigger warnings when we pass a black dog in the park or find a wisp of her fur in our sneakers.
+
+We adopted Delta during the throes of our child-bearing years, and she rescued us from a life that we didn’t want. Our Doghter Delta slipped right in that “closing door” and gave us the blueprint for a future. Our lifetimes are to write a novel, but with a dog, we get only a few chapters. Delta taught us that it was enough.
+
+We are enough.
+"""

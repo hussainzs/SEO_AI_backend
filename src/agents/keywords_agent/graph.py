@@ -127,8 +127,8 @@ async def run_keyword_agent_stream(user_input: str):
     async for update in keyword_agent.astream(
         input={"messages": user_input, "user_input": user_input},
         stream_mode="custom",
-        # config={"callbacks": [tracer]},
+        config={"callbacks": [tracer]},
     ):
         print("\n\n******************")
         print(update)
-        print("\n*****************")
+        print("\n")

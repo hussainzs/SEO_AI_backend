@@ -450,7 +450,7 @@ async def competitor_analysis(state: KeywordState):
             "type": "internal",
             "event_status": "new",
             "node": "Competitor Analysis",
-            "content": "Conducting competitor analysis on the search results to find top competitors and analyze their content...",
+            "content": "Conducting competitor analysis on the search results to find top competitors and analyze their content. This may take sometime because there is alot to analyze...",
         }
     )
 
@@ -502,7 +502,7 @@ async def competitor_analysis(state: KeywordState):
             "type": "internal",
             "event_status": "old",
             "node": "Competitor Analysis",
-            "content": "Competitor analysis completed successfully!",
+            "content": "Phew! Competitor analysis completed successfully yay!",
         })
         
         # this data will be used by frontend in the answer box (it will be stored until all internal steps finish and then will be displayed)
@@ -748,7 +748,7 @@ async def masterlist_and_primary_keyword_generator(state: KeywordState):
         "type": "internal",
         "event_status": "new",
         "node": "Masterlist and Primary Keyword Generator",
-        "content": "Generating a masterlist of most relevant keywords for your article and selecting top primary and secondary keywords...",
+        "content": "Generating a masterlist of most relevant keywords for your article and selecting top primary and secondary keywords. Sometimes this takes a few seconds to effectively extract everything...",
     })
     
     # extract all the input data from the state
