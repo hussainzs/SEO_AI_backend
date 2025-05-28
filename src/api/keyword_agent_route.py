@@ -28,6 +28,9 @@ async def stream_keyword_agent(request: KeywordAgentRequest) -> StreamingRespons
         """
         # Call the agent workflow stream with the user's input query
         async for event in run_keyword_agent_stream(user_input=request.user_article):
+            """
+            run_keyword_agent_stream will break the loop if an error occurs or the agent completes its workflow
+            """
             # Each `event` is expected to be a dict; serialize it to a JSON string
             payload: str = json.dumps(obj=event)
             
