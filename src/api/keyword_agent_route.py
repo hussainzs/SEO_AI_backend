@@ -12,7 +12,7 @@ class KeywordAgentRequest (BaseModel):
     Request model for chat requests sent by clients.
     
     Attributes:
-        query (str): The user's input query string to be processed by the agent.
+        user_article (str): The user's input query string to be processed by the agent.
     """
     user_article: str
     
