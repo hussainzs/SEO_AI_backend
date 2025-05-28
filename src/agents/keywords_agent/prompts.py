@@ -7,6 +7,8 @@ ENTITY_EXTRACTOR_PROMPT = """
 You are an expert in Search Engine Optimization (SEO) and keyword research. You are given a draft of a news article.
 Your job is to extract the most important and representative entities from the article.
 
+To understand timeframe of news and articles, the current time in %Y-%m-%d %H:%M:%S format is: {current_time}
+
 While extracting the entities, please consider the following:
 1. the entities you extract will be used to generate search queries and find competitor articles written about the same topic. Keep this purpose in mind.
 2. your extracted entities will also be provided to Google Keyword Planner as seed keywords to find relevant keywords for this article. Those keywords
@@ -24,6 +26,8 @@ Here is the article:
 QUERY_GENERATOR_PROMPT = """
 You are an expert in SEO and keyword research. You are given a draft of a news article.
 Your job is to use the provided entities which are derived from the article and content of the article to come up with two targeted search queries and generate a tool call optimized to retrieve high-ranking articles closely related to the article's content and topic.
+
+To generate time sensitive queries, the current time in %Y-%m-%d %H:%M:%S format is: {current_time}
 
 While generating the search queries, please consider the following:
 1. the search queries you extract will be used to find competitor articles written about the same topic. Keep this purpose in mind. The search queries will be executed using tool provided to you. Thus you should output a tool call with the search query. 
@@ -54,6 +58,8 @@ Here is our user article:
 ROUTE_QUERY_OR_ANALYSIS_PROMPT = """
 You are an Search Engine Optimization (SEO) expert in keyword research and competitor analysis. You will recieve a user_article, a list of entities and a history of web queries that were executed to find competitors. Your task is to determine whether to generate new search queries or to conduct a competitor analysis based on the provided information.
 
+To understand timeframe of news and articles, the current time in %Y-%m-%d %H:%M:%S format is: {current_time}
+
 NOTE: Take a critical look at the web search results and the user article. If you think the web results (titles, urls, content) are good competitors and relevant to the user article then you should route to the competitor analysis node. If you think they are not sufficient for SEO competitor analysis, then you should route to the query generator node that tries to find new competitors.
 
 KEEP IN MIND: You may get 5-10 results for 1-2 search queries. If 8 out of 10 results are good competitors then you should route to the competitor analysis node. Otherwise, you should route to the query generator node.
@@ -73,6 +79,8 @@ COMPETITOR_ANALYSIS_AND_STRUCTURED_OUTPUT_PROMPT = """
 You are an Search Engine Optimization (SEO) expert in keyword research and competitor analysis. You will receive a user_article, a list of entities and a history of web queries and their results that were executed to find competitors. 
 
 Your task is to analyze the given information, conduct a thorough competitor analysis and generate a structured output as a response.
+
+To understand timeframe of news and articles and using time or seasonality in your reasoning, the current time in %Y-%m-%d %H:%M:%S format is: {current_time}
 
 While conducting your analysis, please keep the following in mind:
 1) Like a true SEO expert, you should analyze all given information about the competitor in the web search results i.e. url, titles, date, highlights etc and the queries that were used to find them.
@@ -102,6 +110,8 @@ Here is the user article:
 MASTERLIST_PRIMARY_SECONDARY_KEYWORD_GENERATOR_PROMPT = """
 You are an Search Engine Optimization (SEO) expert in keyword research and competitor analysis. You will be provided a user article, a list of entities representing the main topics of the article, information about the competitors found through web search queries which includes: their URLs, titles, published dates, and highlights from the web page content. We then fed the entities to Google Keyword Planner (GKP) including top 2 competitor urls and GKP recommended keywords ideal for the provided seed url websites and entities. GKP also gave very useful metrics for each keyword that you will take into account. 
 
+To understand past year keyword metrics and the seasonality and using time based arguments in your reasoning, the current time in %Y-%m-%d %H:%M:%S format is: {current_time}
+
 While conducing your analysis, please keep the following in mind:
 1) Your first task is to analyze all of the information provided to you and generate a masterlist of keywords. This masterlist contains the top 10 keywords that are IDEAL for our user article to dominate the topic and keywords in SEO. To do this well, be critical and put your analytical hat on as an SEO expert skilled with industry standard keyword research and competitor analysis utilizing all of the data you are provided. From competitor analysis, web search results and search queries, understand how headlines were written, what keywords were being emphasized, what can you gather from highlights, what do the search queries help you understand about the competitors and their content etc.
 
@@ -109,7 +119,8 @@ While conducing your analysis, please keep the following in mind:
 Clarification on "competition_index": This is a score from 0 to 100 that indicates the level of competition for a keyword based on the number of ad slots filled compared to the total number of ad slots available. It is calculated using the formula: Number of ad slots filled / Total number of ad slots available. Higher values indicate more competition and potentially higher costs to bid for that keyword.
 "competition" is either LOW, MEDIUM or HIGH.
 
-3) Your second task is to identify primary and secondary keywords from the masterlist. Primary keywords are the most important keywords that should be used in the article. Secondary keywords are also important but not as critical as primary keywords. You should provide 2-3 primary keywords and 3-5 secondary keywords. Each keyword should be accompanied by a reasoning paragraph explaining quantitatively and qualitatively why this keyword is ideal for SEO based on all the information you have. Include the keyword metrics in your reasoning, any seasonal trends and any other information you used to determine that keyword and its importance. However, keep in mind that your reasoning should not be an unjust justification of the keyword. It should be a critical analysis of the keyword and its importance. Include objective and relative reasoning, if a keyword is not ideal but it was the best you could pick from the given list then state that. If keyword will perform well in a niche but not in general then state that. 
+3) Your second task is to identify primary and secondary keywords from the masterlist. Primary keywords are the most important keywords that should be used in the article. Secondary keywords are also important but not as critical as primary keywords. You should provide upto 2-3 primary keywords and upto 3-5 secondary keywords (sometimes Google Keyword Planner may not have recommended enough keywords to pick full 2-3 primary and 3-5 secondary keywrods, in that case pick out of the ones available as primary and secondary but do not make up keywords on your own). 
+Additionally, Note that Each keyword should be accompanied by a reasoning paragraph explaining quantitatively and qualitatively why this keyword is ideal for SEO based on all the information you have. Include the keyword metrics in your reasoning, any seasonal trends and any other information you used to determine that keyword and its importance. However, keep in mind that your reasoning should not be an unjust justification of the keyword. It should be a critical analysis of the keyword and its importance. Include objective and relative reasoning, if a keyword is not ideal but it was the best you could pick from the given list then state that. If keyword will perform well in a niche but not in general then state that. 
 
 For your output, consider the following instructions important: 
 1) The masterlist should be sorted in descending order based on average_monthly_searches. It is a list of objects (representing each keyword) with the following keys: text, monthly_search_volume, competition, competition_index, rank. Here rank represents the rank of the keyword in the masterlist that you determined. All of the keys and values should be string. only include the keys mentioned here from the data and do not include any less or more keys. 
@@ -145,6 +156,8 @@ Here is the keyword planner data by Google Keyword Planner:
 
 SUGGESTION_GENERATOR_PROMPT = """
 You are an expert in Search Engine Optimization (SEO) and have deep expertise in generating Keyword-rich url slugs, article titles, and incorporating keywords into articles so that the content can dominate their targeted keywords in search engines. 
+
+To understand timeframe of news and articles and using this for your analysis, the current time in %Y-%m-%d %H:%M:%S format is: {current_time}
 
 You are provided a news article draft, top competitors found through web search queries, chosen primary and secondary keywords with their reasoning (suggested by Google Keyword Planner). Your job is to finally integrate all of this information into the article so that it can be optimized for search engines and rank high in search results.
 

@@ -2,6 +2,7 @@
 Write all the node functions for the keywords agent here.
 """
 
+import datetime
 import json
 from typing import Any
 
@@ -34,6 +35,8 @@ from src.agents.keywords_agent.schemas import (
 )
 from src.tools.web_search_tool import WebSearch
 
+# get current time to feed into all prompts
+CURRENT_TIME: str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 # #################
 # Entity Extractor Model
@@ -157,7 +160,7 @@ async def entity_extractor(state: KeywordState):
     user_article: str = state["user_input"]
 
     # Prepare the prompt
-    prompt: str = ENTITY_EXTRACTOR_PROMPT.format(user_article=user_article)
+    prompt: str = ENTITY_EXTRACTOR_PROMPT.format(user_article=user_article, current_time=CURRENT_TIME)
 
     # initialize the list of retrieved entities
     retrieved_entities: list[str] = []
@@ -238,6 +241,7 @@ async def query_generator(state: KeywordState):
         user_article=state["user_input"],
         entities=state["retrieved_entities"],
         web_search_results=web_search_results,
+        current_time=CURRENT_TIME
     )
 
     try:
@@ -386,6 +390,7 @@ async def router_and_state_updater(state: KeywordState):
             user_article=user_input,
             entities=retrieved_entities,
             web_search_results=web_search_results,
+            current_time=CURRENT_TIME
         )
 
         try:
@@ -464,6 +469,7 @@ async def competitor_analysis(state: KeywordState):
         user_article=user_input,
         entities=retrieved_entities,
         web_search_results=web_search_results,
+        current_time=CURRENT_TIME
     )
 
     # initialize the output variables
@@ -790,6 +796,7 @@ async def masterlist_and_primary_keyword_generator(state: KeywordState):
         competitor_information=competitor_information,
         competitor_analysis=competitor_analysis,
         keyword_planner_data=keyword_planner_data_str,
+        current_time=CURRENT_TIME
     )
 
     try:
@@ -891,6 +898,7 @@ async def suggestions_generator(state: KeywordState):
         secondary_keywords=secondary_keywords,
         competitor_information=competitor_information,
         competitor_analysis=competitor_analysis,
+        current_time=CURRENT_TIME
     )
 
     try:
