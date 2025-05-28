@@ -673,7 +673,7 @@ async def keyword_data_synthesizer(state: KeywordState):
             "type": "internal",
             "event_status": "old",
             "node": "Google Keyword Planner",
-            "content": f"Google Keyword Planner recommendations received! Found a total of {size} keywords.",
+            "content": f"Google Keyword Planner (GKP) recommendations received! GKP suggested a total of {size} keywords.",
         }
     )
 
@@ -682,7 +682,7 @@ async def keyword_data_synthesizer(state: KeywordState):
             "type": "internal",
             "event_status": "new",
             "node": "Keywords Synthesizer",
-            "content": f"Now combining and deduplicating those {size} keywords to get unique keywords ...",
+            "content": f"Now combining and deduplicating those {size} keywords to keep only the unique ones for further analysis ...",
         }
     )
 
