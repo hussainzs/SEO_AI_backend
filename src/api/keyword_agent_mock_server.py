@@ -13,7 +13,7 @@ from src.api.mock_server_data import STATIC_DATA
 import asyncio
 import json
 from typing import AsyncGenerator
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
@@ -33,6 +33,7 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
+router: APIRouter = APIRouter(prefix="/api/test/keyword", tags=["AGENT"])
 
 @router.post("/stream", response_model=None)
 async def stream_mock_keyword_agent(request: KeywordAgentRequest) -> StreamingResponse:
@@ -44,21 +45,26 @@ async def stream_mock_keyword_agent(request: KeywordAgentRequest) -> StreamingRe
             # mimic the realistc delay for different types of events, I'm just gonna manually set the delay for each event as I already know and this is for testing
             match counter:
                 case 2:
-                    await asyncio.sleep(3.7)
+                    # await asyncio.sleep(3.7)
+                    await asyncio.sleep(1.5)
                 case 5:
                     await asyncio.sleep(2)
                 case 8:
-                    await asyncio.sleep(2.5)
+                    await asyncio.sleep(2.2)
                 case 10:
-                    await asyncio.sleep(37)
+                    # await asyncio.sleep(37)
+                    await asyncio.sleep(3)
                 case 13:
-                    await asyncio.sleep(6)
+                    # await asyncio.sleep(6)
+                    await asyncio.sleep(2)
                 case 15:
                     await asyncio.sleep(1)
                 case 17:
-                    await asyncio.sleep(20)
+                    # await asyncio.sleep(20)
+                    await asyncio.sleep(3)
                 case 20:
-                    await asyncio.sleep(13)
+                    # await asyncio.sleep(13)
+                    await asyncio.sleep(2.5)
 
             yield f"data: {payload}\n\n"
 
@@ -75,7 +81,7 @@ app.include_router(router)
 if __name__ == "__main__":
     # Run the FastAPI application using uvicorn when this script is executed directly.
     # The server will be available at http://127.0.0.1:8000
-    # The SSE test endpoint is: POST http://127.0.0.1:8000/agent/keyword/stream
+    # The SSE test endpoint is: POST http://127.0.0.1:8000/agent/test/keyword/stream
     uvicorn.run(
         app="src.api.keyword_agent_mock_server:app",
         host="127.0.0.1",
