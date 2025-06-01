@@ -126,6 +126,26 @@ tracer = OpikTracer(
 
 # Run the agent
 async def run_keyword_agent_stream(user_input: str) -> AsyncGenerator:
+    """
+    Runs the LangGraph workflow with streaming output and yields updates as a dictionary.
+    It sets the initial state of "messages" and "user_input" channels and starts the agent workflow.
+    
+    Args:
+        user_input (str): The user's input article string to be processed by the agent.
+    
+    Yields:
+        AsyncGenerator: Yields updates from the agent workflow as dictionaries.
+        
+        Possible output types are:
+        - {"type": "error", "content": str}
+        - {"type": "complete", "content": str}
+        - {"type": "internal", "event_status": "new" or "old", "node": str, "content": str}
+        - {"type": "internal_content", "event_status": "old", "node": str, "content": array}
+        - {"type": "answer", "event_status": "new", "node": str, "content": dict}
+    
+    Note:
+        Note that "internal_content" has to be an array of strings because frontend expects it to be an array.
+    """
 
     try:
         async for update in keyword_agent.astream(

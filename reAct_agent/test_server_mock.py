@@ -163,7 +163,7 @@ if __name__ == "__main__":
     # The server will be available at http://127.0.0.1:8000
     # The SSE test endpoint is: POST http://127.0.0.1:8000/api/test-agent/chat/stream
     uvicorn.run(
-        app="src.api.test_server:app",
+        app="reAct_agent.test_server_mock:app",
         host="127.0.0.1",
         port=8000,
         reload=True
