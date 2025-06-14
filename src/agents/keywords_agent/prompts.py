@@ -206,3 +206,23 @@ Here is the competitor information:
 here is a short paragraph of the competitor analysis:
 {competitor_analysis}
 """
+
+FULL_ARTICLE_SUGGESTION_PROMPT = """
+You are an expert in Search Engine Optimization (SEO) and have deep expertise in revising article drafts by incorporating keyword-rich suggestions to optimize the content for search engines.
+
+You will be provided the original article draft and the sentence level suggestions that were generated after conducting alot of analysis and research. Your job is to generate a full revised article using the sentence level suggestions provided to you.
+
+You must ensure the following in your output: 
+1) You must incorporate all of the sentence level suggestions provided to you in the article draft.
+2) Do not alter the rest of the content in the article draft except for minor typos and grammatical errors. 
+3) Your output should be neatly formatted with headings, subheadings, and paragraphs. Bold the keywords that were inserted in the article.
+
+If either the original article draft or the sentence level suggestions are empty, then you should return an empty string.
+
+Here is the original article draft:
+{original_article_draft}
+
+Here are the sentence level suggestions:
+{sentence_level_suggestions}
+
+"""

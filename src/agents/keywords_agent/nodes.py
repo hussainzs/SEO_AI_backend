@@ -7,6 +7,7 @@ import json
 from typing import Any
 
 from src.agents.keywords_agent.state import KeywordState
+from src.agents.keywords_agent.intermediate_state import set_sentence_level_suggestions
 from langchain_core.messages import HumanMessage
 from langgraph.config import get_stream_writer
 
@@ -912,6 +913,9 @@ async def suggestions_generator(state: KeywordState):
         suggested_url_slug = response.suggested_url_slug
         suggested_article_headlines = response.suggested_article_headlines
         final_answer = response.final_suggestions
+        
+        # add final_answer to intermediate-state so we can display full article suggestions (quick hack for now)
+        set_sentence_level_suggestions(final_answer)
 
         # stream the suggestions to the frontend
         stream_writer(

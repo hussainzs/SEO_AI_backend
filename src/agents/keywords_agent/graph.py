@@ -1,5 +1,6 @@
 # typing
 from typing import AsyncGenerator
+from src.agents.keywords_agent.intermediate_state import set_original_article_draft
 
 # Langgraph imports
 from langgraph.graph import StateGraph, START, END
@@ -146,6 +147,8 @@ async def run_keyword_agent_stream(user_input: str) -> AsyncGenerator:
     Note:
         Note that "internal_content" has to be an array of strings because frontend expects it to be an array.
     """
+    # set intermediate state with article draft
+    set_original_article_draft(user_input)
 
     try:
         async for update in keyword_agent.astream(

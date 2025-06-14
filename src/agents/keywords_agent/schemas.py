@@ -158,3 +158,12 @@ class SuggestionGeneratorModel(BaseStructuredModel):
         ...,
         description = "Revised sentences with incorporation of primary & secondary keywords"
     )
+
+class FullArticleGeneratorModel(BaseStructuredModel):
+    """
+    Represents the output of the full article generator model.
+    """
+    content: str = Field(
+        ...,
+        description="Complete article content replaced with suggestions from the SuggestionGeneratorModel. Minimal changes to rest of the content. Properly formatted with headings, subheadings, and paragraphs. Any typos and grammatical errors corrected. ",
+    )
