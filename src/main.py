@@ -7,6 +7,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.api.keyword_agent_route import router as keyword_agent_router
+from src.api.full_article_suggestions_route import router as full_article_suggestions_router
 
 
 def create_app() -> FastAPI:
@@ -22,10 +23,9 @@ def create_app() -> FastAPI:
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
-    )
-
-    # mount routes here
+    )    # mount routes here
     app.include_router(keyword_agent_router)
+    app.include_router(full_article_suggestions_router)
     return app
 
 # initialize the FastAPI app
