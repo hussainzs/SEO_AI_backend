@@ -220,3 +220,36 @@ STATIC_DATA = [
     },
     {"type": "complete", "content": "Agent workflow completed"},
 ]
+
+# Mock data for full article suggestions endpoint
+MOCK_FULL_ARTICLE_SUGGESTION: dict[str, str | bool] = {
+    "success": True,
+    "article_suggestion": """# Penn Supports International Students Amid Federal Government Decision on Harvard
+
+## Introduction
+
+Penn administrators expressed concern over the **federal government decision** to revoke Harvard University's ability to enroll **Harvard international students** and reaffirmed their support for **Penn international students** in a Friday email. This unprecedented action has sent shockwaves through the higher education community, particularly affecting the substantial population of international students across American universities.
+
+## Federal Government Decision Impact
+
+The **federal government decision** on May 22 affects about 6,800 **Harvard international students** — about 27% of Harvard's student body — who now face the prospect of transferring to other institutions or risking the loss of their legal status in the United States. The Department of Homeland Security cited an "unsafe campus environment that is hostile to Jewish students" with "pro-Hamas sympathies" and "racist" diversity, equity and inclusion practices as reasons for this drastic measure.
+
+## Penn's Response and Support
+
+In the email sent to **Penn international students** and scholars, Vice Provost for Global Initiatives Ezekiel Emanuel and Associate Vice Provost for Global Initiatives Amy Gadsden called the **federal government decision** to revoke Harvard's ability to enroll **Harvard international students** "deeply concerning." This response demonstrates Penn's commitment to protecting and supporting its international student community.
+
+Currently, Penn is home to 9,143 **Penn international students** and scholars, representing a significant portion of the university's diverse academic community. According to a press release from Penn Admissions, the Class of 2029 includes **Penn international students** from over 100 countries and all 50 states, highlighting the global nature of Penn's student body.
+
+## Legal and Administrative Support
+
+Last week, Penn Global and International Student and Scholar Services hosted a legal panel webinar to discuss the impacts of recent **federal government decision** on immigration policies. This proactive approach shows Penn's dedication to keeping **Penn international students** informed about their rights and options during these uncertain times.
+
+Penn's International Student and Scholar Services team also shared their message on Instagram, reinforcing the University's stance on supporting **Penn international students** and ensuring they feel welcomed and protected on campus.
+
+## Conclusion
+
+As the situation continues to evolve, Penn's leadership remains committed to supporting **Penn international students** while closely monitoring the implications of the **federal government decision** affecting **Harvard international students**. The university's proactive response serves as a model for institutional support during challenging policy changes that impact international education.
+
+The contrast between Harvard's current predicament and Penn's supportive stance highlights the importance of institutional leadership in protecting international student communities during periods of political uncertainty.""",
+    "message": "Full article suggestion generated successfully",
+}

@@ -8,7 +8,8 @@ Run this server with: python -m src.api.keyword_agent_mock_server
 
 # import static data and request model
 from src.api.keyword_agent_route import KeywordAgentRequest, router
-from src.api.mock_server_data import STATIC_DATA
+from src.api.mock_server_data import STATIC_DATA, MOCK_FULL_ARTICLE_SUGGESTION
+from src.api.full_article_suggestions_route import FullArticleSuggestionResponse
 
 import asyncio
 import json
@@ -73,15 +74,39 @@ async def stream_mock_keyword_agent(request: KeywordAgentRequest) -> StreamingRe
         "Connection": "keep-alive",
         "X-Accel-Buffering": "no",
     }
-    
+
     return StreamingResponse(event_generator(), media_type="text/event-stream", headers=headers)
+
+
+@router.post("/suggestfullarticle", response_model=FullArticleSuggestionResponse)
+async def mock_generate_full_article_suggestion() -> FullArticleSuggestionResponse:
+    """
+    Mock endpoint for generating full article suggestions.
+
+    This endpoint returns static mock data for testing the frontend integration
+    without making actual LLM calls or consuming API resources.
+
+    Returns:
+        FullArticleSuggestionResponse: Mock response containing a sample article suggestion
+    """  # Add a small delay to simulate processing time
+    await asyncio.sleep(delay=1.5)
+
+    # Return the mock full article suggestion data with proper type handling
+    return FullArticleSuggestionResponse(
+        success=bool(MOCK_FULL_ARTICLE_SUGGESTION["success"]),
+        article_suggestion=str(MOCK_FULL_ARTICLE_SUGGESTION["article_suggestion"]),
+        message=str(MOCK_FULL_ARTICLE_SUGGESTION["message"]),
+    )
+
 
 app.include_router(router)
 
 if __name__ == "__main__":
     # Run the FastAPI application using uvicorn when this script is executed directly.
     # The server will be available at http://127.0.0.1:8000
-    # The SSE test endpoint is: POST http://127.0.0.1:8000/agent/test/keyword/stream
+    # Available endpoints:
+    # - SSE test endpoint: POST http://127.0.0.1:8000/api/test/keyword/stream
+    # - Full article suggestion: POST http://127.0.0.1:8000/api/test/keyword/suggestfullarticle
     uvicorn.run(
         app="src.api.keyword_agent_mock_server:app",
         host="127.0.0.1",
