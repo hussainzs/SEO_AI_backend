@@ -38,7 +38,7 @@ router: APIRouter = APIRouter(prefix="/api/test/keyword", tags=["AGENT"])
 @router.post("/stream", response_model=None)
 async def stream_mock_keyword_agent(request: KeywordAgentRequest) -> StreamingResponse:
     async def event_generator() -> AsyncGenerator[str, None]:
-        counter: int = 1
+        counter: int = 0
         for event in STATIC_DATA:
             payload: str = json.dumps(obj=event)
             counter += 1
@@ -46,7 +46,7 @@ async def stream_mock_keyword_agent(request: KeywordAgentRequest) -> StreamingRe
             match counter:
                 case 2:
                     # await asyncio.sleep(3.7)
-                    await asyncio.sleep(1.5)
+                    await asyncio.sleep(5)
                 case 5:
                     await asyncio.sleep(2)
                 case 8:

@@ -152,7 +152,7 @@ async def entity_extractor(state: KeywordState):
             "type": "internal",
             "event_status": "new",
             "node": "Entity Extractor",
-            "content": "Extracting entities from your article to understand the topic better.",
+            "content": "Extracting top seed keywords from your article to understand the topic better.",
         }
     )
 
@@ -180,7 +180,7 @@ async def entity_extractor(state: KeywordState):
                 "type": "internal",
                 "event_status": "old",
                 "node": "Entity Extractor",
-                "content": f"Entities extracted successfully!",
+                "content": f"Seed Keywords extracted successfully!",
             }
         )
         stream_writer(
@@ -224,7 +224,7 @@ async def query_generator(state: KeywordState):
             "type": "internal",
             "event_status": "new",
             "node": "Query Generator",
-            "content": "Generating search queries to find your competitors...",
+            "content": "Generating web search queries to find your competitors...",
         }
     )
 
@@ -264,7 +264,7 @@ async def query_generator(state: KeywordState):
                     "type": "internal",
                     "event_status": "old",
                     "node": "Query Generator",
-                    "content": "Queries generated successfully!",
+                    "content": "Web Search Queries generated successfully!",
                 }
             )
             tool_call_was_made = True
@@ -361,7 +361,7 @@ async def router_and_state_updater(state: KeywordState):
                 "type": "internal",
                 "event_status": "old",
                 "node": "Query Analyzer",
-                "content": "Found enough competitors, transferring to competitor analyst for further processing",
+                "content": "Found enough quality competitors, transferring to competitor analyst for further analysis",
             }
         )
         return {
@@ -455,7 +455,7 @@ async def competitor_analysis(state: KeywordState):
             "type": "internal",
             "event_status": "new",
             "node": "Competitor Analysis",
-            "content": "Conducting competitor analysis on the search results to find top competitors and analyze their content. This may take sometime because there is alot to analyze...",
+            "content": "Conducting competitor analysis on the search results to find your top competitors and analyze their content. This may take sometime because there is alot to analyze...",
         }
     )
 
@@ -919,7 +919,7 @@ async def suggestions_generator(state: KeywordState):
                 "type": "internal",
                 "event_status": "old",
                 "node": "Suggestions Generator",
-                "content": f"Generated suggestion susccessfully!",
+                "content": f"Generated your customized suggestions successfully!",
             }
         )
 
