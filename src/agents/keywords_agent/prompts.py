@@ -90,7 +90,7 @@ While conducting your analysis, please keep the following in mind:
 
 4) In your structured output, you have to give me the top 5 unique web search results. The web search results should be ranked based on relevance and quality of competition (authoritative sources and competition). 1 is the highest rank. You have to provide the following information for each web search result: rank, url, title, published date, highlights (text content). For highlights, extract as much text content as possible from the web search result, do not summarize or paraphrase however do not make up any content not provided in the web search results
 
-5) For your structured output, you have to give a competitive analysis which is 2 paragraphs long. Focus on the strengths and weaknesses of the competitors, where are we lacking, what are the opportunities or content gaps we can fill. Make it actionable, insightful and concise with very precise details. Anyone should be able to read your competitive analysis and understand what to do next to dominate our targeted topic. Uphold the highest standards of SEO and keyword research.
+5) For your structured output, you have to give a competitive analysis which is 2 paragraphs long. Focus on the strengths and weaknesses of the competitors, where are we lacking, what are the opportunities or content gaps we can fill. Make it actionable, insightful and concise with very precise details utilizing the terms, trends, keywords and whatever other important information you find. Anyone should be able to read your competitive analysis and understand what to do next to dominate our targeted topic. Uphold the highest standards of SEO and keyword research. YOU MUST ENSURE you output this analysis in a markdown paragraph format with proper spacing and formatting with each part properly highlighted. 
 
 6) YOU MUST NOT make up any information on your own for the search queries and web search results output, you can only use the information provided to you. The 2 queries you return must exactly match queries that were used to find the competitors. The web search results you return must exactly match the web search results provided to you. If you are given less than 5 web search results, then you should return all of them. If you are given more than 5 web search results, then you should return the top 5 based on relevance and quality of competition. 
 
@@ -176,17 +176,20 @@ consider the following for generating the keyword-rich article titles:
 
 3. Suggest revised sentences with incorporation of primary & secondary keywords:
 consider the following for generating the revised sentences:
-a. Take a deep look at the article draft and primary and secondary keywords. Then identify the sentences in the article where we can incorporate the primary and secondary keywords.
-b. For each sentence, your job is to suggest a revised sentence with the keyword inserted. Try to minimally change the original sentence while making sure the sentence flows naturally with its surrounding context. YOU must make sure the insertion of keyword doesn't feel forced or awkward. If you find yourself changing the meaning of the sentence as an effective way to insert the keywords then you are allowed to do that but make a note of it in your output for that sentence and definitely explain quantitatively and qualitatively why this is a good change in 1 sentence. 
+a. Take a deep look at the article draft and primary and secondary keywords. Then identify the sentences in the article where we can incorporate the primary and secondary keywords without making the sentences awkward or forced.
+b. For each sentence, your job is to suggest a revised sentence with the keyword inserted. Try to minimally change the original sentence while making sure the sentence flows naturally with its surrounding context. YOU must make sure the insertion of keyword doesn't feel forced or awkward. 
+c. If you find yourself changing the meaning of the sentence as an effective way to insert the keywords then YOU ARE allowed to do that but make a note of it in your output for that sentence and explain quantitatively and qualitatively why this is a good change in 1 sentence. 
 c. This should be done for inserting each primary and secondary keyword into the article.
 d. You should also consider the competitors and their content to see how they are using different keywords in their articles.
-5. For each revised sentence,  you need to classify them as either Critical SEO Boost (High Impact) or Minor Enhancement (Low Impact).
+
 6. Make sure you first show high impact revisions and then low impact revisions in your output.
 
 For structuring your output, you must follow the structured format provided to you. 
 1) URL slug is a string. 
 2) Article titles are a list of strings.
-3) Revised sentences should be a neatly formatted markdown paragraph spaced properly and easy to read. Each suggestion should show the original sentence and the revised sentence with the keyword inserted and bolded with their impact classification clearly visible and an explanation only if necessary. Make it pretty and well formatted and structured. All of this will be one markdown paragraph and should be output as a string as required by the structured format.
+3) Revised sentences should be a neatly formatted markdown paragraph spaced properly and easy to read. Each suggestion should show the original sentence and the revised sentence with the keyword inserted and **bolded** with a one sentence explanation if necessary. Make it pretty and well formatted and structured. All of this will be one markdown paragraph and should be output as a string as required by the structured format.
+
+7. Finally, we don't want keyword stuffing so only give maximum of 5-7 revised sentences. 
 
 Here is the article:
 {user_article}
