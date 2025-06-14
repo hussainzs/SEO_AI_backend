@@ -33,7 +33,7 @@ async def generate_full_article_suggestion() -> FullArticleSuggestionResponse:
     """
     try:
         # Call the suggest_full_article function to generate the article suggestion
-        article_content: str = suggest_full_article()
+        article_content: str = await suggest_full_article()
         
         # Return successful response with the generated article content
         return FullArticleSuggestionResponse(

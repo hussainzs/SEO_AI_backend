@@ -1,7 +1,7 @@
 """
 This is the main FastAPI entrypoint to be run for starting the server
 
-Run `python -m src.main` to start the server.
+Run python -m src.main
 """
 import uvicorn
 from fastapi import FastAPI

@@ -89,7 +89,7 @@ async def mock_generate_full_article_suggestion() -> FullArticleSuggestionRespon
     Returns:
         FullArticleSuggestionResponse: Mock response containing a sample article suggestion
     """  # Add a small delay to simulate processing time
-    await asyncio.sleep(delay=1.5)
+    await asyncio.sleep(delay=3.5)
 
     # Return the mock full article suggestion data with proper type handling
     return FullArticleSuggestionResponse(

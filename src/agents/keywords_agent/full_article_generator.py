@@ -28,7 +28,7 @@ MODEL_WITH_FALLBACK_AND_STRUCTURED = initialize_model_with_fallbacks(
 )
 
 
-def suggest_full_article() -> str:
+async def suggest_full_article() -> str:
     """
     suggest a full revised article using the sentence level suggestions suggested earlier. We assume suggestions.txt already has the sentence level suggestions.
     for now this is a quick hack, later we will integrate this using subgraphs or add this as a node to the keywords agent graph.
@@ -43,6 +43,6 @@ def suggest_full_article() -> str:
     )
 
     # Generate the full article suggestion using the model
-    full_article_suggestion: FullArticleGeneratorModel = MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(HumanMessage(content=prompt))  # type: ignore
+    full_article_suggestion: FullArticleGeneratorModel = await MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(HumanMessage(content=prompt))  # type: ignore
 
     return full_article_suggestion.content
