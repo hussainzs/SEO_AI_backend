@@ -30,20 +30,17 @@ Your job is to use the provided entities which are derived from the article and 
 To generate time sensitive queries, the current time in %Y-%m-%d %H:%M:%S format is: {current_time}
 
 While generating the search queries, please consider the following:
-1. the search queries you extract will be used to find competitor articles written about the same topic. Keep this purpose in mind. The search queries will be executed using tool provided to you. Thus you should output a tool call with the search query. 
+1. the search queries you extract will be used to find competitor articles written about the same topic. Keep this purpose in mind. The search queries will be executed using web search tool provided to you.
 2. your search queries should be able to identify competitor's articles covering general topic of our user article and specific nuances of the topics as well.
-3. make sure two distinct search intent queries are generated. (a) Statement based Broad/Entity Focused Search Query: Use retrieved entities to generate this type of query.
-(b) Question based Google Search Query: Formulate common question user might ask related to the topic.
+3. YOU MUST MAKE SURE TWO distinct search intent queries are generated in your tool call:
+(a) Statement based broad Entity Focused Search Query related to the article. Formulate this to capture the main entities and topics discussed in the article the way a human would search for it.
+(b) Question based Search Query: Formulate common question user might ask related to the topic.
 4. your search queries should be consisting of a couple of words (concise and under 400 characters). 
 5. The goal is to conduct competitor analysis for our user article and conduct high performing keyword search. Keep all of these purposes of the search queries in mind to determine the best search queries.
-6. YOU MUST ALWAYS generate TWO tool calls in your response each with a each type of search query you came up with.
+6. YOU MUST ALWAYS generate TWO distinct search queries in your tool call as described above.
 
-IMPORTANT: 
-If you are provided below a history of previous tool calls and their responses, you MUST use the information from the previous tool calls to analyze what was missing in the previous search queries and generate NEW search queries (again of two types but new) to get better results. In this case, take a hollistic view of our user article, the entities, and the previous tool calls and their responses to generate new search queries. Again respond with two tool calls.
-
-IMPORTANT:
-YOU MUST ALWAYS RESPOND WITH TWO TOOL CALLS FILLED WITH EACH TYPE OF SEARCH QUERIES you came up with. No other text or explanation is needed. Correctly format tool calls for the tool provided to you.
-The only exception is that if you are not provided any tool at all, please respond exactly with "I dont have a tool" and nothing else.
+VERY IMPORTANT: 
+If you are provided below a history of previous tool calls and their responses, you MUST use the information from the previous tool calls to analyze what was missing in the previous search queries and generate NEW search queries (again of two types but new) to get better results.
 
 Here are the extracted entities from the article:
 {entities}
@@ -51,7 +48,7 @@ Here are the extracted entities from the article:
 Here is our user article:
 {user_article}
 
-\nHistory of previous tool calls and their responses:
+\nHistory of previous tool calls and their responses (if present):
 {web_search_results}
 """
 
@@ -88,13 +85,16 @@ While conducting your analysis, please keep the following in mind:
 
 3) In your structured output, you have to give me the top 2 search queries from the web search results that gave the best results. If there are only 2 queries, then give me those 2 queries otherwise pick the top 2. If there are less than 2 queries than give me 1.
 
-4) In your structured output, you have to give me the top 5 unique web search results. The web search results should be ranked based on relevance and quality of competition (authoritative sources and competition). 1 is the highest rank. You have to provide the following information for each web search result: rank, url, title, published date, highlights (text content). For highlights, extract as much text content as possible from the web search result, do not summarize or paraphrase however do not make up any content not provided in the web search results
+4) In your structured output, you also have to give me the top 5 unique web search results. The web search results should be ranked based on relevance and quality of competition (authoritative sources and competition). 1 is the highest rank. You have to provide the following information for each web search result: rank, url, title, published date, highlights (text content). For highlights, extract as much text content as possible from the web search result, do not summarize or paraphrase however do not make up any content not provided in the web search results
 
-5) For your structured output, you have to give a competitive analysis which is 2 paragraphs long. Focus on the strengths and weaknesses of the competitors, where are we lacking, what are the opportunities or content gaps we can fill. Make it actionable, insightful and concise with very precise details utilizing the terms, trends, keywords and whatever other important information you find. Anyone should be able to read your competitive analysis and understand what to do next to dominate our targeted topic. Uphold the highest standards of SEO and keyword research. YOU MUST ENSURE you output this analysis in a markdown paragraph format with proper spacing and formatting with each part properly highlighted. 
+5) In your structured output, you also have to give a competitive analysis which is 2 paragraphs long. Focus on the strengths and weaknesses of the competitors, where are we lacking, what are the opportunities or content gaps we can fill. Make it actionable, insightful and concise with very precise details utilizing the terms, trends, keywords and whatever other important information you find. Anyone should be able to read your competitive analysis and understand what to do next to dominate our targeted topic. Uphold the highest standards of SEO and keyword research. 
+VERY IMPORTANT: For your competitive analysis output with markdown formatting, each section with headline and marked. Each part like opportunities, strengths, weaknesses should be clearly marked with headings. Any numbers, insights or other information should have clear labels.
 
 6) YOU MUST NOT make up any information on your own for the search queries and web search results output, you can only use the information provided to you. The 2 queries you return must exactly match queries that were used to find the competitors. The web search results you return must exactly match the web search results provided to you. If you are given less than 5 web search results, then you should return all of them. If you are given more than 5 web search results, then you should return the top 5 based on relevance and quality of competition. 
 
 6) You are allowed to be critical and creative in your competitor analysis paragraphs but be very precise and actionable. Put on your expert hat and think like a true SEO expert.
+
+7) Avoid adding long winded justifications or fluff in your output. Make it quick to read and actionable with proper formatting.
 
 Here is the user article:
 {user_article}
@@ -108,14 +108,17 @@ Here is the user article:
 """
 
 MASTERLIST_PRIMARY_SECONDARY_KEYWORD_GENERATOR_PROMPT = """
-You are an Search Engine Optimization (SEO) expert in keyword research and competitor analysis. You will be provided a user article, a list of entities representing the main topics of the article, information about the competitors found through web search queries which includes: their URLs, titles, published dates, and highlights from the web page content. We then fed the entities to Google Keyword Planner (GKP) including top 2 competitor urls and GKP recommended keywords ideal for the provided seed url websites and entities. GKP also gave very useful metrics for each keyword that you will take into account. 
+You are an Search Engine Optimization (SEO) expert in keyword research and competitor analysis. You will be provided a user article, a list of entities representing the main topics of the article, information about the competitors found through web search queries which includes: their URLs, titles, published dates, and highlights from the web page content. We then fed the entities to Google Keyword Planner (GKP) including top 2 competitor urls and GKP recommended keywords ideal for the provided seed url websites and entities (seed keywords). GKP also gave very useful metrics for each keyword that you must take into account. 
 
-To understand past year keyword metrics and the seasonality and using time based arguments in your reasoning, the current time in %Y-%m-%d %H:%M:%S format is: {current_time}
+\nTo understand past year keyword metrics and the seasonality and using time based arguments in your reasoning, you need to understand the current time which in %Y-%m-%d %H:%M:%S format = {current_time}
 
 While conducing your analysis, please keep the following in mind:
-1) Your first task is to analyze all of the information provided to you and generate a masterlist of keywords. This masterlist contains the top 10 keywords that are IDEAL for our user article to dominate the topic and keywords in SEO. To do this well, be critical and put your analytical hat on as an SEO expert skilled with industry standard keyword research and competitor analysis utilizing all of the data you are provided. From competitor analysis, web search results and search queries, understand how headlines were written, what keywords were being emphasized, what can you gather from highlights, what do the search queries help you understand about the competitors and their content etc.
+1) Your first task is to analyze all of the information provided to you and generate a masterlist of keywords. This masterlist contains the top 10 keywords that are IDEAL for our user article to dominate the topic and keywords in SEO. 
+MUST REMEMBER: pick high metric diverse keywords for your masterlist. Sometimes GKP recommends even typos as keywords that are very common or sometimes it gives 5 keywords that are very similar but have different search volumes, you must pick a diverse set of keywords with highest metrics. 
 
-2) You must also look at the keyword metrics provided by GKP and the monthly search volume from every month last year to understand any seasonal trends. average_monthly_searches provides a average popularity but seasonality trends are very important as well.
+To do this well, be critical and put your analytical hat on as an SEO expert skilled with industry standard keyword research and competitor analysis utilizing all of the data you are provided. From competitor analysis, web search results and search queries, understand how headlines were written, what keywords were being emphasized, what can you gather from highlights, what do the search queries help you understand about the competitors and their content etc.
+
+2) You must also look at the keyword metrics provided by GKP and the monthly search volume from every month last year to understand any seasonal trends. average_monthly_searches provides average popularity but seasonality trends are very important as well.
 Clarification on "competition_index": This is a score from 0 to 100 that indicates the level of competition for a keyword based on the number of ad slots filled compared to the total number of ad slots available. It is calculated using the formula: Number of ad slots filled / Total number of ad slots available. Higher values indicate more competition and potentially higher costs to bid for that keyword.
 "competition" is either LOW, MEDIUM or HIGH.
 
