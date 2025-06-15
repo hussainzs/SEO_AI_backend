@@ -12,8 +12,8 @@ from src.agents.keywords_agent.schemas import FullArticleGeneratorModel
 from src.agents.keywords_agent.prompts import FULL_ARTICLE_SUGGESTION_PROMPT
 
 from src.agents.keywords_agent.intermediate_state import (
-    original_article_draft,
-    sentence_level_suggestions,
+    get_original_article_draft,
+    get_sentence_level_suggestions
 )
 
 MODEL_WITH_FALLBACK_AND_STRUCTURED = initialize_model_with_fallbacks(
@@ -38,11 +38,11 @@ async def suggest_full_article() -> str:
     """
     # format the prompt with the original article draft and sentence level suggestions
     prompt = FULL_ARTICLE_SUGGESTION_PROMPT.format(
-        original_article_draft=original_article_draft,
-        sentence_level_suggestions=sentence_level_suggestions,
+        original_article_draft=get_original_article_draft(),
+        sentence_level_suggestions=get_sentence_level_suggestions(),
     )
 
     # Generate the full article suggestion using the model
-    full_article_suggestion: FullArticleGeneratorModel = await MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke(HumanMessage(content=prompt))  # type: ignore
+    full_article_suggestion: FullArticleGeneratorModel = await MODEL_WITH_FALLBACK_AND_STRUCTURED.ainvoke([HumanMessage(content=prompt)])  # type: ignore
 
     return full_article_suggestion.content

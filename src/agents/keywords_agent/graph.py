@@ -1,6 +1,9 @@
 # typing
 from typing import AsyncGenerator
-from src.agents.keywords_agent.intermediate_state import set_original_article_draft
+from src.agents.keywords_agent.intermediate_state import (
+    set_original_article_draft,
+    clear_intermediate_state,
+)
 
 # Langgraph imports
 from langgraph.graph import StateGraph, START, END
@@ -130,23 +133,26 @@ async def run_keyword_agent_stream(user_input: str) -> AsyncGenerator:
     """
     Runs the LangGraph workflow with streaming output and yields updates as a dictionary.
     It sets the initial state of "messages" and "user_input" channels and starts the agent workflow.
-    
+
     Args:
         user_input (str): The user's input article string to be processed by the agent.
-    
+
     Yields:
         AsyncGenerator: Yields updates from the agent workflow as dictionaries.
-        
+
         Possible output types are:
         - {"type": "error", "content": str}
         - {"type": "complete", "content": str}
         - {"type": "internal", "event_status": "new" or "old", "node": str, "content": str}
         - {"type": "internal_content", "event_status": "old", "node": str, "content": array}
         - {"type": "answer", "event_status": "new", "node": str, "content": dict}
-    
+
     Note:
         Note that "internal_content" has to be an array of strings because frontend expects it to be an array.
     """
+    # Clear any previous intermediate state to ensure clean execution
+    clear_intermediate_state()
+
     # set intermediate state with article draft
     set_original_article_draft(user_input)
 
@@ -159,15 +165,15 @@ async def run_keyword_agent_stream(user_input: str) -> AsyncGenerator:
             print("\n\n******************")
             print(update)
             print("\n")
-            
+
             # check if error was yielded, in which case we yield that error message but break the graph execution
             if isinstance(update, dict) and update.get("type") == "error":
                 yield update
                 break
-            
+
             # otherwise we can yield the update as a normal event and keep the graph execution going
             yield update
-        
+
         # Yield a final message indicating completion so connection can be closed gracefully
         yield {"type": "complete", "content": "Agent workflow completed"}
 
