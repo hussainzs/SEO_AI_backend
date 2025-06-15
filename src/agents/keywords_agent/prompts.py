@@ -63,12 +63,15 @@ You must always generate two different types of queries:
 
 NOTE: You must output valid tool call for the `web_search_tool`.
 
+---
 Here are the extracted entities from the article:
 {entities}
 
+---
 Here is our user article:
 {user_article}
 
+---
 \nHistory of previous tool calls and their responses (if present):
 {web_search_results}
 """
@@ -97,12 +100,15 @@ Carefully compare the `{user_article}` against the provided `{web_search_results
 
 Follow the structured output format exactly.
 
+---
 Here is the user article:
 {user_article}
 
+---
 Here are the extracted entities:
 {entities}
 
+---
 Here is the history of previous web queries and their responses:
 {web_search_results}
 
@@ -124,9 +130,17 @@ While conducting your analysis, please keep the following in mind:
 
 2) In your structured output, you also have to give me the top 5 unique web search results. The web search results should be ranked based on relevance and quality of competition (authoritative sources and competition). 1 is the highest rank. You have to provide the following information for each web search result: rank, url, title, published date, highlights (text content). For highlights, extract as much text content as possible from the web search result, do not summarize or paraphrase however do not make up any content not provided in the web search results
 
-3) In your structured output, you also have to give a competitive analysis which is 2 paragraphs long. Focus on the strengths and weaknesses of the competitors, where are we lacking, what are the opportunities or content gaps we can fill. Make it actionable, insightful and concise with very precise details utilizing the terms, trends, keywords and whatever other important information you find. Anyone should be able to read your competitive analysis and understand what to do next to dominate our targeted topic. Uphold the highest standards of SEO and keyword research. 
+3) In your structured output, you also have to give a competitive analysis. It should have the following sections:
+### Weaknesses of competitors:
+- Identify the opportunities or content gaps that you can fill based on the weaknesses of competitors. What are the topics or subtopics that are not being covered? What are the keywords that are not being targeted? How can you leverage these gaps to create better content?
 
-**VERY IMPORTANT FORMATTING instructions**: For your competitive analysis output with markdown formatting, each section with headline and marked. Each part like opportunities, strengths, weaknesses should be clearly marked with headings. Any numbers, insights or other information should have clear labels.
+### Strengths of competitors:
+- Identify the strengths of the competitors based on the web search results. What are they doing well? What are their unique selling points? What makes them stand out?
+
+### Actions to take:
+- Based on the weaknesses and strengths of competitors, what are the actionable steps you can take to cover the missing topics and cover the gaps? Be actionable and specific.
+
+**VERY IMPORTANT FORMATTING instructions**: For your competitive analysis output with markdown formatting, each section with headline and marked. Each part be clearly marked with headings. Present information in bullet points or numbered lists where appropriate for clarity. Use bold or italic markdown for emphasis on key points.
 
 ## Other critical instructions:
 1) YOU MUST NOT make up any information on your own for the search queries and web search results output, you can only use the information provided to you. The 2 queries you return must exactly match queries that were used to find the competitors. The web search results you return must exactly match the web search results provided to you. If you are given less than 5 web search results, then you should return all of them. If you are given more than 5 web search results, then you should return the top 5 based on relevance and quality of competition. 
@@ -135,12 +149,15 @@ While conducting your analysis, please keep the following in mind:
 
 3) Avoid adding long winded justifications or fluff in your output. Make it quick to read and actionable with proper formatting.
 
+---
 Here is the user article:
 {user_article}
 
+---
 \nHere are the extracted entities:
 {entities}
 
+---
 \nHere is the history of previous web queries and their responses:
 {web_search_results}
 
@@ -175,9 +192,10 @@ From the masterlist you just created, select the most critical keywords for the 
 
 ### Reasoning Requirements:
 For each primary and secondary keyword, you must provide a detailed reasoning paragraph. This is the most important part of your analysis. Your reasoning must be a critical and objective analysis, not a simple justification.
+FORMATTING: THIS reasoning paragraph MUST use markdown and **bold** or *italicize* any metrics or important points.
 
 Each reasoning paragraph **must include**:
--   **Quantitative Analysis:** Explicitly state the keyword's metrics (`average_monthly_searches`, `competition`, `competition_index`). Use bold or italic markdown for emphasis.
+-   **Quantitative Analysis:** Explicitly state the keyword's metrics (`average_monthly_searches`, `competition`, `competition_index`). Use **bold** or *italic* markdown for emphasis.
 -   **Qualitative Analysis:** Explain *why* this keyword is a good strategic fit. Reference the `{competitor_analysis}`, the headlines or content themes from `{competitor_information}`, and its relationship to the `{user_article}`.
 -   **Seasonal Trends:** Analyze the monthly search volume data from the last year. Note any significant peaks, troughs, or seasonal patterns that could inform publishing or content update strategy.
 -   **Final Verdict:** Conclude with a clear statement on the keyword's role (e.g. "This secondary keyword represents a key opportunity to capture long-tail traffic by addressing a content gap left by competitors.").
@@ -191,21 +209,27 @@ VERY IMPORTANT: the primary and secondary keywords must be selected from the mas
 
 Caution: keywords may seem very similar but they have slight differences that are very important. I.e. Penn medicine vs Penn medicine hospital are different keywords but they have very different search volumes and competition. This must be considered.
 
+---
 Here is the user article:
 {user_article}
 
+---
 Here are the extracted entities:
 {entities}
 
+---
 Here are the search queries that were executed to find competitors:
 {generated_search_queries}
 
+---
 Here are the top web search results obtained for each query:
 {competitor_information}
 
+---
 We also conducted brief competitor analysis and here is a paragraph of that to get you started:
 {competitor_analysis}
 
+---
 Here is the keyword planner data by Google Keyword Planner:
 {keyword_planner_data}
 
@@ -238,6 +262,11 @@ b. For each sentence, your job is to suggest a revised sentence with the keyword
 c. Occasionally, If you find yourself changing the meaning of the sentence as an effective way to insert the keywords then YOU ARE allowed to do that. 
 c. This should be done for inserting each primary and secondary keyword into the article.
 d. You should also consider the competitors and their content to see how they are using different keywords in their articles.
+IMPORTANT FORMATTING INSTRUCTION: Each suggestion should show the original sentence and the revised sentence with the keyword inserted and **bolded**. Follow the format below:
+```markdown
+_Original_: [original sentence here]
+_Revised_: [revised sentence here with keyword inserted and **bolded**]
+```
 
 6. Make sure you first show high impact revisions and then low impact revisions in your output.
 
@@ -248,18 +277,23 @@ For structuring your output, you must follow the structured format provided to y
 
 7. Finally, we don't want keyword stuffing so only give maximum of 5-7 revised sentences. 
 
+---
 Here is the article:
 {user_article}
 
+---
 Here are the primary keywords:
 {primary_keywords}
 
+---
 Here are the secondary keywords:
 {secondary_keywords}
 
+---
 Here is the competitor information:
 {competitor_information}
 
+---
 here is a short paragraph of the competitor analysis:
 {competitor_analysis}
 """
@@ -276,9 +310,11 @@ You must ensure the following in your output:
 
 If either the original article draft or the sentence level suggestions are empty, then you should return "Sorry I was not able to generate the full article suggestions because either the original article draft or the sentence level suggestions are empty."
 
+---
 Here is the original article draft:
 {original_article_draft}
 
+---
 Here are the sentence level suggestions:
 {sentence_level_suggestions}
 

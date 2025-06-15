@@ -43,9 +43,9 @@ CURRENT_TIME: str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 # Entity Extractor Model
 # #################
 ENTITIES_MODEL_WITH_FALLBACK_AND_STRUCTURED = initialize_model_with_fallbacks(
-    primary_model_fn=get_mistral_model,
-    primary_model_kwargs={"model_num": 2, "temperature": 0.5},
-    fallback_model_fns=[get_groq_model, get_openai_model],
+    primary_model_fn=get_openai_model,
+    primary_model_kwargs={"model_num": 1, "temperature": 0.5},
+    fallback_model_fns=[get_groq_model, get_mistral_model],
     fallback_model_kwargs_list=[
         {"model_num": 1, "temperature": 0.5},
         {"model_num": 1, "temperature": 0.5},
@@ -91,10 +91,10 @@ COMPETITOR_ANALYSIS_MODEL_WITH_FALLBACK_AND_STRUCTURED = (
     initialize_model_with_fallbacks(
         primary_model_fn=get_openai_model,
         primary_model_kwargs={"model_num": 1, "temperature": 0.3},
-        fallback_model_fns=[get_mistral_model, get_openai_model],
+        fallback_model_fns=[get_gemini_model, get_mistral_model],
         fallback_model_kwargs_list=[
-            {"model_num": 1, "temperature": 0.3},
             {"model_num": 2, "temperature": 0.3},
+            {"model_num": 1, "temperature": 0.3},
         ],
         structured_output_schema=CompetitorAnalysisOutputModel,
     )
@@ -123,9 +123,9 @@ MPS_MODEL_WITH_FALLBACK_AND_STRUCTURED = initialize_model_with_fallbacks(
 # # Suggestions Generator Model
 ################
 SUGGESTIONS_MODEL_WITH_FALLBACK_AND_STRUCTURED = initialize_model_with_fallbacks(
-    primary_model_fn=get_mistral_model,
+    primary_model_fn=get_openai_model,
     primary_model_kwargs={"model_num": 1, "temperature": 0.5},
-    fallback_model_fns=[get_openai_model, get_gemini_model],
+    fallback_model_fns=[get_mistral_model, get_gemini_model],
     fallback_model_kwargs_list=[
         {"model_num": 1, "temperature": 0.5},
         {"model_num": 2, "temperature": 0.5},
